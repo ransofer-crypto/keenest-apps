@@ -1,0 +1,1606 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>תזרים הבית</title><link rel="manifest" href="manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="תזרים הבית"><link rel="apple-touch-icon" href="../shared/logo.png">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: home cash-flow, same shell as the Keenest sites — sticky top bar with tabs, one working column (max 1100px). Same tokens as לוח עבודה. */
+:root{
+  --bg:#f3f4f2; --surface:#ffffff; --sunk:#e8ebe8; --line:#d5dad6;
+  --ink:#16201c; --muted:#5d6a64; --accent:#06B3E5; --accent-ink:#04222c; --accent-text:#0784ad;--brand2:#FA1664;--brand2-ink:#ffffff;
+  --rec:#d2352b; --amber:#b7791f; --ok:#2f7d4f; --info:#2d5fa0;
+  --rec-bg:#fbe7e5; --amber-bg:#fbf0dc; --ok-bg:#e2f2e7; --info-bg:#e3ecf7; --neutral-bg:#eceeec;
+  --f-display:"Secular One","Assistant",system-ui,sans-serif;
+  --f-body:"Assistant",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101614; --surface:#18201d; --sunk:#0c110f; --line:#2a3531; --ink:#e7eeea; --muted:#93a39c;
+  --accent:#06B3E5; --accent-ink:#04222c; --accent-text:#3cc8f2;--brand2:#FA1664;--brand2-ink:#ffffff; --rec:#ff6b5f; --amber:#e3a94b; --ok:#6fcb93; --info:#79a7e6;
+  --rec-bg:#3a1c19; --amber-bg:#36291a; --ok-bg:#183223; --info-bg:#1a2738; --neutral-bg:#222b28; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101614; --surface:#18201d; --sunk:#0c110f; --line:#2a3531; --ink:#e7eeea; --muted:#93a39c;
+  --accent:#06B3E5; --accent-ink:#04222c; --accent-text:#3cc8f2;--brand2:#FA1664;--brand2-ink:#ffffff; --rec:#ff6b5f; --amber:#e3a94b; --ok:#6fcb93; --info:#79a7e6;
+  --rec-bg:#3a1c19; --amber-bg:#36291a; --ok-bg:#183223; --info-bg:#1a2738; --neutral-bg:#222b28; color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink);overflow-x:hidden;max-width:100%;overscroll-behavior-x:none;overflow-anchor:none}
+body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%}
+.brand{flex-wrap:wrap}
+#syncText{overflow:hidden;text-overflow:ellipsis;min-width:0}
+body{font-family:var(--f-body);font-size:16px;line-height:1.45;direction:rtl}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding-block:8px 2px;flex-wrap:wrap}
+.brand{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.btitle{font-family:var(--f-display);font-size:22px;white-space:nowrap}
+.brand img{display:block;height:30px;width:auto;margin-inline-start:auto}
+.sync{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);background:var(--sunk);border-radius:999px;padding:4px 11px;white-space:nowrap;max-width:100%;min-width:0;overflow:hidden}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--ok)}.dot.old{background:var(--amber)}.dot.err{background:var(--rec)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{background:none;border:0;padding:8px 10px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+main{padding-block:12px 20px;display:flex;flex-direction:column;gap:14px}
+main.home{gap:10px}
+h2{font-family:var(--f-display);font-weight:400;font-size:20px;margin:0;text-wrap:balance}
+h2.h3{font-size:17px}
+.sec{display:flex;flex-direction:column;gap:10px;min-width:0}
+.sec-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec-h .count{color:var(--muted);font-family:var(--f-data);font-size:13px}
+.sec-h .spacer{flex:1}
+.hint{color:var(--muted);font-size:13px}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+.pos{color:var(--ok)}.neg{color:var(--rec)}
+.btn{border:0;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer;background:var(--brand2);color:var(--brand2-ink)}
+.btn.ghost{background:var(--sunk);color:var(--ink)}
+.btn.sm{padding:5px 12px;font-size:13px}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 9px;font-size:13px;font-weight:600;white-space:nowrap;background:var(--neutral-bg);color:var(--muted)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.late{background:var(--rec-bg);color:var(--rec)}.pill.warn{background:var(--amber-bg);color:var(--amber)}.pill.info{background:var(--info-bg);color:var(--info)}
+.banner{background:var(--amber-bg);color:var(--amber);border-radius:var(--r);padding:10px 14px;font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner span{font-weight:500;color:var(--ink)}
+.empty{padding:22px;color:var(--muted);text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+
+.period{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.seg{display:inline-grid;grid-auto-flow:column;background:var(--sunk);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:7px 14px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700}
+.stepper{display:inline-flex;align-items:center;gap:4px}
+.stepper button{width:34px;height:34px;border:1px solid var(--line);background:var(--surface);border-radius:8px;font-size:18px;line-height:1;cursor:pointer}
+.stepper strong{min-width:150px;text-align:center;font-family:var(--f-display);font-weight:400;font-size:18px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;min-width:0}
+.kpi .l{color:var(--muted);font-size:13px;letter-spacing:.02em}
+.kpi .v{font-family:var(--f-data);font-size:22px;margin-top:2px;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.kpi .s{color:var(--muted);font-size:12.5px}
+.kpi.hero{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px}
+@media (max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0}
+.legend{display:flex;gap:12px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:5px;vertical-align:-1px}
+svg.chart{width:100%;height:auto;display:block;margin-top:8px}
+svg.chart text{font-family:var(--f-data);font-size:10px;fill:var(--muted)}
+.cats{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.card .lbl{font-size:12.5px;color:var(--muted)}
+.balc{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.huge{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:24px;line-height:1.2}
+.balc .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.diffl{font-size:12.5px;font-weight:600;margin-top:2px}
+.mhead{display:flex;align-items:center;justify-content:space-between}
+.mhead strong{font-family:var(--f-display);font-weight:400;font-size:17px}
+.mhead button{width:30px;height:30px;border:1px solid var(--line);background:var(--surface);border-radius:8px;font-size:18px;line-height:1;cursor:pointer;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile.in{background:var(--ok-bg);color:var(--ok)}.tile.out{background:var(--rec-bg);color:var(--rec)}
+.tile .big{font-family:var(--f-data);font-variant-numeric:tabular-nums;font-size:22px;color:var(--ink);direction:ltr;text-align:right}
+.sec-t{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:15px}
+.moreb{border:0;background:none;color:var(--accent-text);font-weight:700;font-size:13px;padding:4px 4px 0;cursor:pointer}
+.sec-t .num{font-weight:500;color:var(--muted);font-size:13px}
+.rank{display:flex;flex-direction:column;gap:0;margin-top:4px}
+.rk{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:3px 8px;align-items:center;font-size:14.5px;border:0;background:none;padding:3px 4px;border-radius:8px;text-align:start;cursor:pointer;width:100%}
+.rk:hover{background:var(--sunk)}
+.rk i{font-style:normal;color:var(--muted);font-family:var(--f-data);font-size:12px}
+.rk .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .rkbar{grid-column:2/-1;height:5px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.rk .rkbar span{display:block;height:100%;border-radius:3px}
+.rk .rkbar .o{background:var(--rec)}.rk .rkbar .i{background:var(--ok)}
+.rk.unk .n{color:var(--amber)}.rk.unk .rkbar span{background:var(--amber)}
+.rk .pc{color:var(--muted);font-size:12px;margin-inline-start:6px}
+.catrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;border:0;background:none;padding:5px 6px;border-radius:7px;text-align:start;cursor:pointer}
+.catrow:hover{background:var(--sunk)}
+.catrow[aria-pressed="true"]{background:var(--info-bg)}
+.catrow .n{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.catrow .a{font-size:13px}
+.catrow .track{grid-column:1/-1;height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.catrow .fill{height:100%;background:var(--rec);border-radius:3px;opacity:.8}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tools input[type=search],.tools select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
+.tools input[type=search]{flex:1 1 200px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.tools .count{margin-inline-start:auto;font-size:13px;color:var(--muted)}
+
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lrow{display:grid;grid-template-columns:78px minmax(0,1fr) 92px 180px 110px;gap:12px;align-items:center;padding:8px 14px;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}
+.lhead{background:var(--sunk);font-size:13px;color:var(--muted);font-weight:600}
+.lhead button{border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer;text-align:inherit}
+.lrow .d{font-family:var(--f-data);font-size:13px;color:var(--muted)}
+.lrow .desc{min-width:0}
+.lrow .desc b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .desc small{color:var(--muted);font-size:13px}
+.lrow .amt{text-align:end;font-weight:600}
+.lrow.internal{opacity:.55}
+.src{font-size:12.5px;border-radius:999px;padding:1px 9px;justify-self:start;background:var(--neutral-bg);color:var(--muted);font-weight:600;white-space:nowrap}
+.src.bank{background:var(--info-bg);color:var(--info)}
+.catsel{width:100%;border:1px solid transparent;border-radius:999px;background:var(--neutral-bg);padding:4px 10px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.catsel:hover{border-color:var(--line)}
+.catsel.unk{background:var(--amber-bg);color:var(--amber)}
+.more{display:block;width:100%;border:0;border-top:1px solid var(--line);background:var(--sunk);padding:10px;color:var(--accent-text);font-weight:700;cursor:pointer}
+@media (max-width:680px){
+  .lhead{display:none}
+  .lrow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"desc amt" "src cat";gap:5px 10px}
+  .lrow .d{display:none}.lrow .desc{grid-area:desc}.lrow .amt{grid-area:amt}.lrow .src{grid-area:src}.lrow .catcell{grid-area:cat;width:170px}
+}
+
+/* forecast rows */
+.frow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 12px;align-items:center;padding:9px 14px;border-top:1px solid var(--line)}
+.frow:first-child{border-top:0}
+.frow .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .sub{grid-column:1/2;display:flex;gap:6px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:13px}
+.frow .amt{font-weight:700;text-align:end}
+.frow .when{grid-row:span 2;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.frow input[type=date]{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 8px;font-family:var(--f-data);font-size:13px;width:140px}
+.frow input[type=date].est{border-style:dashed;color:var(--muted)}
+.frow .est-l{font-size:11.5px;color:var(--muted)}
+.frow.skip{opacity:.45}
+.frow.skip .t{text-decoration:line-through}
+.frow .x{border:0;background:none;color:var(--muted);font-size:12.5px;cursor:pointer;padding:2px 4px;text-decoration:underline;text-underline-offset:3px}
+.gh{background:var(--sunk);padding:7px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;border-top:1px solid var(--line)}
+.gh:first-child{border-top:0}
+.gh .num{font-weight:600;color:var(--muted)}
+@media (max-width:560px){.frow{grid-template-columns:minmax(0,1fr) auto}.frow .when{grid-row:auto;grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center}}
+
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 12px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:13px;border-top:0;background:var(--sunk)}
+td.n,th.n{text-align:left}
+tfoot td,tr.tot td{font-weight:700;background:var(--sunk)}
+.fixed-in{display:inline-flex;align-items:center;gap:6px}
+.fixed-in input{width:110px;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 8px;font-family:var(--f-data);direction:ltr}
+
+.rules{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+@media (max-width:760px){.rules{grid-template-columns:minmax(0,1fr)}}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.rule:first-of-type{border-top:0}
+.rule code{font-family:var(--f-data);font-size:13px;background:var(--sunk);padding:1px 6px;border-radius:4px;overflow-wrap:anywhere}
+.form{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.form input,.form select{border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:7px 10px;flex:1 1 140px;min-width:0}
+.linkbtn{border:0;background:none;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-size:13px;padding:4px}
+
+.toast{display:flex;align-items:center;gap:12px;position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;z-index:30;font-weight:600;max-width:calc(100% - 32px);flex-wrap:wrap}
+.toast button{background:none;border:0;color:var(--bg);font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
+.tfoot{display:flex;justify-content:center;padding-block:4px 40px}
+.themelink{border:0;background:none;color:var(--muted);font-size:13px;cursor:pointer;padding:6px 10px;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:480px){.btitle{font-size:20px}.brand img{height:24px}.stepper strong{min-width:110px;font-size:16px}.kpi .v{font-size:19px}}
+
+/* ===== Night bank — one dark look for the whole site. Radius scale: 3 / 4 / 5 (squarer corners). ===== */
+:root:root:root{
+  --bg:#0b0f1a; --surface:#141a2b; --sunk:#0f1422; --line:#1f2740; --ink:#eef1f8; --muted:#8e98b3;
+  --accent:#8f91ff; --accent-ink:#0b0f1a; --accent-text:#a6a8ff; --brand2:#6c6cf2; --brand2-ink:#ffffff;
+  --rec:#ff7d8a; --amber:#ffb547; --ok:#5ef0a4; --info:#7aa7ff;
+  --rec-bg:#3a1d26; --amber-bg:#3a2c16; --ok-bg:#15372a; --info-bg:#1a2547; --neutral-bg:#1c2337;
+  --f-display:"Rubik",system-ui,sans-serif; --f-body:"Rubik",system-ui,sans-serif; --f-data:"Rubik",system-ui,sans-serif;
+  --r:4px; color-scheme:dark}
+body{font-family:var(--f-body)}
+body::before{background:var(--bg)}
+header.top{background:var(--bg);border-bottom-color:var(--line)}
+.btitle{font-weight:600}
+.sync{background:var(--surface);border-radius:3px}
+nav.tabs button[aria-selected="true"]{border-bottom-color:var(--accent);color:var(--ink)}
+.card,.panel,.list,.tbl-wrap,.kpi,.empty{border-radius:5px}
+.banner{border-radius:4px}
+.btn,.chip,.seg,.seg button,.stepper button,.tools input,.tools select,.form input,.form select,.catsel,.src,.pill{border-radius:3px}
+.num{font-feature-settings:"tnum"}
+/* home */
+.balc{position:relative;overflow:hidden;border:0;box-shadow:none;border-radius:5px;padding:14px 16px;
+  background:radial-gradient(120% 140% at 100% 0%,#5b5cf0 0%,#3b2fb8 38%,#191a52 100%)}
+.balc::after{content:"";position:absolute;inset:auto -40px -70px auto;width:170px;height:170px;border-radius:50%;background:rgb(255 255 255 / .07);pointer-events:none}
+.balc .lbl{color:#c9cbff}
+.balc .huge{font-size:30px;font-weight:700;letter-spacing:-.5px;color:#fff}
+.diffl{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:rgb(255 255 255 / .13);border-radius:3px;padding:3px 9px;font-weight:500;color:#fff}
+.diffl::before{content:"";width:7px;height:7px;border-radius:50%;background:#5ef0a4}
+.diffl.neg::before{background:#ff7d8a}
+.diffl.pos,.diffl.neg{color:#fff}
+.tiles{gap:8px}
+.tile{border-radius:5px;background:var(--surface)!important;border:1px solid var(--line)}
+.tile .lbl{font-size:12.5px}
+.tile .big{font-size:21px;font-weight:600;color:var(--ink)}
+.mhead strong{font-family:var(--f-body);font-weight:600;font-size:16px}
+.mhead button{border-radius:3px;background:var(--surface);border-color:var(--line)}
+.sec-t{font-size:14px;font-weight:600;color:#c4cbe0}
+.rk{grid-template-columns:30px minmax(0,1fr) auto;padding:5px 2px;border-radius:3px}
+.rk .cic{width:30px;height:30px;border-radius:3.5px;display:grid;place-items:center;grid-row:span 2}
+.rk .cic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rk .n{font-size:14.5px}
+.rk>.num{font-weight:600}
+.rk .rkbar{height:4px;background:var(--line)}
+.rk.unk .n{color:var(--amber)}
+.moreb{color:var(--accent-text);font-weight:500}
+.tile,.card,.balc{border-radius:5px}
+.hugew{text-align:right}.hugew .huge{display:inline-block;direction:ltr;unicode-bidi:isolate}
+.tile{flex-direction:row;align-items:center;gap:10px;padding:9px}
+.tile .ib{width:38px;height:38px;border-radius:4px;display:grid;place-items:center;flex:none}
+.tile.in .ib{background:var(--ok-bg);color:var(--ok)}.tile.out .ib{background:var(--rec-bg);color:var(--rec)}
+.tile .ib svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.tile>div{display:flex;flex-direction:column;min-width:0}
+.tile .lbl{font-size:12px;color:var(--muted)}
+.tile .big{font-size:18px;font-weight:600;text-align:right}
+.mtag{display:flex;align-items:center;gap:8px}
+main.home{gap:14px;position:relative;isolation:isolate}
+main.home::before{content:"";position:absolute;z-index:-1;top:-16px;left:50%;width:100vw;transform:translateX(-50%);height:340px;pointer-events:none;background:radial-gradient(120% 100% at 75% 0%,#5146e0 0%,#2f279a 38%,rgb(11 15 26 / 0) 80%)}
+main.home .balc .lbl{color:#d4d6ff}
+main.home .balc{background:none!important;padding:14px 2px 10px;border:0}
+main.home .balc::after{display:none}
+main.home .balc .huge{font-size:40px;letter-spacing:-.8px;margin-top:4px}
+main.home .tile{padding:14px 12px}
+main.home .tile .ib{width:42px;height:42px}
+main.home .tile .big{font-size:20px}
+main.home .card{padding:16px 16px 12px}
+main.home .rank{gap:6px;margin-top:10px}
+main.home .rk{grid-template-columns:36px minmax(0,1fr) auto;gap:6px 12px;padding:6px 2px}
+main.home .rk .cic{width:36px;height:36px}
+main.home .rk .cic svg{width:18px;height:18px}
+main.home .rk .n,main.home .rk>.num{font-size:15.5px}
+main.home .moreb{padding:10px 4px 2px}
+main.home .mhead button{background:none;border:0;width:36px;height:36px;font-size:22px;color:var(--muted)}
+.mtag .pill{border-radius:3px;padding:2px 8px;font-size:13.5px;font-weight:600;direction:ltr;unicode-bidi:isolate}
+.mtag .pill.pos{background:var(--ok-bg);color:var(--ok)}.mtag .pill.neg{background:var(--rec-bg);color:var(--rec)}
+.rk .rkbar,.rk .rkbar span{border-radius:2px}
+
+/* transactions screen (option 5) */
+.txhero{border-radius:5px;padding:12px 14px 14px;background:radial-gradient(120% 140% at 100% 0%,#5b5cf0 0%,#3b2fb8 38%,#191a52 100%);display:flex;flex-direction:column;gap:10px}
+.txhero .mhead button{background:none!important;border:0!important;color:#c9cbff;width:36px;height:36px;font-size:22px}
+.txhero .mhead strong{color:#fff}
+.txhero .bot{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.txhero small{font-size:12px;color:#c9cbff;display:block}
+.txhero .big{font-size:26px;font-weight:700;color:#fff}
+.txhero .io{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:13.5px;font-weight:600}
+.txhero .io .pos{color:#7ff7b9}.txhero .io .neg{color:#ffa3ad}
+.tbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tb{height:40px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--surface);border-radius:5px;color:var(--muted);font-size:14px;cursor:pointer;position:relative;padding:0}
+.tb svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tb.on{background:#23264d;border-color:#3a3e8a;color:var(--ink);font-weight:600}
+.tb .fdot{position:absolute;top:6px;left:6px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.tsearch{width:100%;height:40px;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:0 12px}
+.tfil{display:flex;gap:6px;align-items:center}
+.tfil select{flex:1;min-width:0;height:40px;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:0 10px}
+.tcount{font-size:12.5px;color:var(--muted)}
+.tlist{display:flex;flex-direction:column}
+.tday{font-size:12px;color:var(--muted);padding:12px 2px 4px}
+.trow{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:2px 10px;align-items:center;padding:9px 2px;border-top:1px solid var(--line)}
+.tday+.trow{border-top:0}
+.trow .cic{width:36px;height:36px;border-radius:4px;display:grid;place-items:center;grid-row:span 2}
+.trow .cic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.trow .t{font-size:14.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow .amt{font-size:15px;font-weight:600;text-align:left}
+.trow .amt.neg{color:var(--rec)}
+.trow .s{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.trow .tag{font-size:11px;color:var(--amber);text-align:left}
+.trow.int .t,.trow.int .amt,.trow.int .tag{color:var(--muted)}
+.trow .tag.chg{color:var(--muted)}
+.trow .catsel{width:auto;max-width:150px;display:inline;background:none;border:0;border-bottom:1px dashed var(--line);border-radius:0;padding:0;font-size:12px;font-weight:500;color:var(--muted);-webkit-appearance:none;appearance:none}
+.trow .catsel.unk{background:none;color:var(--amber)}
+.tlist .more{border-radius:5px;margin-top:8px;border:1px solid var(--line)}
+
+/* floating bottom nav (capsule, icons only) */
+nav.tabs#tabs{position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:4px;height:58px;padding:0 7px;align-items:center;border-radius:29px;background:rgb(20 26 43 / .85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid #2a3355;box-shadow:0 10px 30px rgb(0 0 0 / .5);overflow:visible}
+nav.tabs#tabs button{width:44px;height:44px;border-radius:22px;padding:0;border:0!important;display:grid;place-items:center;color:var(--muted);background:none}
+nav.tabs#tabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs#tabs button[aria-selected="true"]{background:var(--accent);color:#0b0f1a}
+body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+header.top{border-bottom:0}
+
+/* no title bar; sync lives in the balance row; fade under the floating nav */
+header.top{position:static;background:none!important;border:0}
+header.top .bar{display:none}
+#syncSlot .sync{background:none;padding:0;font-size:12.5px;color:#d4d6ff;gap:6px;max-width:60vw}
+#syncSlot .dot.ok{box-shadow:0 0 8px var(--ok)}
+body::after{content:"";position:fixed;z-index:19;left:0;right:0;bottom:0;height:calc(120px + env(safe-area-inset-bottom,0px));pointer-events:none;background:linear-gradient(180deg,rgb(11 15 26 / 0),rgb(11 15 26 / .92) 55%,var(--bg))}
+main{padding-top:max(16px,env(safe-area-inset-top,0px))}
+
+/* transactions toolbar: text tabs + ghost icons */
+.tbar2{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line)}
+.ttabs2{flex:1;display:flex;gap:24px;padding-inline:4px}
+.ttabs2 button{background:none;border:0;padding:9px 0 11px;font-size:15px;color:var(--muted);position:relative;cursor:pointer}
+.ttabs2 button.on{color:var(--ink);font-weight:600}
+.ttabs2 button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.gi{width:38px;height:38px;display:grid;place-items:center;background:none;border:0;color:var(--muted);cursor:pointer;position:relative;border-radius:19px}
+.gi svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gi.on{color:var(--accent)}
+.gi .fdot{position:absolute;top:7px;left:7px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+/* pull to refresh */
+html,body{overscroll-behavior-y:none}
+#ptr{position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) - 30px);left:50%;transform:translate(-50%,0);width:40px;height:40px;border-radius:20px;background:#1b2140;border:1px solid #2a3355;box-shadow:0 6px 20px rgb(0 0 0 / .45);display:grid;place-items:center;opacity:0;pointer-events:none;color:var(--muted)}
+#ptr svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#ptr.ready{color:var(--accent)}
+#ptr.spin svg{animation:ptrspin .8s linear infinite}
+@keyframes ptrspin{to{transform:rotate(360deg)}}
+
+/* home: monthly balance first */
+main.home .mhead.hm strong{font-size:16px}
+.sofar{color:#d4d6ff;font-weight:400;font-size:13.5px}
+.mhero{text-align:right;padding:4px 2px 0}
+.mhero small{display:block;font-size:13px;color:#d4d6ff}
+.mhero .mv{font-size:46px;font-weight:700;letter-spacing:-1px;line-height:1.1;margin-top:4px}
+.mhero .mv.p{color:#7ff7b9}.mhero .mv.n{color:#ffa3ad}
+.vsb{display:flex;flex-direction:column;gap:12px;padding:4px 2px}
+.vsb .r{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center}
+.vsb .l{font-size:13.5px;color:var(--muted)}
+.vsb .tr{height:12px;border-radius:3px;background:var(--line);overflow:hidden}
+.vsb .tr span{display:block;height:100%;border-radius:3px}
+.vsb b{font-weight:600;font-size:16px}
+.bankc{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.bankc .row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--muted);gap:8px}
+.bankc .bv{font-size:28px;font-weight:700;letter-spacing:-.5px;text-align:right;align-self:flex-start}
+.bankc #syncSlot .sync{color:var(--muted)}
+
+/* home: bank strip on top, month section with month picker */
+.bstrip{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 2px 14px;border-bottom:1px solid rgb(255 255 255 / .12)}
+.bstrip .bl{display:flex;flex-direction:column;gap:2px;font-size:13px;color:#d4d6ff;min-width:0}
+.bstrip .bv{font-size:26px;font-weight:700;color:#fff;letter-spacing:-.4px}
+.bstrip #syncSlot .sync{font-size:11.5px}
+.msect{display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.mlbl{display:flex;align-items:center;gap:8px;font-size:14px;color:#d4d6ff}
+.msel{position:relative;display:inline-flex;align-items:center;gap:4px;background:rgb(255 255 255 / .1);border:1px solid rgb(255 255 255 / .16);border-radius:4px;padding:3px 8px 3px 6px;cursor:pointer}
+.msel select{appearance:none;-webkit-appearance:none;background:none;border:0;color:#fff;font:inherit;font-weight:600;font-size:14.5px;padding:0;cursor:pointer}
+.msel select option{background:#141a2b;color:#eef1f8}
+.msel svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.msect .mv{font-size:46px;font-weight:700;letter-spacing:-1px;line-height:1.1;text-align:right;align-self:flex-start}
+.msect .mv.p{color:#7ff7b9}.msect .mv.n{color:#ffa3ad}
+.msect .vsb{margin-top:8px}
+
+.mdots{display:flex;justify-content:center;gap:5px;margin-top:10px}
+.mdots i{width:6px;height:6px;border-radius:3px;background:#2a3355;transition:width .2s}
+.mdots i.on{width:18px;background:var(--accent)}
+.mslide{display:flex;flex-direction:column;gap:6px;will-change:filter,opacity}
+.mcar{will-change:transform}
+.msect{overflow:hidden;margin-inline:-16px;padding-inline:16px}
+@keyframes msl{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes msr{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+
+.hpseg{display:flex;background:rgb(255 255 255 / .06);border-radius:5px;padding:3px;gap:2px}
+.hpseg button{flex:1;border:0;background:none;color:#c9cbff;font:inherit;font-size:13px;padding:6px 0;border-radius:3px;cursor:pointer}
+.hpseg button.on{background:rgb(255 255 255 / .14);color:#fff;font-weight:600}
+.msect .mlbl{font-size:13px;color:#d4d6ff}
+.mcar{display:grid;grid-template-columns:1fr auto 1fr;align-items:baseline;gap:14px;white-space:nowrap;margin-top:12px;-webkit-mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent)}
+.mcar span{font-size:14px;color:#8e98b3;overflow:hidden}
+.mcar span:first-child{text-align:left}.mcar span:last-child{text-align:right}
+.mcar b{font-size:16.5px;font-weight:600;color:#fff}
+
+/* month wheel */
+.mcar{position:relative;height:30px;margin-top:14px;overflow:hidden;display:block!important;-webkit-mask:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent)}
+.mtrack{position:absolute;inset:0;direction:ltr;will-change:transform}
+.mtrack i{position:absolute;top:0;left:50%;width:36%;margin-left:-18%;text-align:center;font-style:normal;font-size:15px;color:#8e98b3;white-space:nowrap;line-height:30px;direction:rtl;transform-origin:center}
+.mtrack i[data-o="2"]{left:calc(50% - 72%)}.mtrack i[data-o="1"]{left:calc(50% - 36%)}.mtrack i[data-o="-1"]{left:calc(50% + 36%)}.mtrack i[data-o="-2"]{left:calc(50% + 72%)}
+.mtrack i.c{color:#fff;font-weight:600}
+#mvNum{will-change:filter,opacity}
+
+.roll{display:inline-flex;direction:ltr}
+.rc{display:inline-block;height:1.15em;line-height:1.15em;overflow:hidden;vertical-align:top;white-space:pre;text-align:center}
+.rcol{display:flex;flex-direction:column;will-change:transform}
+.rcol span{height:1.15em;line-height:1.15em;display:block;white-space:pre}
+.msect .vsb b{min-width:5.4em;text-align:left}
+#mvNum{font-variant-numeric:tabular-nums}
+#mvNum{transition:color .3s cubic-bezier(.32,.72,0,1)}
+
+.sym{font-size:.62em;font-weight:600;opacity:.75;margin-inline:.04em;vertical-align:.08em}
+.rc.s{font-size:.62em;opacity:.8;height:1.85em;line-height:1.85em;vertical-align:top}
+.rc.s .rcol span{height:1.85em;line-height:1.85em}
+
+.sym.cur{margin-right:.22em}
+#mvNum .sg{font-size:.62em;opacity:.8;margin-right:.04em}
+#mvNum .sym{vertical-align:.12em}
+.rc.cur{margin-right:.13em}
+#mvNum{display:block;height:1.15em;line-height:1.15em;overflow:visible}
+#mvNum .roll{display:inline-flex;align-items:flex-start;vertical-align:top;height:1.15em}
+
+.msect .hpseg{margin-top:22px}
+.msect .mcar{margin-top:12px}
+.mlive{text-align:center;font-size:11.5px;color:#8e98b3;height:16px;margin-top:-2px}
+
+/* transactions screen top */
+.bstrip.tbal{border:0;padding:6px 2px 0}
+.tbig{display:block;text-align:right;font-size:44px;font-weight:700;letter-spacing:-1px;line-height:1.1;color:#fff;padding:0 2px 6px}
+.tmon{display:flex;flex-direction:column;gap:10px;will-change:transform,opacity}
+.tmon .mt{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px}
+.tmon .mt strong{font-size:20px;font-weight:600;white-space:nowrap}.tmon .mt small{font-size:12px;color:var(--muted);white-space:nowrap}
+.tpair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.tt{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:12px 10px;display:flex;align-items:center;gap:10px;min-width:0}
+.tt .ib{width:38px;height:38px;border-radius:4px;display:grid;place-items:center;flex:none}
+.tt .ib svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.tt.in .ib{background:var(--ok);color:#0d3a24;box-shadow:0 0 14px -2px rgb(94 240 164 / .55)}
+.tt.out .ib{background:var(--rec);color:#4a1019;box-shadow:0 0 14px -2px rgb(255 125 138 / .55)}
+.tt div{display:flex;flex-direction:column;min-width:0}.tt small{font-size:12px;color:var(--muted)}.tt b{font-size:18px;font-weight:600}
+.tdots{margin-top:0}
+.tday{display:flex;justify-content:space-between;align-items:baseline}
+.tday .eb{color:#c4cbe0;font-size:11.5px}
+
+main.txv{position:relative;isolation:isolate}
+main.txv::before{content:"";position:absolute;z-index:-1;top:-16px;left:50%;width:100vw;transform:translateX(-50%);height:340px;pointer-events:none;background:radial-gradient(120% 100% at 75% 0%,#5146e0 0%,#2f279a 38%,rgb(11 15 26 / 0) 80%)}
+main.txv .bstrip .bl{color:#d4d6ff}
+
+/* fixed charges */
+.glbl{font-size:13px;color:#d4d6ff;padding:6px 2px 0}
+.gsub{font-size:12.5px;color:#d4d6ff;padding:0 2px}
+.fxbar{display:flex;height:14px;border-radius:4px;overflow:hidden;gap:2px;margin-top:4px}
+.fxleg{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.fxleg div{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#c4cbe0;min-width:0}
+.fxleg i{width:9px;height:9px;border-radius:2px;flex:none}.fxleg b{margin-inline-start:auto;font-weight:600;color:var(--ink)}
+.fxmon{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);padding:2px 2px 0}.fxmon b{color:var(--ink);font-weight:600}
+.fxg{background:var(--surface);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.fxgh{width:100%;display:grid;grid-template-columns:4px minmax(0,1fr) auto 16px;gap:10px;align-items:center;padding:12px;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.fxg>.fxgh:first-child{border-top:0}
+.fxgh i{height:30px;border-radius:2px}.fxgh .n{font-size:14.5px;font-weight:500}.fxgh .c{font-size:11.5px;color:var(--muted)}.fxgh .a{font-weight:600;font-size:15px}
+.fxgh .chev{color:var(--muted);transition:transform .25s cubic-bezier(.32,.72,0,1)}.fxgh .chev.o{transform:rotate(-90deg)}
+.fxitems{padding:0 12px 6px 12px;padding-inline-start:26px;padding-inline-end:38px;background:rgb(255 255 255 / .015)}
+.fxi{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.fxitems .fxi:first-child{border-top:0}
+.fxi .n{font-size:14px}.fxi .s{font-size:11.5px;color:var(--muted)}.fxi .a{font-weight:600;font-size:14px}
+.fxal{background:linear-gradient(180deg,rgb(255 125 138 / .06),transparent),var(--surface);border:1px solid #4a2a33;border-radius:5px;padding:8px 12px}
+.fxal .h{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#c4cbe0}
+.fxal .fxi:nth-child(2){border-top:0}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:3px;font-weight:600;white-space:nowrap}
+.tag.up{background:var(--rec-bg);color:var(--rec)}.tag.miss{background:#3a2e14;color:#f5b94a}
+/* Claude page */
+.aihdr{display:flex;align-items:center;gap:10px;padding:6px 2px 0}.aihdr b{font-size:18px;font-weight:600;flex:1}
+.cmark{display:inline-block;width:20px;height:20px;background:#e0805e;-webkit-mask:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAXZklEQVR42u1de7QcRZn/dc+dJCaXBCMIeYmS5WHYjbirKJCwQQ/x4CJoAgrquiu6SA6L6CoqegIihkPYs7KybEz2oBBEdyFcCCqisEfYkEQeooI8VB5RHkFWwLxIuDPTPf5R33f6u5Wu7qrqnp6Zm1vn9Ll37p3urqrvq9/3rK+A7rUAQAhgPIAbAbQBxPSTr1cAXAlgKd0T0n1VtjDlcw1jrXCr088LidiRRnz9WtEFJqiLdx4J4C3if2NMUMLEniZWuonwLQAN+n0lgIGKJp9X/lwAa0V/bgdwrAEdxprlxAYA5gB4GkDTYvXHxAgxgFfT/Z1EAX72EgA7qA96P5fQdwbGSOq3su4XK7xtcTXpu1/o8MQzulyqMZ9EpCb9fsoYE7g1nqiLaQIblsRnHSEG8ByAQW2llo1ObwCwk/oXGcRSC8DjAPan+8J+Xo1Vt7/yIGBIxNgfwKc6pIiFROB5AF6VQdgaMeNsUmLjMX3ADQH+W8B62+FiKP5FBxiYzdJBAI8SUaMcRIoIkfpeHlfdBgvI5xjAYQDeQb/XSpyLGMAhAA61nJ8QwOYOiaNRyQBt+nlDgUlrkxm5FMCEDszFh4Til9Ui+nlNPyuC3UKAh4iQgScKAMACANOJEGHJTOryvIljIsC+MbEeAfAgMUDk8RzWBU4veRwBgHEOc9cA8DP6HJdMl1rKNSoaD+RHjn4A3TEUA9gKYN8SzDBGor0A/BHpcQn9/W0ALwmGCSpYlKXrGd2UW8sBHCf0AleCtQBMBvAZcg4NlLAKA0e9YiKASYQEZS2OiMzL/VLE5Ebxud3PKMBcfmdBFIgAvEi6QJEVwvftTaiShwBsHv5S+AuCgozHi/EYANsN7/1Gh/wfXfEHBADmQ3ncmjkTnuUebgP4SEFEY+KNA7DFggHYg7mM7qsXJD4T9D8ADItFwb4G6X5eMJqYAEjcwk0PBuAA0QaakLAA9IJE0rAFIjW0FVkvgfgrNP3G5Hh6upM6QZWNYW8iadKRpyjge04sgAJMwPNgF6NgEbCwwGqUsL9KvDe2GOsQ9bnW70zAE3BiAV2A7/kZMZPPpDADnAO3INUMTzNUEn+l4zt1E3hUiIIagNUFRAFfh3gShBngXxyI0QBwoMf7JOx/A+5R0VjoBIcgiWH0vUUwHSozqOWhELISeYWnGGAGOMuCIMygN1HfBxyJH2oyvwF/5feL3TDnA5qwutDmi2bo8IpY6ikKWHHaCeB1Ho6hAeGbyEMhyQCuk1+neVpVgPjyOqhqj25gQcjA87nMBI96KoRNTTP3WRVPIT9Blf+32FEGM8osLCjqGB2fBfBadD49LtVd+mmopIyzAOwDYApdKMCRjCYf9JwgdgxtBzDLUzY+7sAARzgwAH/naADbYM40chF336oS/kPi4MkA1msd2kbOky0k1wY9O8YEmyDeEXmiwApPDfkJSwbYBeBvLN/B/z+K5irPyWSTGtcmn0VlVgAT88f08l002Wmr9C6ojF8fJODBHEwOmchxsiQKHOiBAnkMwGJpg+X4+P8zhXs3KkB8tgC2QiXFVCL/+QVnGBSXWFwN8Z1F4v7Qgwm+6SkK+Pv/6YFEZTJAIEzcmwv4OdLGdk9VxGdinKm5Xm3cszGA/xHPqDmIAp68TcjPzTNZBMMAXm+BAtyv44lxWxby93QL5mKlb6gE/waPq0mr/2+rsv9lEmfsMAhJtCHSVl2YgN+7pCAKrLAgFP/vAw4m4Ptznst/X1SSuSfR9ZgqZT+/5AiPlSgn7AWoVGuenNACBUKoUOsmD9nJfd1JFkEWXDKxFucwACPLZvHMIGPOThQeu7gk6C8afPJmgGMKKDAMqS8DuCzl2TbMV8QiWGW5Wk/OYQB+/9MWpvIgfa+o0if7803NXK7MTRuQLH0G5lClrfOiDeBa4bOvW4qC73kqUTx578lgOkaGH+a8Q0bi0uQve0inkpJYhtLHzLOZ/C1d2YHEL9wA/5BtW9MhNgN4owVHFxVBrJDeA3O+AP/tnhyisQw+m74/zqD0+QR4TMRvEpL4BrlKEwMBki3SRbVZnpg/ADjXwns4oMUJfHcTmfIF+L3rcxiAN6f+fcpz+PdPYOR29iIXZwadWrXcNylkkwGsK5G7+fdLoRIgTXKa0WESIYcrEsh8gXqKGJAIZ2IAFmF/IsVU9ov7PM/BVLYVXRd1m/j6JL0awP9j5G7ddgki4RER2UoTCTzJ5xVEgRO05zEz/DV5N6McHWYYKnFULowQwDSozS5RCUof3/9rEjPdKIuTqRDOEC7hMrXcYSRFFwJtpfJkTyGT0gcFYkKBMMU5Nc/SA/gjIkpNEH8cEatdEvEjYqZp6MFt55ITzyDLoAxtV95/NZLtVrUUhfBdnpOdhgL8zCNznsny+GtCAWRYvqhETx+L1nlVRvp8mIAnbjqSfX4xygl0cEDp7SnKIU/IHR6Mxyhwn3iujNTlIUAM4J/p+7x55FSNQcpAwjN7mfhpcnkQqkhCs6SVIO8/Wax+uT/uHdi9dIuPX2A8/bzSsu8zBfO41DiyRaf/0yyvnm9ydb4JKkvFJr3ZZkJ4UtZoTFcriAJt4RdgW/6mDAbgcewAcIDoy/0li7/HoJJtBtBnqd5SJMwWq6lMT9hGIRfrxHgzoLaFuVojul8AAK7PYAD+23VCEV5VstzfJXSTvk3zlh1fhiQBolHSCtFjCQBwiQchpF9gEj3nBgsGuI2+++6SNH757LN6xd4vQyRIxep/NfOmDCvh28I1Og0qPu7rk3gzPWdNBgPwu88gMbcdxXL6dOIPkSjqO+jPanUhHr5oUPCKxhJYJFzq8WzWUdjTdluOF7BFFsALKJ7TJ9HjJWFRjLoqY1KTPVK4kYuigST0hfT8jY46RySUwYPgnmtQRmbPDqgw+6gvPs1oMBEqlbxVgitZRiUvAPCPjowlK3y81ZJx4hKIL3Wir/SLvV+2gjgXqrBCGZYCE3ybB3E4areUrIl2BRej1+qKlb6gF1BGdmIAwPnCUiiSNlV0h82DUKljnSa+3N8/HZ1L6uT9igOGWELXGUFGtw4DcHcJaBBXtILLWP1lxPcDsaAGLMTIAFll+mIMekUslOk3KJKb0Gnif8eD+IFQFOsWxJ5LLvTFAG6FynPgeM3dAE7qNb9B2AG/Qa9dPJ45FvJYxj1MxN4bKkHnKKiaBucQoZ/ICExJdF1PjDBpNPsNeg36v5Oi9cvdQ6bY/15Q29yOgwpH/xc5v7bmvLMpYipRivXUBrC8lzxPNSHLj4Taqz8fSe2/fnSUxETkTVCJrVuRlL03VUh9G83FqeTpnAu1V9LUmppItdku3iDG+8Ge4jfo9uo/O2Os7wXwSYLwuy0CR02M3I9ZqI+96nuuiRUyF6oi95voc9QnnjNe/b+EyjmcAnVQxluhkmBPITR4fcp9EETqRFpYRH27upcnMM9v0A+KXxuqGuqVGTK7pcnrKvrGyDEnzW+fpqmz+VHXriDj6rTfoB9FQlvAeJWWTixiEK+IOMikTvqi64YrzLgCS7/BKpSXdFIFEjRLjCW4xktMfpX3QEz4SQA+h5FFh/ggpPUkx0LsXo17DfnhA4ysXj1Ml0/TGbKtoQGv/IUArkJSKLqNURRPd2xtTXfQET2Cij7eAJXJ/W0AvwMQBySfPub54p0YebQKM83zZGLojNEgxaOh/Y+J9zxU5o+N86gFtRFzFZLk0T2FCSIxVlNM4Umow7U2kB7yJOkhuylaUikIcrjLZLKVwcEBVGLkA6Jfw8Sgw0jOCLg35f5jofL6pqLCsmkVrWyIRVbP8AXcRwvrSqiEmTsMYjQQ4giBcAoEBTqY9vcoBQGCEnSOe5Hk6ddIRN0J4MNQZxH3i5loMh2lqWsy/zYSkX8OlUq+jfz9aWhZ05TNVAToFfiMU9AmzPnczy3WCKMvjm1k+l5Pn6+hvz1pIDb/bMPyLKaAXI6rBbf0OnxGBsTph77HwkGUJrufJT3oWnIf/4TG+7JBWW5biOlcBgBUStVVGgQFAhVqls8Za7vrTjHMeX8/J7v8FgC/hdp8uiND14o0L2Ep3jZ++HUA3uf5nKaHU8fHIdTv7TEAvxIEX59hCuumXcfcrYGA0AOg0q0PF6t/LyRl0UydnVjRiopyHEW9gkQ7oc4UfoiU1i1QFVae18ZQE/0OhLJWRAGPXBkAKdq63iYb7m3T/06xWL0xMdY8+J22fWCfwD77M26BqijyEoDbSb6PJ8RtC0Qou4UGWsUmK0BHA105aSP/HN0q2rEAXqNZK2xW7gLwVahYQT8d5X6rheNLVyL5wOrrxCJs5/hJJOJEPspb3vcGLFdGhHKPWJVc/yBUdKvdAwygJ6pWue2L/SSBmOsfAricFMy6g87WU41z5GR1jn2gwsQvoD/TxTgU7HrJMwX1y/SuDQDeWYIy3rWmi6aFSOoR9FJquIz+dYup9Ksh5miZJkL7gvADGuF/gt0rePdyWlg3wsFZRTduRA8WoDLBPrcZSHbx9mJCiDxPeDWSI2jTEkJa6F7aO6eNDwEIaj1O+JgIvxQqynWYmDgbuz+uGOZ4K/kNAD4K4LtQvvunoE4zm4AkyMNKmmSEsKK5bdFcbuo1wuvKyQfIlnbN/ukFZPhSii/laKgDt25FcjqJSYfoZKZT7Oh0qoTwEo1OBvBTTzkvV9QtBMVVMoQsZMFbwMcbxv1uGutVSErVpo2HxUbZekTcbcLrCp6+WdRFzkuu/gOAj0MlSXRjm5ks+ngBja0uTFmTWDqcmOJ6bQGkPbvIuCST9oSCdzDUsa8y7dsFAmWa+E1Q2a6+ZwyUnQHcJl9FmsOMGSIt+SMg9/c/QG0JG0J6arlLWrleW/HlbsE9t0Go0712wW+3rkSI50lnAE143v6BqlCB+3ChQIIgRxQOZMRkFpIesQ4qsdOUDSwLWOqEfwmqwtqsbsn5ccTZDxSw5+WA1gDYl579FYuVX7VIYCb4skAC23OTahlMU4fK6LbZWtaGqvR+cdWE1xNKjkGyX91nl49c9Q9Bbabk9iFh68Y5xP8Wyqvy7aMTwMPsCyz0iCOgorPXQyWcxET4ZUhK3QIVhc9rmoJzNZKdKa41diWMNQlSB8V7DkV+7V5WnB6FKqCwE/lnBJTtjWO//LSUOfJVomsG/36d9IjXVk14mWk0HSrHrVkAgiWcP4BkoygPaB+oEGnes3kVHk2rJA+Bih6QlTWWXyPZ1FIredGl6RGVRSTlYD6G5ETuGO7HqUjo5FKxNQGffHiDzTGzum2edUhUBOCPJcj8PEZ8FMD+BguhzABaZd7QutDui1b6kIT5KVSxCIggBr/rc8ivLcTP+pXo6zoDAzDTnY2koqgt024H8HtL85Pn5GFyd3eKCSrT8FmheSdGHsAUwW8nKx/StEyDMYky8+k7jRylL6bQMZdnmw6VW592yAV/fjOSI+Balgz7CsUtvg67A6Rawixboi2ivmmSa5eJATcKQuePhYyUuQASzp5xkPsfEfctMNzHzLIJqohDnTRoG68bM+5zZK+fa6nzyP+d2U9MEAriz0dSr9fnJI9IEP8ZqMrcacoLa70TyDOWd6A1E38p3c+Fmd9iWP36yR0BgM87iDG+/1a6/wIkVUhbluP/hIXDqGfCtSDF7OWSVv1aTTM2HR93hQVR5Okgk5AUuICA6Kbhno0CdaYKpLHRBXgOVtK75lJsIm9+JDOfYYiO9szKB1TN/ms9QrV6lIvLv59lYDCd+IvI0ZPlOYzpOy0y+fh+RpPv5TDAXRoUL3BANlYihwEcT/fPEWZqntnJ71hSwGHUUeIHZIdv9nTh6rAtD5M22ary4MpdFnKVJ/E0jXn457U5DHC/5r4O4HZGUUv4LKamLJhGDvPy/XcIZ1dPMAFP4Frq4K4Cpt3DFA9AjgnEcn8Syea8A6xbQpwEgqn42g/J0e6xQRydlyKG+IyilqMoWK6NZ6Wl04j7sg7JzquwFxgggEp5ylPATBPSIhlcTzEhs5jO5vBoJv5vsHvdIX7HbItJP8GAHMsd/RqcyDGP+jFeWEvbHSyYu3oFCXgirnGYCLli7wXwd4YgUdb7lljKzwat0qNTdAmeuEMzVh4///3a+xlJ9oYqu2Jb0i0SQavJmuV0FFS+oK0Hc4Nggq44jFgr3pcgNM821hFiOdRGU1s7tyZkp40GPpxjS9e1VdzImOzFKRPNv5/giAItTRTw5hYQo+6weB73dT2SAs+VMwHD6Szh35d5aqzVN7XJfQhqXx8cAh+8UmYgOZXbRu6vRBI/N7mp/9WCAU41TDKbkjc7BrW4f0cI5OP+zCN9KE/BlOJgTgeCSNYowC8eyhn0c6RM7ePh2ODv3WvpRInIVp+E9MobrADuBbUvP8sL+CzUJlSk9JefO9NRIeQ+bsLIeL6shDpkMVYZDl/ULa+hrMK1BirrdgvUhoiviWuO46rXFc3zLZ1LPCkLMqCR+zteOK1ig7x+zKJ/APBBR+cX9/NybU5kfYA12H0Xj+kg63a3mYDbFLpqBjkeOBJf+uptI2rn5yiV/PeFFLBpZShsj8NuN3SI7CNnTfa9dE6FKbGOky2iqHIz6Hu7LQ50OStLwrq6l2tQqeHPWkQSpWWBHKKx0vVZmI97j0QswlYfmk2izjZFW5qpE1IcXzxnbydZnxVRjIRudFI3TcQyCkTLxIWnLCNoEa3WGchPsuTn35WBLC0RhbSZTIbdf3IUBbyqrzDAN6/kiVApdFmu9kgo4H+Jzp1EVpl/YQXcMmpOcTSJfpfBXA3NB28jV/k7P/AQBcNQx8CkwbcUnUsEYmUdbn1VN30EZUQWbc8A5pVwriWheEUcDpU8YtptxAzwGQcGYG/jLKgUsthRFDxAzqU0XUnumjoIwCOG2At/XtOPDMADnw+VoZsXWGJ5uA7AqyyVTJ6QxTkMxgxwjqNmzQx8OkbG9V1jBfWc/u8nFolEMZnpPAV9VP2DOzo1wzRLI/6LIjgSOBDoCznxi4YWCKp7oNidcAuNy1hB1uqVcv1cJPkFMZKA3CUopxZzZYojb5a80WLSpLfxfY5mD0/efTnvyZPLeShTIyRrIntjSlasIIupJXHnkEOLx7K6W6ZgUbn/XcsgD0/qIg85F5LJlcUATKwtwmQMPMd0miMKyFjBAOwDZOOhjtf7NJJNJmE/Ef8kJBG8rNUyrJlN4zzedVSOacnv30pKmQ8DyNyDmx2ZgPs125KQfVs2lwlysHD0xBaK0pDBcVI2A/zJAopt9JqZUPF+l/oGEZIj5EJLhsvaONqTcj8k6FoP++jXUI730SaukLdzKBZoM6UAA+hM14LbbqhD+32F28iuD8M+/n0TRp4q5vvO63LeyYx4G5LtZmUg3eWOjq1LPCyQvmKAGlQ6WZa9zH9fi+xDlW1d1NOEeznOIcDFJRFA7tq1cW3z+y+rmgGqghouZDwI4F0wH6DQoom7kTR+rmETe76Ty8nNsoT1ssreywJMx0Nt/QpyxtGVej1VyxpZzMlE/NuRpGQVqWTFxH6bw3PKrIrONQofBnAR/c1Uy59PaGlglDaG40FaDXp8nGF/O9ROmjI8Wmwu/jvMIWAdgld0AIJ5HHeIfkQGBfEv0McRPRu0CaE2lVydQpAdSLaA10pguBAqRewXsN+gubADHjU212Ygyf3Tr43CyVWremV2q80B8Ckyu26BSnt+AimHGhSQ/+PJuzcBdsfizYRKRglRbhFFft5UAG+k8X2U3vV9YtI9poUZXF4W9ElbfKelQyZ28MSVvdi6Vrm7G5GjOGXQZZcu5UOm50OFjZsWcr3TR862kV7nIEYXS7Z2M3RYxcBtztdjwrxIaNFpJojQQ21UapsYeSpXnlbNBLkNasdzDT1QRHmMAYq1Fo1tLVT1zDBn5cUkKva4Fo7isdUICb6PxBNpIn4IFQoea6OosVI3E0nKmV6sUu68fQ369DStsZbPBAci2cWjO4TuR1J5tDY2ZaOTCbj9G1QSZQsqz+DjSIo2hHvi5PwZVPQyg+7rt1MAAAAASUVORK5CYII=) center/contain no-repeat;mask:url(data:image/png;base64,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) center/contain no-repeat;flex:none}
+.astar{width:30px;height:30px;display:grid;place-items:center;flex:none}.astar .cmark{width:26px;height:26px}
+.aask{display:flex;align-items:flex-end;gap:8px;background:var(--surface);border:1px solid #2f3770;border-radius:22px;padding:6px 6px 6px 8px;box-shadow:0 0 0 4px rgb(143 145 255 / .06)}
+.aask textarea{flex:1;resize:none;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:7px 8px;max-height:140px;outline:none}
+.aask button{width:36px;height:36px;border-radius:18px;border:0;background:var(--accent);display:grid;place-items:center;flex:none;cursor:pointer}
+.aask button[disabled]{opacity:.4}
+.aask svg{width:17px;height:17px;fill:none;stroke:#0b0f1a;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.aideas{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.aidea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:11px 10px;display:flex;flex-direction:column;gap:4px;text-align:start;color:var(--ink);font:inherit;cursor:pointer;min-width:0}
+.aidea small{font-size:11px;font-weight:600}.aidea span{font-size:13.5px;line-height:1.35}
+.athread{display:flex;flex-direction:column;gap:8px}
+.amsg{max-width:90%;padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.5;white-space:pre-wrap}
+.amsg.me{align-self:flex-start;background:rgb(143 145 255 / .16);border:1px solid rgb(143 145 255 / .26);border-bottom-right-radius:4px}
+.amsg.cl{align-self:flex-end;background:#11161f;border:1px solid #232a3a;border-bottom-left-radius:4px}
+.aglass{height:38px;min-width:38px;border-radius:19px;border:1px solid rgb(255 255 255 / .14);background:rgb(255 255 255 / .08);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:grid;place-items:center;color:var(--ink);flex:none;cursor:pointer;padding:0;font:inherit}
+.aglass svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.aglass.txt{display:flex;gap:5px;padding:0 13px 0 11px;font-size:13px;color:#d4d6ff}.aglass.txt svg{width:15px;height:15px}
+.acont{display:flex;align-items:center;gap:10px;width:100%;text-align:start;background:var(--surface);border:1px solid #2f3770;border-radius:12px;padding:11px 12px;color:var(--ink);font:inherit;cursor:pointer}
+.acont .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.acont small{font-size:12px;color:#d4d6ff}.acont span.q{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acont svg{width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.alink{display:inline;border:0;background:rgb(143 145 255 / .14);color:#c9cbff;font:inherit;padding:0 5px;border-radius:5px;cursor:pointer;text-decoration:underline;text-decoration-color:rgb(143 145 255 / .5);text-underline-offset:3px}
+#backChat{position:fixed;z-index:21;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 12px;border-radius:20px;border:1px solid rgb(143 145 255 / .4);background:rgb(35 38 77 / .92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#e6e7ff;font:inherit;font-size:13.5px;box-shadow:0 8px 24px rgb(0 0 0 / .4);cursor:pointer}
+#backChat .cmark{width:16px;height:16px}
+.aprop{margin-top:8px;border:1px solid #2f3770;border-radius:6px;padding:9px 10px;background:rgb(143 145 255 / .06);display:flex;flex-direction:column;gap:5px;white-space:normal}
+.aprop .h{font-size:12px;color:#c4cbe0;font-weight:600}.aprop .ai1{font-size:13px}
+.abtn{display:flex;gap:6px;margin-top:4px}.abtn button{flex:1;padding:7px 0;border-radius:4px;border:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.abtn .ok{background:var(--accent);border-color:var(--accent);color:#0b0f1a;font-weight:600}
+.achips{display:flex;flex-wrap:wrap;gap:6px}.achips button{font:inherit;font-size:12.5px;padding:6px 11px;border-radius:15px;border:1px solid var(--line);background:rgb(255 255 255 / .03);color:#c4cbe0;cursor:pointer;text-align:start}
+.ajars{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:10px 12px;display:flex;flex-direction:column}
+.ajars .h{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#c4cbe0;margin-bottom:4px}
+.afree{display:flex;justify-content:space-between;font-size:13px;color:#d4d6ff;padding:4px 0 8px}.afree b{font-weight:600;color:#fff}
+.ajar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:9px 0;border-top:1px solid var(--line);align-items:center}
+.ajar .n{font-size:14px;font-weight:500}.ajar .a{font-weight:600}.ajar .s{font-size:11.5px;color:var(--muted)}
+.ajar .bar{grid-column:1/-1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.ajar .bar span{display:block;height:100%;background:var(--accent);border-radius:3px}
+.bvw{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.bfree{font-size:11.5px;color:#d4d6ff}.bfree b{font-weight:600;color:#fff}
+
+/* sort page */
+.sec2{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600;color:#c4cbe0;padding:6px 2px 0}.sec2 span:last-child{font-weight:500;color:var(--muted)}
+.remt{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--muted);font:inherit;font-size:12px;padding:0 2px;cursor:pointer;text-align:start}
+.remt .sw{width:28px;height:17px;border-radius:9px;background:#2a3355;position:relative;flex:none;transition:background .2s}
+.remt .sw::after{content:"";position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.32,.72,0,1)}
+.remt .sw.on{background:var(--accent)}.remt .sw.on::after{transform:translateX(-11px)}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:2px 12px}
+.sm{padding:11px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;transition:opacity .25s,transform .26s cubic-bezier(.32,.72,0,1),max-height .26s;max-height:600px;overflow:hidden}
+.sm:first-child{border-top:0}
+.sm.gone{opacity:0;transform:translateX(-30px);max-height:0;padding:0}
+.smt{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.smt .n{font-size:14.5px;font-weight:500}.smt .s{font-size:11.5px;color:var(--muted)}.smt .a{font-weight:600;font-size:14px}
+.schips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.schips::-webkit-scrollbar{display:none}.schips.wrap{flex-wrap:wrap;overflow:visible;justify-content:flex-start}
+.schips button{flex:none;font:inherit;font-size:12.5px;padding:6px 11px;border-radius:15px;border:1px solid var(--line);background:rgb(255 255 255 / .03);color:#c4cbe0;cursor:pointer;white-space:nowrap}
+.schips button:active{background:var(--acc-bg,#23264d);color:#fff}
+.schips .more{color:var(--muted)}.schips .ni{border-style:dashed}
+.ilbl{font-size:11.5px;color:var(--muted);margin-bottom:-3px}
+.remt.sm2{margin-top:-2px}
+.snote{font-size:12px;color:var(--muted);line-height:1.55;padding:0 4px}.snote b{color:#c4cbe0;font-weight:600}
+.fold2{display:flex;justify-content:space-between;align-items:center;width:100%;font:inherit;font-size:13px;color:#c4cbe0;padding:12px;border:1px solid var(--line);border-radius:5px;background:var(--surface);cursor:pointer}
+.fold2 .chev{color:var(--muted);transition:transform .25s cubic-bezier(.32,.72,0,1)}.fold2 .chev.o{transform:rotate(-90deg)}
+.rules.adm{grid-template-columns:minmax(0,1fr)}
+.askc{display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:none;color:#d4d6ff;font:inherit;font-size:12.5px;padding:6px;cursor:pointer}
+.astar.xs{width:18px;height:18px;display:inline-grid;align-self:center;vertical-align:middle}.astar.xs .cmark{width:17px;height:17px}
+
+/* home: tighter label/sync */
+.bstrip .bl{gap:0!important;line-height:1.25}
+.bstrip #syncSlot .sync{padding:0!important;line-height:1.25;margin-top:1px}
+/* tx: amount row with sync opposite */
+.tbrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 2px 6px}
+.tbrow .tbig{padding:0}
+.tbrow #syncSlot .sync{font-size:12px;color:#d4d6ff}
+
+.fxseg{margin-top:4px}
+.fxstrip{display:flex;justify-content:space-between;font-size:12.5px;color:#d4d6ff;padding:8px 2px 2px;border-top:1px solid rgb(255 255 255 / .12)}.fxstrip b{font-weight:600;color:#fff}
+.fxgh.nob{cursor:default}
+.vtag{font-size:10.5px;color:#f5b94a;background:#3a2e14;border-radius:3px;padding:0 5px;margin-inline-start:6px;font-weight:600;vertical-align:1px}
+
+.rule .rbtns{display:inline-flex;gap:10px;justify-content:flex-end}
+.rule input#renIn{grid-column:1/2;background:var(--bg);border:1px solid var(--accent);border-radius:4px;padding:6px 8px;color:var(--ink);font:inherit;min-width:0}
+
+.fxr{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.fxr .st{font-size:10.5px;font-weight:600;padding:0 6px;border-radius:3px}
+.fxr .st.ok{color:var(--ok);background:var(--ok-bg)}.fxr .st.late{color:#f5b94a;background:#3a2e14}.fxr .st.wait{color:var(--muted);background:rgb(255 255 255 / .05)}
+
+/* Claude noticed */
+.rvpill{display:flex;align-items:center;gap:8px;width:100%;background:rgb(217 119 87 / .12);border:1px solid rgb(217 119 87 / .35);border-radius:20px;padding:7px 10px 7px 12px;font:inherit;font-size:13px;color:#f3cfc2;cursor:pointer;text-align:start}
+.rvpill span:nth-child(2){flex:1}.rvpill .c{background:#d97757;color:#fff;border-radius:10px;padding:0 7px;font-size:12px;font-weight:600}
+.rvh{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#e8b3a1;padding:2px}
+.rvl{display:flex;flex-direction:column;gap:8px}
+.rvi{background:var(--surface);border:1px solid #3a3570;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:9px}
+.rvi .t{font-size:14px;line-height:1.5}.rvi .t b{font-weight:600}
+.rvb{display:flex;flex-wrap:wrap;gap:6px}
+.rvb button{font:inherit;font-size:12.5px;padding:6px 11px;border-radius:5px;border:1px solid var(--line);background:none;color:var(--ink);cursor:pointer}
+.rvb .ok{background:var(--accent);border-color:var(--accent);color:#0b0f1a;font-weight:600}
+.rvb .talk{border-color:rgb(217 119 87 / .45);color:#f3cfc2}
+.rvb .later{border:0;color:var(--muted);margin-inline-start:auto}
+.rvi{position:relative;touch-action:pan-y}.rvi .t{padding-left:30px}
+.smt{align-items:center}.smt>div:first-child{flex:1;min-width:0}
+.mi{font-size:12px;color:#c4cbe0;margin-top:2px;line-height:1.35}.smt .s b{font-weight:500;color:#d4d6ff}
+.trow .tag{display:flex;justify-content:flex-end;align-items:center;gap:6px}
+.txq{width:26px;height:24px;flex:none;border-radius:6px;border:1px solid rgb(217 119 87 / .4);background:none;color:#f3cfc2;display:grid;place-items:center;padding:0;cursor:pointer}.txq svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.txq.ghost{border-color:transparent;color:#5d6785}
+.whatq{width:30px;height:30px;flex:none;border-radius:8px;border:1px solid rgb(217 119 87 / .4);background:none;color:#f3cfc2;display:grid;place-items:center;padding:0;cursor:pointer;margin-inline-start:8px}.whatq svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rvx{position:absolute;top:8px;left:8px;width:26px;height:26px;border-radius:13px;border:0;background:rgb(255 255 255 / .07);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
+.rvx svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.rvb{flex-wrap:nowrap;align-items:center}.rvb button{white-space:nowrap}.rvsp{flex:1}
+.rvb .talk{width:34px;height:auto;align-self:stretch;padding:0;display:grid;place-items:center;flex:none}
+.rvb .talk svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs#tabs button{position:relative}
+.cmark.nav{width:23px;height:23px;background:currentColor}
+.ndot{position:absolute;top:7px;left:9px;width:9px;height:9px;border-radius:50%;background:#d97757;border:2px solid #141a2b}
+
+body.aichat::after{display:none}
+/* chat mode: app-like fixed layout */
+body.aichat{overflow:hidden;overscroll-behavior:none}
+body.aichat main#view{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100dvh);margin:0 auto;display:flex;flex-direction:column;gap:10px;padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));overflow:hidden}
+body.aichat main#view>.aihdr{flex:none}
+body.aichat .athread{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:6px!important;mask-image:linear-gradient(to bottom,transparent 0,#000 14px)}
+body.aichat .aask.bottom{position:static;flex:none;margin:0;box-shadow:0 0 0 4px rgb(143 145 255 / .06)}
+body.aichat.kb main#view{padding-bottom:10px}
+body.aichat.kb.ios main#view{padding-bottom:calc(var(--kb,0px) + 6px)}
+body.aichat.kb #tabs{display:none}
+
+.aask.bottom{position:fixed;z-index:25;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:1068px;margin:0 auto;background:#141a2b;box-shadow:0 -14px 24px 6px var(--bg),0 0 0 4px rgb(143 145 255 / .06)}
+body.aichat .athread{padding-bottom:84px}
+
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+input,textarea,select{font-size:16px!important}
+
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="bar">
+      <div class="brand"><span class="btitle">תזרים הבית</span><span class="sync" id="sync"><i class="dot" id="syncDot"></i><span id="syncText">מתחבר…</span></span></div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </div>
+</header>
+<main class="wrap" id="view"><div class="empty">טוען נתונים…</div></main>
+<footer class="wrap tfoot"></footer>
+
+<script>
+(()=>{try{const t=localStorage.getItem("keenest.theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}})();
+</script>
+<script>
+/* block pinch / double-tap zoom, same as the other Keenest sites */
+(()=>{try{let m=document.querySelector('meta[name="viewport"]');if(!m){m=document.createElement("meta");m.name="viewport";document.head.appendChild(m)}m.content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"}catch(_){}
+let lastT=0;document.addEventListener("touchend",e=>{const n=Date.now();if(n-lastT<300&&!e.target.closest("input,textarea,select"))e.preventDefault();lastT=n},{passive:false})})();
+(()=>{const stop=e=>{e.preventDefault()};["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,stop,{passive:false}));
+document.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+let last=0;document.addEventListener("touchend",e=>{const now=Date.now();if(now-last<300&&!e.target.closest("input,textarea,select"))e.preventDefault();last=now},{passive:false});})();
+window.addEventListener("error",e=>{try{const b=document.getElementById("syncText");if(b){b.textContent="שגיאה בדף: "+String(e.message).slice(0,120);document.getElementById("syncDot").className="dot err"}}catch(_){}});
+window.addEventListener("unhandledrejection",e=>{try{const b=document.getElementById("syncText");if(b){b.textContent="שגיאה: "+String((e.reason&&(e.reason.message||e.reason.code))||e.reason).slice(0,120);document.getElementById("syncDot").className="dot err"}}catch(_){}});
+</script>
+<script type="text/keenest-app">
+(()=>{
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const SRC={bank:"מסד",isracard:"ישראכרט",max:"מקס",card:"אשראי"};
+const MONTHS=["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+const VAT=0.18;
+const MGMT_URL="https://claude.ai/artifact/MHDmdzUA1GEAQRXv1pA6y4";
+const NOTION="Notion", N_PROJ="collection://30028b36-67ff-807f-bfe0-000ba9c922ed", N_SUP="collection://31c28b36-67ff-8003-b83e-000b05440f31";
+const PCOLS=`url, createdTime, "שם הפרויקט", "סטטוס", "סטטוס תשלום", "תקציב (ללא מע״מ)", "כמה שולם", "date:סיום הפרויקט:start", "קרדיט"`;
+const SCOLS=`url, createdTime, "שם הספק", "פרויקטים", "תקציב", "שולם"`;
+const BASE_CATS=[
+  {n:"משכורות",k:"in"},{n:"הכנסות אחרות",k:"in"},{n:"החזרים וזיכויים",k:"in"},
+  {n:"סופר ומזון",k:"out"},{n:"מסעדות ומשלוחים",k:"out"},{n:"דיור ומשכנתא",k:"out"},{n:"חשבונות הבית",k:"out"},
+  {n:"תקשורת ומנויים",k:"out"},{n:"רכב ודלק",k:"out"},{n:"תחבורה וחניה",k:"out"},{n:"ילדים וחינוך",k:"out"},
+  {n:"בריאות וביטוחים",k:"out"},{n:"קניות וביגוד",k:"out"},{n:"בית וריהוט",k:"out"},{n:"פנאי וחופשות",k:"out"},
+  {n:"מתנות ואירועים",k:"out"},{n:"חיסכון והשקעות",k:"out"},{n:"העברות בביט",k:"out"},{n:"מיסים ועמלות",k:"out"},{n:"משיכת מזומן",k:"out"},{n:"כללי",k:"out"},
+  {n:"חיוב כרטיס אשראי",k:"int"},{n:"העברה פנימית",k:"int"},{n:"הכנסה משכירות",k:"in"},{n:"קצבאות וביטוח לאומי",k:"in"},{n:"כניסה חד־פעמית",k:"int"}];
+const UNK="לא מסווג";
+const BUILTIN=[
+  [/ישראכרט|מקס איט|max it|כרטיסי אשראי|לאומי קארד|כ\.א\.ל|כאל|אמריקן אקספרס/i,"חיוב כרטיס אשראי","bank"],
+  [/משכורת|שכר|salary|מעביד/i,"משכורות"],
+  [/שופרסל|רמי לוי|יוחננוף|ויקטורי|אושר עד|טיב טעם|מגה|יינות ביתן|חצי חינם|קרפור|סופר|מכולת|ירקות|מאפיה|קצביה|am:pm|am pm/i,"סופר ומזון"],
+  [/wolt|וולט|תן ביס|10bis|cibus|סיבוס|מסעדה|קפה|aroma|ארומה|פיצה|בורגר|מקדונלדס|סושי/i,"מסעדות ומשלוחים"],
+  [/משכנתא|שכר דירה|שכירות|ועד בית/i,"דיור ומשכנתא"],
+  [/חשמל|חברת החשמל|מי |תאגיד מים|מים |ארנונה|עירייה|גז|סופרגז|אמישראגז/i,"חשבונות הבית"],
+  [/פרטנר|סלקום|פלאפון|בזק|הוט|hot|yes|גולן טלקום|019|012|netflix|נטפליקס|spotify|ספוטיפיי|apple\.com|google|disney|youtube|amazon prime/i,"תקשורת ומנויים"],
+  [/פז |סונול|דור אלון|ten |דלק|מוסך|טסט|ליסינג|צמיגים/i,"רכב ודלק"],
+  [/רב.?קו|רכבת|אגד|דן |מטרופולין|gett|yango|פנגו|pango|cellopark|חניון|כביש 6|נתיבי/i,"תחבורה וחניה"],
+  [/גן |צהרון|בית ספר|חוג|מעון|צעצוע|toys/i,"ילדים וחינוך"],
+  [/קופת חולים|כללית|מכבי|מאוחדת|לאומית|סופר.?פארם|בית מרקחת|רופא|ביטוח|הראל|מגדל|הפניקס|מנורה|כלל ביטוח|ביטוח ישיר|איילון/i,"בריאות וביטוחים"],
+  [/זארה|zara|h&m|קסטרו|פוקס|fox|terminal x|asos|shein|aliexpress|עלי אקספרס|amazon|ksp|באג |איבורי/i,"קניות וביגוד"],
+  [/איקאה|ikea|הום סנטר|ace|טמבור|ביתילי/i,"בית וריהוט"],
+  [/מלון|booking|airbnb|אל על|ישראייר|ארקיע|wizz|ryanair|סינמה|קולנוע|הופעה|eventim|לאן/i,"פנאי וחופשות"],
+  [/קרן השתלמות|פנסיה|גמל|חיסכון|פיקדון|מיטב|אלטשולר|הפקדה לחיסכון/i,"חיסכון והשקעות"],
+  [/עמלה|עמל\.|דמי ניהול חשבון|ריבית חובה|מס הכנסה|ביטוח לאומי/i,"מיסים ועמלות"],
+  [/משיכת מזומן|כספומט|מזומן/i,"משיכת מזומן"]];
+
+const S={tab:ls.get("cf.tab","overview"),mode:ls.get("cf.mode","month"),anchor:null,
+  months:{},edits:{},rules:[],customCats:[],sync:null,realSync:null,demo:false,live:false,canWrite:true,
+  f:{q:"",src:"",dir:"",cat:"",intl:false},sort:"date",hp:+(ls.get("cf.hp")||1)||1,sortRem:ls.get("cf.sortRem","1")!=="0",fxMode:ls.get("cf.fxm","out"),shown:150,
+  notion:{state:"idle",msg:"",at:null,projects:[],suppliers:[]},fc:{},fcfg:{},vat:ls.get("cf.vat","1")==="1"};
+let db=null,mcp=null;
+
+/* ---------- dates & money ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const today=()=>iso(new Date());
+const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d||1)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const eom=s=>{const d=parse(s);return iso(new Date(d.getFullYear(),d.getMonth()+1,0))};
+const ym=s=>s.slice(0,7);
+const nowYm=()=>today().slice(0,7);
+const addM=(m,n)=>{let[y,mm]=m.split("-").map(Number);mm+=n;while(mm>12){mm-=12;y++}while(mm<1){mm+=12;y--}return y+"-"+pad(mm)};
+const mName=m=>MONTHS[+m.slice(5)-1];
+const nf=new Intl.NumberFormat("he-IL",{maximumFractionDigits:0});
+const money=v=>(v<0?"−":"")+"₪"+nf.format(Math.abs(Math.round(v||0)));
+/* shrink ₪ and +/− inside amounts so the eye lands on the digits */
+const SYM=/[₪+−]/;
+const decor=root=>{if(!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>SYM.test(n.nodeValue)&&n.parentElement&&n.parentElement.closest(".num")&&!n.parentElement.closest(".sym,.rc,.roll,.sg")?1:3});
+  const list=[];while(w.nextNode())list.push(w.currentNode);
+  list.forEach(n=>{const f=document.createDocumentFragment();n.nodeValue.split(/([₪+−])/).forEach(part=>{if(!part)return;if(SYM.test(part)&&part.length===1){const sp=document.createElement("span");sp.className="sym"+(part==="₪"?" cur":"");sp.textContent=part;f.appendChild(sp)}else f.appendChild(document.createTextNode(part))});n.replaceWith(f)})};
+const moneyHTML=v=>{const t=money(v);return t.replace(/₪/g,'<span class="sym cur">₪</span>').replace(/([+−])/g,'<span class="sym">$1</span>')};
+const fmtD=s=>{if(!s)return"";const[y,m,d]=s.slice(0,10).split("-");return d+"/"+m+(y!==String(new Date().getFullYear())?"/"+y.slice(2):"")};
+const kfmt=v=>Math.abs(v)>=1000?(v/1000).toFixed(Math.abs(v)%1000?1:0)+"K":String(Math.round(v));
+
+/* ---------- tabs ---------- */
+const TABS=[["overview","בית"],["tx","תנועות"],["rec","חיובים קבועים"],["rules","סיווג"],["ai","Claude"]];
+const TAB_IC={ai:'<path d="M12 2.5l1.7 6.3 6.3-1.8-4.6 4.6 6.1 1.9-6.3 1.4 1.6 6.6-4.8-4.5-4.8 4.5 1.6-6.6L2.5 13.5l6.1-1.9L4 7l6.3 1.8z"/>',overview:'<path d="M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',tx:'<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',rec:'<path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',rules:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>'};
+function renderTabs(){let n=0;try{n=openReviews().length}catch(_){}$("#tabs").innerHTML=TABS.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${S.tab===k}" aria-label="${l}" title="${l}">${k==="ai"?'<i class="cmark nav"></i>':`<svg viewBox="0 0 24 24">${TAB_IC[k]||""}</svg>`}${k==="ai"&&n&&S.tab!=="ai"?'<i class="ndot"></i>':""}</button>`).join("")}
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;S.tab=b.dataset.tab;ls.set("cf.tab",S.tab);render();scrollTo({top:0})});
+
+/* ---------- bank ledger logic ---------- */
+const RN=n=>(S.catRen&&S.catRen[n])||n;
+const BN=n=>{for(const b of BASE_CATS)if(RN(b.n)===n)return b.n;return n};
+const allCats=()=>[...BASE_CATS.map(c=>({n:RN(c.n),k:c.k})),...S.customCats.map(c=>({n:c.n,k:c.k||"out"}))];
+const kindOf=n=>{const r=RN(n);return(allCats().find(c=>c.n===r)||{k:n===UNK?"unk":"out"}).k};
+function categorize(t){return RN(categorizeBase(t))}
+function categorizeBase(t){
+  const e=(S.edits[ym(t.d)]||{})[t.id];if(e&&e.c)return e.c;
+  const c=categorize0(t);
+  if(t.amt>0&&kindOf(c)==="out")return t.src==="bank"?"הכנסות אחרות":"החזרים וזיכויים";
+  return c}
+function categorize0(t){
+  const hay=(t.desc+" "+(t.memo||"")).toLowerCase();
+  for(const r of S.rules)if(r.m&&hay.includes(r.m.toLowerCase()))return r.c;
+  if(/שכר דירה|שכירות/.test(hay))return "דיור ומשכנתא";
+  if(/^bit|העברה ב-?\s|bitהעברה|פייבוקס|paybox/i.test(hay))return t.amt>0?"הכנסות אחרות":"העברות בביט";
+  for(const[re,c,only]of BUILTIN){if(only&&t.src!==only)continue;if(re.test(hay))return c}
+  if(t.fc&&FC_MAP[t.fc])return FC_MAP[t.fc];
+  if(t.amt>0)return t.src==="bank"?"הכנסות אחרות":"החזרים וזיכויים";
+  return UNK}
+function txnsIn(months){const out=[];for(const m of months){const doc=S.months[m];if(!doc)continue;
+  for(const t of doc.txns||[]){const c=categorize(t);out.push({...t,cat:c,kind:kindOf(c)})}}return out}
+function totals(list){let inn=0,out=0,sal=0,nIn=0,nOut=0;const salN=new Set();
+  for(const t of list){if(t.kind==="int")continue;if(t.amt>0){inn+=t.amt;nIn++}else{out+=-t.amt;nOut++}
+    if(t.cat===RN("משכורות")&&t.amt<0){sal+=-t.amt;salN.add(t.desc)}}
+  return{inn,out,net:inn-out,sal,nIn,nOut,salN:salN.size}}
+function periodMonths(){const a=S.anchor;if(S.mode==="month")return[a];
+  if(S.mode==="quarter"){const[y,m]=a.split("-").map(Number);const q0=Math.floor((m-1)/3)*3+1;return[0,1,2].map(i=>y+"-"+pad(q0+i))}
+  const y=a.slice(0,4);return Array.from({length:12},(_,i)=>y+"-"+pad(i+1))}
+function periodLabel(){const[y,m]=S.anchor.split("-").map(Number);
+  if(S.mode==="month")return MONTHS[m-1]+" "+y;if(S.mode==="quarter")return"רבעון "+(Math.floor((m-1)/3)+1)+" · "+y;return"שנת "+y}
+const periodBar=()=>`<div class="period"><div class="seg" role="group" aria-label="תקופה">${[["month","חודש"],["quarter","רבעון"],["year","שנה"]].map(([k,l])=>`<button data-mode="${k}" aria-pressed="${S.mode===k}">${l}</button>`).join("")}</div>
+  <div class="stepper"><button data-step="-1" aria-label="תקופה קודמת">›</button><strong>${periodLabel()}</strong><button data-step="1" aria-label="תקופה הבאה">‹</button></div></div>`;
+const demoBanner=()=>S.demo?`<div class="banner">נתונים לדוגמה<span>התנועות האמיתיות ממסד ומישראכרט ייטענו מ־Financy בפתיחה הראשונה שלך עם החיבור.</span></div>`:"";
+
+/* ---------- Notion forecast data ---------- */
+const pageId=u=>{const m=String(u||"").replace(/-/g,"").match(/[0-9a-f]{32}/g);return m?m[m.length-1]:null};
+const jarr=v=>{if(Array.isArray(v))return v;try{const a=JSON.parse(v||"[]");return Array.isArray(a)?a:[]}catch(_){return[]}};
+const nnum=v=>v===""||v==null||isNaN(+v)?null:+v;
+const mapP=r=>({id:pageId(r.url),name:r["שם הפרויקט"]||"",status:r["סטטוס"]||"",pay:r["סטטוס תשלום"]||"",budget:nnum(r["תקציב (ללא מע״מ)"]),paid:nnum(r["כמה שולם"]),
+  end:String(r["date:סיום הפרויקט:start"]||"").slice(0,10),credit:(jarr(r["קרדיט"])[0]||(typeof r["קרדיט"]==="string"&&!r["קרדיט"].startsWith("[")?r["קרדיט"]:"")||"").replace(/ֿ/g,""),created:String(r.createdTime||"").slice(0,10)});
+const mapS=r=>({id:pageId(r.url),name:r["שם הספק"]||"",project:pageId(jarr(r["פרויקטים"])[0])||"",amount:nnum(r["תקציב"]),paid:r["שולם"]==="__YES__",created:String(r.createdTime||"").slice(0,10)});
+function nErr(e){const c=e&&e.code;
+  if(c==="server_not_connected")return"נושן לא מחובר לחשבון ה-Claude שלך. מחברים בהגדרות של Claude, תחת Connectors.";
+  if(c==="needs_reauth")return"החיבור לנושן פג. צריך לחבר אותו מחדש בהגדרות של Claude, תחת Connectors.";
+  if(c==="not_in_manifest"||c==="approval_required"||c==="consent_required")return"האתר צריך את האישור שלך כדי לקרוא מנושן.";
+  if(c==="selection_required")return"יש יותר מחיבור נושן אחד. צריך לבחור אחד בחלון שקופץ.";
+  if(c==="blocked_by_policy")return"הארגון חוסם את הגישה לנושן מהאתר.";
+  if(c==="server_unavailable")return"נושן לא עונה כרגע. נסו שוב בעוד רגע.";
+  return"לא הצלחתי לקרוא מנושן"+(e&&e.message?": "+String(e.message).slice(0,120):".")}
+async function nQuery(url,cols){const r=await mcp.callTool(NOTION,"notion-query-data-sources",{data:{data_source_urls:[url],query:`SELECT ${cols} FROM "${url}" LIMIT 1000`}},{cache:false});
+  let p=r&&r.payload;if(typeof p==="string"){try{p=JSON.parse(p)}catch(_){}}
+  const rows=p&&(p.results||(p.data&&p.data.results));if(!Array.isArray(rows))throw{code:"bad_shape",message:"תשובה לא צפויה מנושן"};return rows}
+let nBusy=false;
+async function loadNotion(retried){
+  if(!mcp||nBusy)return;nBusy=true;S.notion.state="loading";render();
+  try{const[pr,sr]=await Promise.all([nQuery(N_PROJ,PCOLS),nQuery(N_SUP,SCOLS)]);
+    S.notion.projects=pr.map(mapP).filter(p=>p.id);S.notion.suppliers=sr.map(mapS).filter(s=>s.id);
+    S.notion.at=new Date().toISOString();S.notion.state="ok";S.notion.msg="";render();saveSnapshot()}
+  catch(e){if(e&&e.retryable&&!retried){nBusy=false;setTimeout(()=>loadNotion(true),(e.retryAfterMs||1500)+Math.random()*800);return}
+    S.notion.state="err";S.notion.msg=nErr(e);render()}
+  finally{nBusy=false}}
+let lastSnap="";
+async function saveSnapshot(){if(!db||!S.canWrite)return;
+  const body={projects:S.notion.projects,suppliers:S.notion.suppliers};const key=JSON.stringify(body);if(key===lastSnap)return;
+  try{await db.doc("notion/snapshot").set({...body,at:S.notion.at});lastSnap=key}catch(e){}}
+
+/* estimate when a project's remaining money arrives */
+const creditDays=c=>{if(!c)return null;if(c.startsWith("מיידי"))return 0;const m=c.match(/\d+/);return m?+m[0]:null};
+function estimateIn(p){
+  const N=creditDays(p.credit);const n=N==null?30:N;const t=today();
+  const sent=p.pay==="יצאה דרישת תשלום"||p.pay==="יצאה חשבונית מס";
+  let base;
+  if(sent) base=p.end&&p.end<t?p.end:t;
+  else if(p.end) base=p.end<t?t:p.end;
+  else base=addDays(t,p.status==="לא התחיל"?45:21);
+  const d=n===0?(sent?base:addDays(base,7)):addDays(eom(base),n);
+  return{d,why:(sent?"נשלחה דרישה · ":p.end?"לפי תאריך סיום · ":"אין תאריך סיום · ")+(N==null?"הנחה: שוטף 30":p.credit)}}
+function estimateOut(s,proj){const t=today();
+  if(proj&&proj.status==="הושלם")return{d:eom(t),why:"הפרויקט הסתיים"};
+  if(proj&&proj.end&&proj.end>t)return{d:eom(proj.end),why:"סוף חודש הסיום"};
+  return{d:eom(addM(nowYm(),1)+"-01"),why:"הנחה: סוף החודש הבא"}}
+
+function forecastItems(){
+  const P=S.notion.projects,byId=Object.fromEntries(P.map(p=>[p.id,p])),t=today();
+  const ins=[];
+  for(const p of P){
+    if(!p.budget||p.budget<=0||p.pay==="פרוייקט סגור")continue;
+    const rem=p.budget-(p.paid||0);if(rem<=0)continue;
+    const o=S.fc[p.id]||{};const e=estimateIn(p);
+    const amt=rem*(S.vat?1+VAT:1);const d=o.date||e.d;
+    ins.push({id:p.id,kind:"in",name:p.name,p,amt,base:rem,d,est:!o.date,why:e.why,skip:!!o.skip,late:d<t})}
+  const outs=[];
+  for(const s of S.notion.suppliers){if(s.paid||!s.amount)continue;
+    const proj=byId[s.project];const o=S.fc["s-"+s.id]||{};const e=estimateOut(s,proj);const d=o.date||e.d;
+    outs.push({id:"s-"+s.id,kind:"out",name:s.name,proj:proj?proj.name:"",amt:s.amount,d,est:!o.date,why:e.why,skip:!!o.skip,late:d<t})}
+  ins.sort((a,b)=>a.d.localeCompare(b.d));outs.sort((a,b)=>a.d.localeCompare(b.d));
+  return{ins,outs}}
+function fixedMonthly(){
+  if(S.fcfg.monthlyFixed!=null&&S.fcfg.monthlyFixed!=="")return{v:+S.fcfg.monthlyFixed,manual:true};
+  const cur=nowYm();const ms=[1,2,3].map(i=>addM(cur,-i)).filter(m=>S.months[m]);
+  if(!ms.length)return{v:0,manual:false,n:0};
+  let sum=0;for(const m of ms)for(const t of txnsIn([m])){if(t.kind==="int"||t.amt>=0||t.cat==="פרילנסרים וספקים")continue;sum+=-t.amt}
+  return{v:sum/ms.length,manual:false,n:ms.length}}
+
+/* ---------- views ---------- */
+function vForecast(){
+  const ns=S.notion;
+  const conn= ns.state==="err"?`<div class="banner">${esc(ns.msg)} <button class="btn sm" id="nRetry">לנסות שוב</button></div>`
+    : ns.state==="loading"&&!ns.projects.length?`<div class="empty">קורא פרויקטים וספקים מנושן…</div>`
+    : !mcp&&!ns.projects.length?`<div class="empty">כדי לראות צפי צריך חיבור לנושן. פתחו את הדף בתוך Claude עם חיבור Notion פעיל.</div>`:"";
+  if(!ns.projects.length)return demoBanner()+conn;
+  const {ins,outs}=forecastItems();const fx=fixedMonthly();
+  const H=6,cur=nowYm(),ms=Array.from({length:H},(_,i)=>addM(cur,i));
+  const bucket=d=>{const m=ym(d);return m<cur?cur:m};
+  const rows=ms.map(m=>({m,in:0,sup:0,fix:fx.v*(m===cur?remainingShare():1)}));
+  const idx=Object.fromEntries(ms.map((m,i)=>[m,i]));
+  let laterIn=0,laterOut=0;
+  for(const x of ins){if(x.skip)continue;const i=idx[bucket(x.d)];if(i==null)laterIn+=x.amt;else rows[i].in+=x.amt}
+  for(const x of outs){if(x.skip)continue;const i=idx[bucket(x.d)];if(i==null)laterOut+=x.amt;else rows[i].sup+=x.amt}
+  const bal0=S.sync&&typeof S.sync.balance==="number"?S.sync.balance:null;
+  let run=bal0||0;rows.forEach(r=>{r.net=r.in-r.sup-r.fix;run+=r.net;r.bal=run});
+  const totIn=ins.filter(x=>!x.skip).reduce((s,x)=>s+x.amt,0),totOut=outs.filter(x=>!x.skip).reduce((s,x)=>s+x.amt,0);
+  const lateIn=ins.filter(x=>!x.skip&&x.late);const lateSum=lateIn.reduce((s,x)=>s+x.amt,0);
+  const low=rows.reduce((a,r)=>r.bal<a.bal?r:a,rows[0]);
+  const fresh=ns.at?`עודכן מנושן ${new Date(ns.at).toLocaleString("he-IL",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"})}`:"";
+  return `${demoBanner()}${conn}
+  <section class="sec">
+    <div class="sec-h"><h2>צפי ל־6 חודשים</h2><span class="hint">${fresh}${ns.state==="loading"?" · מרענן…":""}</span><div class="spacer"></div>
+      <button class="chip" id="vatBtn" aria-pressed="${S.vat}">כולל מע״מ</button><button class="btn ghost sm" id="nRefresh">רענון מנושן</button></div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">צפוי להיכנס מפרויקטים</div><div class="v pos">${money(totIn)}</div><div class="s">${ins.filter(x=>!x.skip).length} פרויקטים פתוחים</div></div>
+      <div class="kpi"><div class="l">באיחור</div><div class="v ${lateSum?"neg":""}">${money(lateSum)}</div><div class="s">${lateIn.length?lateIn.length+" פרויקטים שעבר מועד התשלום שלהם":"אין"}</div></div>
+      <div class="kpi"><div class="l">חייבים לספקים</div><div class="v neg">${money(totOut)}</div><div class="s">${outs.filter(x=>!x.skip).length} ספקים שעוד לא שולמו</div></div>
+      <div class="kpi hero"><div class="l">${bal0==null?"נטו מצטבר בעוד 6 חודשים":"יתרה צפויה בעוד 6 חודשים"}</div><div class="v ${rows[H-1].bal<0?"neg":""}">${money(rows[H-1].bal)}</div><div class="s">${bal0==null?"אין עדיין יתרת בנק":"נקודה נמוכה: "+mName(low.m)+" "+money(low.bal)}</div></div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="sec-h"><h2 class="h3">לפי חודש</h2><span class="legend"><span><i style="background:var(--ok)"></i>נכנס</span><span><i style="background:var(--rec)"></i>ספקים</span><span><i style="background:var(--amber)"></i>הוצאות קבועות</span><span><i style="background:var(--ink)"></i>${bal0==null?"נטו מצטבר":"יתרה צפויה"}</span></span></div>
+    ${fChart(rows,bal0)}
+    <div class="tbl-wrap" style="margin-top:12px;border:0"><table><thead><tr><th>חודש</th><th class="n">נכנס</th><th class="n">ספקים</th><th class="n">קבועות</th><th class="n">נטו</th><th class="n">${bal0==null?"מצטבר":"יתרה"}</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${mName(r.m)}${r.m===cur?" (מהיום)":""}</td><td class="n num pos">${money(r.in)}</td><td class="n num neg">${r.sup?money(-r.sup):"—"}</td><td class="n num">${money(-r.fix)}</td><td class="n num ${r.net<0?"neg":"pos"}">${money(r.net)}</td><td class="n num ${r.bal<0?"neg":""}">${money(r.bal)}</td></tr>`).join("")}
+      ${laterIn||laterOut?`<tr class="tot"><td>אחרי זה</td><td class="n num">${money(laterIn)}</td><td class="n num">${laterOut?money(-laterOut):"—"}</td><td></td><td></td><td></td></tr>`:""}
+    </tbody></table></div>
+    <div class="hint" style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="fixed-in">הוצאות קבועות לחודש: <input id="fixIn" type="number" inputmode="decimal" value="${Math.round(fx.v)}" ${S.canWrite?"":"disabled"} aria-label="הוצאות קבועות לחודש"></span>
+      <span>${fx.manual?`הוזן ידנית · <button class="linkbtn" id="fixReset">לחשב מהבנק</button>`:fx.n?`ממוצע ${fx.n} החודשים האחרונים מהבנק, בלי ספקים וחיובי אשראי כפולים`:"עוד אין נתוני בנק — אפשר להזין ידנית"}</span>
+    </div>
+  </section>
+  <div class="grid2" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+    <section class="sec"><div class="sec-h"><h2 class="h3">כסף שצריך להיכנס</h2><span class="count">${money(totIn)}</span></div>
+      ${fList(ins,"אין כרגע כסף פתוח מפרויקטים.")}
+      <div class="hint">סכומים לפי תקציב פחות מה ששולם${S.vat?", כולל מע״מ 18%":", ללא מע״מ"}. התאריך המקווקו הוא הערכה לפי סטטוס התשלום והקרדיט, ואפשר לשנות אותו. תשלומים מסמנים <a href="${MGMT_URL}" target="_blank" rel="noopener">בלוח העבודה</a>.</div></section>
+    <section class="sec"><div class="sec-h"><h2 class="h3">כסף שצריך לצאת לספקים</h2><span class="count">${money(totOut)}</span></div>
+      ${fList(outs,"כל הספקים שולמו.")}
+      <div class="hint">ספקים שלא סומנו ״שולם״. הסכום כפי שהוזן לספק.</div></section>
+  </div>`}
+function remainingShare(){const d=new Date();const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();return Math.max(0,(last-d.getDate()+1)/last)}
+function fList(items,emptyMsg){
+  if(!items.length)return`<div class="empty">${emptyMsg}</div>`;
+  const cur=nowYm(),groups=[["late","באיחור",x=>x.late],["now","החודש",x=>!x.late&&ym(x.d)===cur],["later","בהמשך",x=>!x.late&&ym(x.d)>cur]];
+  return`<div class="list">${groups.map(([k,l,f])=>{const g=items.filter(f);if(!g.length)return"";
+    const sum=g.filter(x=>!x.skip).reduce((s,x)=>s+x.amt,0);
+    return`<div class="gh"><span>${l}</span><span class="num">${money(sum)}</span></div>`+g.map(fRow).join("")}).join("")}</div>`}
+function fRow(x){
+  const sub=x.kind==="in"
+    ?[x.p.pay?`<span class="pill ${x.p.pay.startsWith("יצאה")?"info":x.p.pay.startsWith("צריך")?"warn":""}">${esc(x.p.pay)}</span>`:`<span class="pill">אין סטטוס תשלום</span>`,
+      x.p.status?esc(x.p.status):"",x.p.paid?`שולם ${money(x.p.paid*(S.vat?1+VAT:1))}`:""].filter(Boolean)
+    :[x.proj?esc(x.proj):"בלי פרויקט"];
+  return`<div class="frow${x.skip?" skip":""}">
+    <div class="t" title="${esc(x.name)}">${esc(x.name)}</div>
+    <div class="amt num ${x.kind==="in"?"pos":"neg"}">${money(x.kind==="in"?x.amt:-x.amt)}</div>
+    <div class="when"><input type="date" class="${x.est?"est":""}" value="${x.d}" data-fdate="${x.id}" aria-label="תאריך צפוי" ${S.canWrite?"":"disabled"}>
+      <span class="est-l">${x.late?`<span class="pill late">באיחור</span> `:""}${x.est?esc(x.why):`<button class="x" data-freset="${x.id}">חזרה להערכה</button>`}</span></div>
+    <div class="sub">${sub.join(" · ")} <button class="x" data-fskip="${x.id}" ${S.canWrite?"":"disabled"}>${x.skip?"להחזיר לחישוב":"לא לספור"}</button></div>
+  </div>`}
+function fChart(rows,bal0){
+  const W=640,H=230,L=8,R=56,T=12,B=26;
+  const vals=rows.flatMap(r=>[r.in,r.sup+r.fix,r.bal,0]);
+  let hi=Math.max(...vals),lo=Math.min(...vals);if(hi===lo)hi=lo+1;
+  const step=(()=>{const raw=(hi-lo)/4;const p=Math.pow(10,Math.floor(Math.log10(raw)));for(const k of[1,2,2.5,5,10])if(k*p>=raw)return k*p;return 10*p})();
+  hi=Math.ceil(hi/step)*step;lo=Math.floor(lo/step)*step;
+  const y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));const n=rows.length,pw=(W-L-R)/n;const x=i=>W-R-(i+1)*pw;
+  let g="";for(let v=lo;v<=hi+1e-6;v+=step){g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${W-R+6}" y="${y(v)+3}">${kfmt(v)}</text>`}
+  g+=`<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)"/>`;
+  const bw=Math.min(22,(pw-14)/2);const pts=[];
+  rows.forEach((r,i)=>{const cx=x(i)+pw/2;
+    g+=`<rect x="${cx+1}" y="${y(r.in)}" width="${bw}" height="${Math.max(0,y(0)-y(r.in))}" rx="2" fill="var(--ok)"><title>${mName(r.m)}: נכנס ${money(r.in)}</title></rect>`;
+    g+=`<rect x="${cx-1-bw}" y="${y(r.fix)}" width="${bw}" height="${Math.max(0,y(0)-y(r.fix))}" rx="2" fill="var(--amber)"><title>קבועות ${money(r.fix)}</title></rect>`;
+    g+=`<rect x="${cx-1-bw}" y="${y(r.fix+r.sup)}" width="${bw}" height="${Math.max(0,y(r.fix)-y(r.fix+r.sup))}" fill="var(--rec)"><title>ספקים ${money(r.sup)}</title></rect>`;
+    g+=`<text x="${cx}" y="${H-8}" text-anchor="middle">${r.m.slice(5)}/${r.m.slice(2,4)}</text>`;pts.push([cx,y(r.bal)])});
+  g+=`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linejoin="round"/>`;
+  pts.forEach((p,i)=>{g+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i===n-1?4.5:3}" fill="${rows[i].bal<0?"var(--rec)":"var(--surface)"}" stroke="var(--ink)" stroke-width="1.5"><title>${bal0==null?"מצטבר":"יתרה"} ${money(rows[i].bal)}</title></circle>`});
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="צפי תזרים לפי חודש">${g}</svg>`}
+
+const CAT_IC={
+ "דיור ומשכנתא":["home","#7aa7ff"],"חשבונות הבית":["bolt","#ffb547"],"תקשורת ומנויים":["wifi","#c38bff"],"סופר ומזון":["cart","#5ef0a4"],
+ "מסעדות ומשלוחים":["food","#ff9f6b"],"רכב ודלק":["car","#7aa7ff"],"תחבורה וחניה":["bus","#6fd3ff"],"ילדים וחינוך":["kid","#ffd36b"],
+ "בריאות וביטוחים":["heart","#ff7d8a"],"קניות וביגוד":["bag","#f28fd8"],"בית וריהוט":["sofa","#c9a77a"],"פנאי וחופשות":["sun","#ffb547"],
+ "מתנות ואירועים":["gift","#ff8fb1"],"חיסכון והשקעות":["piggy","#5ef0a4"],"העברות בביט":["send","#6fd3ff"],"מיסים ועמלות":["pct","#a6a8ff"],
+ "משיכת מזומן":["cash","#9fe0a8"],"כללי":["dots","#8e98b3"],"לא מסווג":["q","#ffb547"],
+ "משכורות":["brief","#5ef0a4"],"הכנסות אחרות":["coin","#7aa7ff"],"החזרים וזיכויים":["back","#c38bff"]};
+const IC_P={
+ home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+ bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+ wifi:'<path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01"/>',
+ cart:'<path d="M3 4h2l2.4 11h11L21 7H6.2"/><circle cx="9" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/>',
+ food:'<path d="M5 3v8a2 2 0 0 0 2 2v8M9 3v8a2 2 0 0 1-2 2M17 21V3c-2 1-3 4-3 7h3"/>',
+ car:'<path d="M5 16V11l2-5h10l2 5v5M5 16h14M5 16v2M19 16v2"/><circle cx="8" cy="13.5" r=".6"/><circle cx="16" cy="13.5" r=".6"/>',
+ bus:'<rect x="5" y="3" width="14" height="14" rx="2"/><path d="M5 11h14M8 21v-4M16 21v-4"/>',
+ kid:'<circle cx="12" cy="6" r="3"/><path d="M6 21v-5a6 6 0 0 1 12 0v5"/>',
+ heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+ bag:'<path d="M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2"/>',
+ sofa:'<path d="M4 12V9a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M3 12h18v5H3zM5 17v2M19 17v2"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ gift:'<rect x="3" y="8" width="18" height="5"/><path d="M5 13v8h14v-8M12 8v13M12 8c-2-4-6-3-5 0M12 8c2-4 6-3 5 0"/>',
+ piggy:'<path d="M5 11a7 6 0 0 1 13-2l2-1v4l-1 1a7 6 0 0 1-3 4v3h-3v-2H10v2H7v-3a6 6 0 0 1-2-6z"/><circle cx="15" cy="10" r=".6"/>',
+ send:'<path d="M21 3L10 14M21 3l-7 18-4-7-7-4z"/>',
+ pct:'<path d="M19 5L5 19"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/>',
+ cash:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>',
+ dots:'<circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/>',
+ q:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7M12 17h.01"/>',
+ brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 13h18"/>',
+ coin:'<circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .9-3 2s1.3 1.7 3 2 3 .9 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6.5V8M12 16v1.5"/>',
+ back:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'};
+const catIcon=n=>{const[k,c]=CAT_IC[n]||CAT_IC[BN(n)]||["dots","#8e98b3"];return{svg:`<svg viewBox="0 0 24 24" aria-hidden="true">${IC_P[k]}</svg>`,c}};
+const WMS=["ינו׳","פבר׳","מרץ","אפר׳","מאי","יוני","יולי","אוג׳","ספט׳","אוק׳","נוב׳","דצמ׳"];
+const winMonths=end=>{const hp=S.hp||1;return Array.from({length:hp},(_,i)=>addM(end,i-hp+1))};
+const winLabel=(end,full)=>{const hp=S.hp||1;if(hp===1)return MONTHS[+end.slice(5)-1]+(full?" "+end.slice(0,4):"");const st=addM(end,1-hp);
+  return WMS[+st.slice(5)-1]+(st.slice(0,4)!==end.slice(0,4)?" "+st.slice(2,4):"")+" – "+WMS[+end.slice(5)-1]+" "+(full?end.slice(0,4):end.slice(2,4))};
+const winSum=end=>{const ms=winMonths(end),T=totals(txnsIn(ms));return{inn:T.inn,out:T.out,d:T.inn-T.out,live:ms.includes(nowYm())}};
+const winNext=(end,st)=>{const hp=S.hp||1;let n=addM(end,st*hp);if(n>nowYm()){if(end>=nowYm())return null;n=nowYm()}return n};
+function vOverview(){
+  if(S.mode!=="month"){S.mode="month";ls.set("cf.mode","month")}
+  const HP=S.hp||1,wins=Array.from({length:HP},(_,i)=>addM(S.anchor,i-HP+1));
+  const list=txnsIn(wins),T=totals(list);
+  const MS=["ינו׳","פבר׳","מרץ","אפר׳","מאי","יוני","יולי","אוג׳","ספט׳","אוק׳","נוב׳","דצמ׳"];
+  const wl=end=>{if(HP===1)return MONTHS[+end.slice(5)-1]+(end===S.anchor?" "+end.slice(0,4):"");const st=addM(end,1-HP);return MS[+st.slice(5)-1]+(st.slice(0,4)!==end.slice(0,4)?" "+st.slice(2,4):"")+" – "+MS[+end.slice(5)-1]+" "+(end===S.anchor?end.slice(0,4):end.slice(2,4))};
+  const prevE=addM(S.anchor,-HP),nextE=addM(S.anchor,HP);
+  const bal=S.sync&&typeof S.sync.balance==="number"?S.sync.balance:null;
+  const d=T.inn-T.out,mn=MONTHS[+S.anchor.slice(5)-1];
+  const diffLine=(T.inn||T.out)?(d>=0?`ב${mn} נכנס ${money(d)} יותר ממה שיצא`:`ב${mn} יצא ${money(-d)} יותר ממה שנכנס`):"";
+  const exp={},inc={};
+  for(const t of list){if(t.kind==="int")continue;if(t.amt<0)exp[t.cat]=(exp[t.cat]||0)-t.amt;else inc[t.cat]=(inc[t.cat]||0)+t.amt}
+  const ladder=(o,tot,cls)=>{const all=Object.entries(o).sort((a,b)=>b[1]-a[1]);if(!all.length)return`<div class="hint" style="padding:8px 2px">אין תנועות בחודש הזה.</div>`;
+    const open=S.open&&S.open[cls],rows=open?all:all.slice(0,5),hid=all.length-5;
+    return`<div class="rank">${rows.map(([n,v],k)=>`<button class="rk${n===UNK?" unk":""}" data-cat="${esc(n)}">${(ci=>`<span class="cic" style="background:${ci.c}22;color:${ci.c}">${ci.svg}</span>`)(catIcon(n))}<span class="n">${esc(n)}</span><span class="num">${money(v)}<span class="pc">${Math.round(v/tot*100)}%</span></span><span class="rkbar"><span style="width:${(v/rows[0][1]*100).toFixed(1)}%;background:${catIcon(n).c}"></span></span></button>`).join("")}</div>${hid>0?`<button class="moreb" data-more="${cls}">${open?"פחות ›":"עוד "+hid+" קטגוריות ›"}</button>`:""}`};
+  return`${demoBanner()}
+  <section class="bstrip"><div class="bl"><span>יתרה בחשבון · מסד</span><span id="syncSlot"></span></div><div class="bvw"><span class="bv num">${bal==null?"—":money(bal)}</span>${jarsSum()&&bal!=null?`<span class="bfree">פנוי <b class="num">${money(bal-jarsSum())}</b> · בצד <b class="num">${money(jarsSum())}</b></span>`:""}</div></section>
+  ${(()=>{const n=openReviews().length;return n?`<button class="rvpill" id="rvGo"><span class="astar xs">${STAR_SVG}</span><span>Claude שם לב ל${n===1?"דבר אחד":n+" דברים"}</span><span class="c">${n}</span></button>`:""})()}
+  <section class="msect"><div class="mslide">
+    <span id="mvNum" class="mv num ${d>=0?"p":"n"}" data-to="${nf.format(Math.abs(Math.round(d)))}"><span class="sg">${d>=0?"+":"−"}</span><span class="sym cur">₪</span><span class="roll">${[...nf.format(Math.abs(Math.round(d)))].map(c=>`<span class="rc">${c}</span>`).join("")}</span></span>
+    <div class="vsb">${[["נכנס",T.inn,"var(--ok)"],["יצא",T.out,"var(--rec)"]].map(([l,v,c])=>`<div class="r"><span class="l">${l}</span><span class="tr"><span style="width:${(v/Math.max(T.inn,T.out,1)*100).toFixed(1)}%;background:${c}"></span></span><b class="num">${money(v)}</b></div>`).join("")}</div>
+    </div><div class="hpseg" role="group" aria-label="תקופה">${[[1,"חודש"],[3,"3 חודשים"],[6,"חצי שנה"],[12,"שנה"]].map(([k,l])=>`<button data-hp="${k}" class="${HP===k?"on":""}">${l}</button>`).join("")}</div><div class="mcar" aria-hidden="true"><div class="mtrack">${[2,1,0,-1,-2].map(o=>{let e=S.anchor;for(let k=0;k<Math.abs(o);k++){e=e&&winNext(e,Math.sign(o))}return`<i data-o="${o}"${o===0?' class="c"':""}>${e?winLabel(e,o===0):""}</i>`}).join("")}</div></div>${wins.includes(nowYm())?'<div class="mlive">עד היום</div>':'<div class="mlive"></div>'}</section>
+  <section class="card"><div class="sec-t"><span>הוצאות לפי קטגוריה</span><span class="num">${money(T.out)}</span></div>${ladder(exp,T.out,"o")}</section>
+  <section class="card"><div class="sec-t"><span>הכנסות לפי קטגוריה</span><span class="num">${money(T.inn)}</span></div>${ladder(inc,T.inn,"i")}</section>
+`}
+function hChart(){
+  const W=640,H=230,L=8,R=52,T=12,B=26;const ms=Array.from({length:12},(_,i)=>addM(S.anchor,i-11));
+  const data=ms.map(m=>{const t=totals(txnsIn([m]));return{m,i:t.inn,o:t.out,n:t.net}});
+  const maxV=Math.max(1,...data.map(d=>Math.max(d.i,d.o)));
+  const nice=(()=>{const p=Math.pow(10,Math.floor(Math.log10(maxV)));for(const k of[1,2,2.5,5,10])if(k*p>=maxV)return k*p;return 10*p})();
+  const minN=Math.min(0,...data.map(d=>d.n));const lo=minN<0?-nice*Math.ceil(-minN/nice*4)/4:0;
+  const y=v=>T+(H-T-B)*(1-(v-lo)/(nice-lo));const pw=(W-L-R)/12;const x=i=>W-R-(12-i)*pw;
+  let g="";for(const f of[0,.25,.5,.75,1]){const v=lo+(nice-lo)*f;g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${W-R+6}" y="${y(v)+3}">${kfmt(v)}</text>`}
+  g+=`<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--muted)"/>`;
+  const bw=Math.min(14,(pw-10)/2);const pts=[];const sel=periodMonths();
+  data.forEach((d,i)=>{const cx=x(i)+pw/2;
+    if(sel.includes(d.m))g+=`<rect x="${x(i)+1}" y="${T}" width="${pw-2}" height="${H-T-B}" fill="var(--info-bg)" rx="4"/>`;
+    g+=`<rect x="${cx+1}" y="${y(d.i)}" width="${bw}" height="${Math.max(0,y(0)-y(d.i))}" rx="2" fill="var(--ok)"><title>${mName(d.m)}: נכנס ${money(d.i)}</title></rect>`;
+    g+=`<rect x="${cx-1-bw}" y="${y(d.o)}" width="${bw}" height="${Math.max(0,y(0)-y(d.o))}" rx="2" fill="var(--rec)"><title>${mName(d.m)}: יצא ${money(d.o)}</title></rect>`;
+    g+=`<text x="${cx}" y="${H-8}" text-anchor="middle">${d.m.slice(5)}/${d.m.slice(2,4)}</text>`;pts.push([cx,y(d.n)])});
+  g+=`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-linejoin="round"/>`;
+  pts.forEach((p,i)=>{g+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i===11?4:2.5}" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"><title>נטו ${money(data[i].n)}</title></circle>`});
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="הכנסות והוצאות לפי חודש">${g}</svg>`}
+function catBars(list){const m={};for(const t of list){if(t.kind==="int"||t.amt>=0)continue;m[t.cat]=(m[t.cat]||0)-t.amt}
+  const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]);if(!rows.length)return`<div class="hint" style="padding:16px 4px">אין הוצאות בתקופה הזו.</div>`;
+  const max=rows[0][1];
+  return`<div class="cats">${rows.slice(0,9).map(([c,v])=>`<button class="catrow" data-cat="${esc(c)}" aria-pressed="${S.f.cat===c}"><span class="n">${esc(c)}</span><span class="a num">${money(v)}</span><span class="track"><span class="fill" style="width:${(v/max*100).toFixed(1)}%;${c===UNK?"background:var(--amber)":""}"></span></span></button>`).join("")}</div>${rows.length>9?`<div class="hint">ועוד ${rows.length-9} קטגוריות</div>`:""}`}
+
+function vTx(){
+  if(S.mode!=="month"){S.mode="month";ls.set("cf.mode","month")}
+  const f=S.f,q=f.q.trim().toLowerCase();const list=txnsIn(periodMonths()),T=totals(list),d=T.inn-T.out;
+  let rows=list.filter(t=>(!f.dir||t.kind!=="int")&&(!f.src||t.src===f.src)&&!(f.dir==="in"&&t.amt<=0)&&!(f.dir==="out"&&t.amt>=0)&&(!f.cat||t.cat===f.cat)&&(!q||(t.desc+" "+(t.memo||"")+" "+(t.owner||"")+" "+Math.abs(t.amt)).toLowerCase().includes(q)));
+  rows.sort((a,b)=>b.d.localeCompare(a.d)||a.desc.localeCompare(b.desc));
+  const names=[...allCats().map(c=>c.n),UNK];
+  const srcs=[...new Set(list.map(t=>t.src))];
+  const today=new Date().toISOString().slice(0,10);
+  const dayL=x=>{const s=new Date(x+"T12:00:00").toLocaleDateString("he-IL",{day:"numeric",month:"long"});return x===today?"היום · "+s:s};
+  const bal=S.sync&&typeof S.sync.balance==="number"?S.sync.balance:null;
+  const bankAll=[];for(const k of Object.keys(S.months||{}))for(const t of txnsIn([k]))if(t.src==="bank")bankAll.push(t);
+  const eod=day=>bal==null?null:bal-bankAll.reduce((a,t)=>a+(t.d>day?t.amt:0),0);
+  let last="";
+  const body=rows.slice(0,S.shown).map(t=>{const sub=[];if(t.inst)sub.push("תשלום "+esc(t.inst));if(t.orig)sub.push(esc(t.orig));if(t.memo)sub.push(esc(t.memo));
+    const ci=catIcon(t.cat),isInt=t.kind==="int",hd=t.d!==last?`<div class="tday"><span>${dayL(t.d)}</span>${(()=>{const e=eod(t.d);return e==null?"":`<span class="eb num">${money(e)}</span>`})()}</div>`:"";last=t.d;
+    const src=(SRC[t.src]||esc(t.src))+(t.owner?" · "+esc(t.owner):"")+(t.acct?" "+esc(t.acct):"");
+    return`${hd}<div class="trow${isInt?" int":""}"><span class="cic" style="background:${ci.c}22;color:${ci.c}">${ci.svg}</span><span class="t">${esc(t.desc)}</span><span class="amt num ${isInt?"":t.amt>0?"pos":"neg"}">${t.amt>0?"+":"−"}${money(Math.abs(t.amt))}</span>
+    <span class="s"><select class="catsel${t.cat===UNK?" unk":""}" data-id="${esc(t.id)}" data-m="${ym(t.d)}" data-desc="${esc(t.desc)}" aria-label="קטגוריה" ${S.canWrite?"":"disabled"}>${names.map(n=>`<option${n===t.cat?" selected":""}>${esc(n)}</option>`).join("")}</select> · ${src}${sub.length?" · "+sub.join(" · "):""}</span>
+    <span class="tag${t.src!=="bank"&&t.chg&&t.chg>today?" chg":""}">${isInt?"לא נספר":t.src!=="bank"&&t.chg&&t.chg>today?"יחויב "+fmtD(t.chg):t.pend?"בהמתנה":""}<button class="txq${t.cat===UNK?"":" ghost"}" data-txq="${esc(ym(t.d)+"|"+t.id)}" aria-label="מה זה? לשאול את Claude"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg></button></span></div>`}).join("");
+  const showF=S.showF||f.cat||f.src,showQ=S.showQ||f.q;
+  return`${demoBanner()}
+  <span class="glbl">יתרה בחשבון · מסד</span>
+  <div class="tbrow"><span class="tbig num">${bal==null?"—":money(bal)}</span><span id="syncSlot"></span></div>
+  <section class="tmon" id="tmon"><div class="mt"><strong>${MONTHS[+S.anchor.slice(5)-1]} ${S.anchor.slice(0,4)}</strong><small>${list.filter(t=>t.kind!=="int").length} תנועות${S.anchor===nowYm()?" · עד היום":""}</small></div>
+    <div class="tpair"><div class="tt in"><span class="ib"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span><div><small>נכנס</small><b class="num">${money(T.inn)}</b></div></div><div class="tt out"><span class="ib"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span><div><small>יצא</small><b class="num">${money(T.out)}</b></div></div></div>
+    <div class="mdots tdots">${[...new Set([nowYm(),...Object.keys(S.months||{})])].filter(x=>/^\d{4}-\d{2}$/.test(x)&&x<=nowYm()).sort().slice(-7).map(x=>`<i class="${x===S.anchor?"on":""}"></i>`).join("")}</div></section>
+  <div class="tbar2"><div class="ttabs2">${[["","הכל"],["in","נכנס"],["out","יצא"]].map(([k,l])=>`<button class="${f.dir===k?"on":""}" data-dir="${k}">${l}</button>`).join("")}</div>
+    <button class="gi${showQ?" on":""}" id="tSearch" aria-label="חיפוש"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+    <button class="gi${showF?" on":""}" id="tFilter" aria-label="סינון"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>${f.cat||f.src?'<span class="fdot"></span>':""}</button></div>
+  ${showQ?`<input type="search" id="q" class="tsearch" placeholder="חיפוש לפי עסק, הערה או סכום" value="${esc(f.q)}">`:""}
+  ${showF?`<div class="tfil"><select id="fCat" aria-label="קטגוריה"><option value="">כל הקטגוריות</option>${names.map(n=>`<option${n===f.cat?" selected":""}>${esc(n)}</option>`).join("")}</select>
+    <select id="fSrc" aria-label="מקור"><option value="">כל המקורות</option>${srcs.map(k=>`<option value="${k}"${f.src===k?" selected":""}>${SRC[k]||esc(k)}</option>`).join("")}</select>
+    ${f.cat||f.src?`<button class="linkbtn" id="fClear">ניקוי</button>`:""}</div>`:""}
+  <div class="tlist" id="ledger">${rows.length?body:`<div class="hint" style="padding:18px 4px">אין תנועות שמתאימות לסינון.</div>`}${rows.length>S.shown?`<button class="more" id="more">להציג עוד ${Math.min(150,rows.length-S.shown)} מתוך ${rows.length-S.shown}</button>`:""}</div>`}
+
+const fxKey=d=>d.replace(/\s+\d[\d\s\-\/]*$/,"").trim().toLowerCase();
+function recurring(){
+  const cur=nowYm(),ms=[1,2,3,4].map(i=>addM(cur,-i)).filter(m=>S.months[m]);if(ms.length<2)return[];
+  const fx=S.fx||{},ren=fx.rename||{},hide=new Set(fx.hide||[]),grp=fx.group||{};
+  const by={};
+  ms.forEach(m=>{for(const t of txnsIn([m])){if(t.kind==="int"||t.amt>=0||t.inst)continue;if(/העברה/.test(t.desc)&&/bit|ביט/i.test(t.desc))continue;
+    const k=fxKey(t.desc);const o=by[k]=by[k]||{key:k,name:t.desc.replace(/\s+\d[\d\s\-\/]*$/,"").trim(),cat:t.cat,src:t.src,owner:t.owner,pm:{},n:{},days:[],last:0,lastD:""};
+    o.pm[m]=(o.pm[m]||0)-t.amt;o.n[m]=(o.n[m]||0)+1;o.days.push(+t.d.slice(8));if(t.d>o.lastD){o.lastD=t.d;o.last=-t.amt}}});
+  const need=Math.max(2,ms.length-1),curTx=txnsIn([cur]),dNow=+today().slice(8);
+  const inc=new Set(fx.include||[]);
+  for(const k of inc)if(!by[k]){for(const m of [cur,...ms]){for(const t of txnsIn([m])){if(t.amt>=0||fxKey(t.desc)!==k)continue;const o=by[k]=by[k]||{key:k,name:t.desc.replace(/\s+\d[\d\s\-\/]*$/,"").trim(),cat:t.cat,src:t.src,owner:t.owner,pm:{},n:{},days:[],last:0,lastD:""};if(m===cur)continue;o.pm[m]=(o.pm[m]||0)-t.amt;o.n[m]=(o.n[m]||0)+1;o.days.push(+t.d.slice(8));if(t.d>o.lastD){o.lastD=t.d;o.last=-t.amt}}}if(by[k]&&!Object.keys(by[k].pm).length){const t=txnsIn([cur]).find(t=>t.amt<0&&fxKey(t.desc)===k);if(t){by[k].pm[cur]=-t.amt;by[k].n[cur]=1;by[k].days.push(+t.d.slice(8))}}}
+  return Object.values(by).filter(o=>{const mm=Object.keys(o.pm);if(hide.has(o.key))return false;if(inc.has(o.key))return mm.length>0;if(mm.length<need)return false;
+      const vals=mm.map(m=>o.pm[m]),mx=Math.max(...vals),mn=Math.min(...vals),cnt=Math.max(...mm.map(m=>o.n[m]));
+      return cnt<=2&&mx/mn<=1.7})
+    .map(o=>{const mm=Object.keys(o.pm).sort(),vals=mm.map(m=>o.pm[m]),avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+      const day=o.days.sort((a,b)=>a-b)[Math.floor(o.days.length/2)];
+      const curAmt=curTx.filter(t=>t.amt<0&&fxKey(t.desc)===o.key).reduce((a,t)=>a-t.amt,0);
+      const lastM=vals[vals.length-1],prevAvg=vals.length>1?vals.slice(0,-1).reduce((a,b)=>a+b,0)/(vals.length-1):lastM;
+      let flag=null;if(!curAmt&&day<dNow-3)flag="miss";else if(lastM>prevAvg*1.08&&lastM-prevAvg>20)flag="up";
+      const OLDG={home:"דיור ומשכנתא",kids:"ילדים וחינוך",bill:"חשבונות הבית",ins:"בריאות וביטוחים",com:"תקשורת ומנויים"};const name=ren[o.key]||o.name,g0=grp[o.key],g=g0?RN(OLDG[g0]||g0):(o.cat===UNK?RN("כללי"):o.cat);
+      return{...o,name,avg,day,curAmt,flag,g,lastM,prevAvg}}).sort((a,b)=>b.avg-a.avg)}
+function recurringIncome(){
+  const cur=nowYm(),ms=[1,2,3,4].map(i=>addM(cur,-i)).filter(m=>S.months[m]);if(ms.length<2)return[];
+  const fx=S.fx||{},ren=fx.rename||{},hide=new Set(fx.hide||[]);const by={};
+  ms.forEach(m=>{for(const t of txnsIn([m])){if(t.kind==="int"||t.amt<=0||t.src!=="bank")continue;if(/bit|ביט|פייבוקס|paybox/i.test(t.desc))continue;
+    const k=fxKey(t.desc);const o=by[k]=by[k]||{key:k,name:t.desc.replace(/\s+\d[\d\s\-\/]*$/,"").trim(),cat:/קצב|ביטוח לאומי|בטוח לאומי/.test(t.desc)&&t.cat===RN("הכנסות אחרות")?RN("קצבאות וביטוח לאומי"):t.cat,pm:{},n:{},days:[]};
+    o.pm[m]=(o.pm[m]||0)+t.amt;o.n[m]=(o.n[m]||0)+1;o.days.push(+t.d.slice(8))}});
+  const need=Math.max(2,ms.length-1),curTx=txnsIn([cur]);
+  return Object.values(by).filter(o=>{const mm=Object.keys(o.pm);return mm.length>=need&&!hide.has(o.key)&&Math.max(...mm.map(m=>o.n[m]))<=3})
+    .map(o=>{const vals=Object.values(o.pm),avg=vals.reduce((a,b)=>a+b,0)/vals.length,mx=Math.max(...vals),mn=Math.min(...vals);
+      const ds=o.days.sort((a,b)=>a-b),lo=ds[0],hi=ds[ds.length-1];
+      const curAmt=curTx.filter(t=>t.amt>0&&fxKey(t.desc)===o.key).reduce((a,t)=>a+t.amt,0);
+      return{...o,name:ren[o.key]||o.name,avg,variable:mx/mn>1.25,dayTxt:hi-lo>4?`${lo}–${hi} לחודש`:`${ds[Math.floor(ds.length/2)]} לחודש`,curAmt}}).sort((a,b)=>b.avg-a.avg)}
+function avgIncome(){const ms=[1,2,3,4,5,6].map(i=>addM(nowYm(),-i)).filter(m=>S.months[m]);if(!ms.length)return 0;return ms.reduce((a,m)=>a+totals(txnsIn([m])).inn,0)/ms.length}
+function vRec(){const r=recurring(),ri=recurringIncome(),mode=S.fxMode||"out";
+  if(!r.length&&!ri.length)return`${demoBanner()}<div class="empty">צריך לפחות חודשיים של נתונים כדי לזהות חיובים קבועים.</div>`;
+  const tot=r.reduce((a,x)=>a+x.avg,0),ti=ri.reduce((a,x)=>a+x.avg,0),left=ti-tot;S.open=S.open||{};
+  const seg=`<div class="hpseg fxseg"><button data-fxm="in" class="${mode==="in"?"on":""}">הכנסות</button><button data-fxm="out" class="${mode==="out"?"on":""}">הוצאות</button></div>`;
+  const leftTxt=`<b class="num" style="color:${left>=0?"#7ff7b9":"#ffa3ad"}">${left>=0?"+":"−"}${money(Math.abs(left))}</b>`;
+  if(mode==="in"){const got=ri.reduce((a,x)=>a+x.curAmt,0),exp=ri.reduce((a,x)=>a+(x.curAmt?0:x.avg),0);
+    return`${demoBanner()}${seg}
+    <span class="glbl">הכנסות קבועות בכל חודש</span><span class="tbig num">${money(ti)}</span>
+    <div class="fxstrip"><span>הוצאות קבועות <b class="num">${money(tot)}</b></span><span>נשאר ${leftTxt}</span></div>
+    <div class="fxmon"><span>נכנסו החודש <b class="num">${money(got)}</b></span><span>עוד צפוי <b class="num">${money(exp)}</b></span></div>
+    ${(()=>{const COL=["#5ef0a4","#4fd1c5","#7ad7ff","#b8f27a","#9ae6b4"];const cats=[...new Set(ri.map(x=>x.cat))].map((c,i)=>({c,col:COL[i%COL.length],items:ri.filter(x=>x.cat===c)})).map(g=>({...g,t:g.items.reduce((a,x)=>a+x.avg,0)})).sort((a,b)=>b.t-a.t);
+      if(!cats.length)return`<div class="fxg"><div class="hint" style="padding:12px">לא נמצאו הכנסות שחוזרות כל חודש.</div></div>`;
+      const it=x=>`<div class="fxi"><div><div class="n">${esc(x.name)}${x.variable?'<span class="vtag">ממוצע</span>':""}</div><div class="s">${x.dayTxt}${x.variable?" · משתנה":""}${x.curAmt?" · נכנס החודש":""}</div></div><span class="a num">${money(x.avg)}</span></div>`;
+      return`<div class="fxbar">${cats.map(g=>`<span style="flex:${g.t};background:${g.col}"></span>`).join("")}</div>
+      <div class="fxleg">${cats.map(g=>`<div><i style="background:${g.col}"></i>${esc(g.c)}<b class="num">${Math.round(g.t/ti*100)}%</b></div>`).join("")}</div>
+      <div class="fxg">${cats.map((g,i)=>{const k="fxi"+g.c;return`<button class="fxgh" data-fxg="${esc("i"+g.c)}"><i style="background:${g.col}"></i><div><div class="n">${esc(g.c)}</div><div class="c">${g.items.length} ${g.items.length===1?"הכנסה":"הכנסות"}</div></div><span class="a num">${money(g.t)}</span><span class="chev${S.open[k]?" o":""}">‹</span></button>${S.open[k]?`<div class="fxitems">${g.items.map(it).join("")}</div>`:""}`}).join("")}</div>`})()}`}
+  const inc=avgIncome(),done=r.reduce((a,x)=>a+Math.min(x.curAmt,x.avg*1.5),0),lft=r.reduce((a,x)=>a+(x.curAmt?0:x.avg),0);
+  const gs=[...new Set(r.map(x=>x.g))].map(n=>({id:n,n,c:catIcon(n).c,items:r.filter(x=>x.g===n)})).map(g=>({...g,t:g.items.reduce((a,x)=>a+x.avg,0)})).sort((a,b)=>b.t-a.t);
+  const al=r.filter(x=>x.flag&&!(x.flag==="up"&&S.rv&&S.rv["up|"+x.key+"|"+Math.round(x.lastM)]));S.open=S.open||{};
+  const dn=+today().slice(8),item=x=>`<div class="fxi"><div><div class="n">${esc(x.name)}</div><div class="s">יורד בדרך כלל ב־${x.day} לחודש · ${SRC[x.src]||esc(x.src)}</div></div><div class="fxr"><span class="a num">${money(x.avg)}</span><span class="st ${x.curAmt?"ok":x.day<dn?"late":"wait"}">${x.curAmt?"ירד ✓":x.day<dn?"עוד לא ירד":"צפוי"}</span></div></div>`;
+  return`${demoBanner()}${seg}
+  <span class="glbl">הוצאות קבועות בכל חודש</span><span class="tbig num">${money(tot)}</span>
+  <div class="fxstrip"><span>הכנסות קבועות <b class="num">${money(ti)}</b></span><span>נשאר ${leftTxt}</span></div>
+  <div class="fxbar">${gs.map(g=>`<span style="flex:${g.t};background:${g.c}"></span>`).join("")}</div>
+  <div class="fxleg">${gs.map(g=>`<div><i style="background:${g.c}"></i>${esc(g.n)}<b class="num">${Math.round(g.t/tot*100)}%</b></div>`).join("")}</div>
+  <div class="fxmon"><span>ירדו החודש <b class="num">${money(done)}</b></span><span>עוד יירדו <b class="num">${money(lft)}</b></span></div>
+  <div class="fxg">${gs.map(g=>`<button class="fxgh" data-fxg="${esc(g.id)}"><i style="background:${g.c}"></i><div><div class="n">${esc(g.n)}</div><div class="c">${g.items.length} חיובים</div></div><span class="a num">${money(g.t)}</span><span class="chev${S.open["fx"+g.id]?" o":""}">‹</span></button>${S.open["fx"+g.id]?`<div class="fxitems">${g.items.map(item).join("")}</div>`:""}`).join("")}</div>
+  ${al.length?`<div class="fxal"><div class="h"><span>מה השתנה</span><span>${al.length}</span></div>${al.map(x=>`<div class="fxi"><div><div class="n">${esc(x.name)}</div><div class="s">${x.flag==="miss"?`ב${MONTHS[+nowYm().slice(5)-1]} עוד לא ירד, למרות שבדרך כלל יורד ב־${x.day} לחודש`:`${money(x.lastM)} בחודש שעבר, בדרך כלל ${money(x.prevAvg)}`}</div></div><span class="tag ${x.flag}">${x.flag==="miss"?"לא ירד":"עלה"}</span></div>`).join("")}</div>`:""}`}
+
+function vRulesAdmin(){const kinds={in:"הכנסה",out:"הוצאה",int:"פנימי"};
+  return`<div class="rules adm"><section class="panel"><h2 class="h3">חוקי סיווג</h2>
+    <p class="hint">תנועה שהתיאור שלה מכיל את הטקסט מקבלת את הקטגוריה. החוקים שלכם קודמים לחוקים המובנים, ושינוי ידני של תנועה קודם לכולם.</p>
+    ${S.rules.length?S.rules.map((r,i)=>`<div class="rule"><span>מכיל <code>${esc(r.m)}</code></span><span>← ${esc(r.c)}</span><button class="linkbtn" data-delrule="${i}" ${S.canWrite?"":"disabled"}>מחיקה</button></div>`).join(""):`<p class="hint">עוד אין חוקים משלכם. אפשר להוסיף כאן, או לשנות קטגוריה של תנועה ולבחור ״תמיד״.</p>`}
+    <form class="form" id="ruleForm"><input id="rMatch" placeholder="טקסט בתיאור" required><select id="rCat" aria-label="קטגוריה">${allCats().map(c=>`<option>${esc(c.n)}</option>`).join("")}</select><button class="btn" type="submit" ${S.canWrite?"":"disabled"}>הוספת חוק</button></form></section>
+  <section class="panel"><h2 class="h3">קטגוריות</h2><p class="hint">קטגוריות ״פנימי״ לא נספרות בסיכומים, כדי שחיוב האשראי החודשי בבנק לא ייספר פעמיים לצד הקניות עצמן.</p>
+    ${allCats().map(c=>{const i=S.customCats.findIndex(x=>x.n===c.n);if(S.renaming===c.n)return`<div class="rule"><input id="renIn" value="${esc(c.n)}" aria-label="שם חדש"><button class="linkbtn" data-rensave="${esc(c.n)}">שמירה</button><button class="linkbtn" data-rencancel="1">ביטול</button></div>`;return`<div class="rule"><span>${esc(c.n)}</span><span class="hint">${kinds[c.k]}</span><span class="rbtns">${c.n!==UNK&&c.k!=="int"?`<button class="linkbtn" data-ren="${esc(c.n)}" ${S.canWrite?"":"disabled"}>שינוי שם</button>`:""}${i>=0?`<button class="linkbtn" data-delcat="${i}" ${S.canWrite?"":"disabled"}>מחיקה</button>`:""}</span></div>`}).join("")}
+    <form class="form" id="catForm"><input id="cName" placeholder="שם קטגוריה חדשה" required><select id="cKind" aria-label="סוג"><option value="out">הוצאה</option><option value="in">הכנסה</option></select><button class="btn" type="submit" ${S.canWrite?"":"disabled"}>הוספה</button></form></section></div>`}
+
+const INC_CATS=["משכורות","הכנסה משכירות","קצבאות וביטוח לאומי","החזרים וזיכויים","הכנסות אחרות"];
+const EXP_QUICK=()=>["סופר ומזון","מסעדות ומשלוחים","קניות וביגוד","ילדים וחינוך"].map(RN);
+const ruleKey=d=>d.replace(/\s+\d[\d\s\-\/]*$/,"").trim().slice(0,40);
+const hasRule=t=>{const hay=(t.desc+" "+(t.memo||"")).toLowerCase();return S.rules.some(r=>r.m&&hay.includes(r.m.toLowerCase()))};
+const hasEdit=t=>{const e=(S.edits[ym(t.d)]||{})[t.id];return!!(e&&e.c)};
+function sortData(){const cur=nowYm(),list=txnsIn([cur]);
+  const unk=list.filter(t=>t.cat===UNK&&t.amt<0),by={};
+  for(const t of unk){const k=fxKey(t.desc);const o=by[k]=by[k]||{key:k,label:ruleKey(t.desc),n:0,sum:0,txns:[]};o.n++;o.sum+=-t.amt;o.txns.push(t)}
+  const mer=Object.values(by).sort((a,b)=>b.sum-a.sum);
+  const inc=[0,1,2].map(i=>addM(cur,-i)).flatMap(m=>txnsIn([m])).filter(t=>t.amt>=300&&t.src==="bank"&&t.cat===RN("הכנסות אחרות")&&!hasEdit(t)&&!hasRule(t)).sort((a,b)=>b.d.localeCompare(a.d));
+  return{mer,inc,unkSum:unk.reduce((a,t)=>a-t.amt,0)}}
+async function renameCat(from,to){to=String(to||"").trim();if(!to||to===from||from===UNK)return false;if(allCats().some(c=>c.n===to)){toast("כבר יש קטגוריה בשם הזה");return false}
+  const ren={...(S.catRen||{})};for(const k of Object.keys(ren))if(ren[k]===from)ren[k]=to;ren[from]=to;const b=BN(from);if(b!==from)ren[b]=to;
+  const ci=S.customCats.findIndex(c=>c.n===from);if(ci>=0)S.customCats[ci]={...S.customCats[ci],n:to};
+  S.catRen=ren;await put("config/categories",{custom:S.customCats,renames:ren});render();return true}
+async function undoClassify(){const u=S.lastUndo;if(!u)return;S.lastUndo=null;S.rules=u.rules;await put("config/rules",{list:S.rules});
+  for(const[m,map]of Object.entries(u.edits)){S.edits[m]=map;if(db&&!S.demo)await put("edits/"+m,{map,updatedAt:new Date().toISOString()})}render();toast("בוטל")}
+async function classify(txns,cat,remember,key){
+  const undo={rules:S.rules.map(r=>({...r})),edits:{}};for(const t of txns){const m=ym(t.d);if(!(m in undo.edits))undo.edits[m]={...(S.edits[m]||{})}}
+  S.lastUndo=undo;
+  if(remember&&key){S.rules=S.rules.filter(r=>r.m!==key);S.rules.unshift({m:key,c:cat});await put("config/rules",{list:S.rules})}
+  else{const byM={};for(const t of txns){const m=ym(t.d);(byM[m]=byM[m]||{...(S.edits[m]||{})})[t.id]={c:cat}}
+    for(const[m,map]of Object.entries(byM)){S.edits[m]=map;if(db&&!S.demo)await put("edits/"+m,{map,updatedAt:new Date().toISOString()})}}
+  render()}
+function vRules(){const d=sortData(),rem=S.sortRem!==false;S.open=S.open||{};
+  const allOut=allCats().filter(c=>c.k==="out").map(c=>c.n);
+  return`${demoBanner()}
+  <span class="glbl">עוד לא מסווג ב${MONTHS[+nowYm().slice(5)-1]}</span><span class="tbig num">${money(d.unkSum)}</span>
+  <span class="gsub">${d.mer.length||d.inc.length?`${d.mer.length?(d.mer.length===1?"עסק אחד":d.mer.length+" עסקים")+" לסווג":""}${d.mer.length&&d.inc.length?" · ":""}${d.inc.length?(d.inc.length===1?"כניסה אחת":d.inc.length+" כניסות")+" לבדיקה":""}`:"הכל מסודר ✓"}</span>
+  ${d.mer.length||d.inc.length?`<button class="remt" id="sortRem"><span class="sw${rem?" on":""}"></span>לזכור לפעמים הבאות</button>`:""}
+  ${d.mer.length?`<div class="sec2"><span>לסווג, לפי עסק</span><span>${d.mer.length}</span></div>
+  <div class="scard">${d.mer.map(o=>{const open=S.open["m"+o.key];const cats=open?allOut:EXP_QUICK();return`<div class="sm" data-mk="${esc(o.key)}"><div class="smt"><div><div class="n">${esc(o.label)}</div>${(()=>{const i=mInfo(o.label);return i?`<div class="mi">${esc(i.w)}${i.p&&!String(i.w).includes(i.p)?" · "+esc(i.p):""}</div>`:""})()}<div class="s">${o.n} ${o.n===1?"פעם":"פעמים"}${(()=>{const i=mInfo(o.label);return i&&i.c&&i.c!==UNK&&i.conf!=="low"?` · מתאים כנראה ל<b>${esc(RN(i.c))}</b>`:""})()}</div></div><span class="a num">${money(o.sum)}</span><button class="whatq" data-whatm="${esc(o.key)}" aria-label="מה זה? לשאול את Claude"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg></button></div>
+    <div class="schips${open?" wrap":""}">${cats.map(c=>`<button data-cls="${esc(o.key)}" data-cat="${esc(c)}">${esc(c)}</button>`).join("")}${open?"":`<button class="more" data-mmore="${esc(o.key)}">עוד…</button>`}</div></div>`}).join("")}</div>`:""}
+  ${d.inc.length?`<div class="sec2"><span>כניסות לבדיקה</span><span>${d.inc.length}</span></div>
+  <div class="scard">${d.inc.map(t=>{const k=ym(t.d)+"|"+t.id,r=S.open["r"+k]!==false;return`<div class="sm"><div class="smt"><div><div class="n">${esc(t.desc)}</div><div class="s">${fmtD(t.d)}</div></div><span class="a num pos">+${money(t.amt)}</span><button class="whatq" data-whati="${esc(k)}" aria-label="מה זה? לשאול את Claude"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg></button></div>
+    <div class="ilbl">הכנסה מסוג:</div><div class="schips wrap">${[...new Set([...INC_CATS.map(RN),...allCats().filter(c=>c.k==="in").map(c=>c.n)])].map(c=>`<button data-inc="${esc(k)}" data-cat="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+    <div class="ilbl">או:</div><div class="schips wrap"><button class="ni" data-inc="${esc(k)}" data-cat="${esc(RN("כניסה חד־פעמית"))}">חד־פעמי — לא חלק מהשגרה</button></div>
+</div>`}).join("")}</div>
+  <div class="snote"><b>חד־פעמי</b> — כסף אמיתי שנכנס אבל לא חלק מהשגרה (מכירת רכב, החזר מס גדול). לא נספר במאזן החודשי, כדי לא לנפח אותו.</div>`:""}
+  <button class="fold2" id="rulesFold"><span>קטגוריות וחוקים</span><span class="chev${S.open.rulesFold?" o":""}">‹</span></button>
+  ${S.open.rulesFold?vRulesAdmin():""}
+  <button class="askc" id="sortAsk"><span class="astar xs">${STAR_SVG}</span>לא בטוחים מה זה? שאלו את Claude</button>`}
+function renderSync(){const s=S.sync,dot=$("#syncDot"),tx=$("#syncText");
+  if(finErr){dot.className="dot err";tx.textContent=finErr+" · לנסות שוב";tx.title=finErr;return}
+  if(S.demo||!s||!s.lastRun){dot.className="dot";tx.textContent=S.live?"משיכה מ־Financy":"מתחבר…";tx.title="";return}
+  const h=(Date.now()-new Date(s.lastRun).getTime())/36e5;const when=new Date(s.lastRun).toLocaleString("he-IL",{day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"});
+  if(s.error){dot.className="dot err";tx.textContent="סנכרון נכשל · "+when;tx.title=s.error;return}
+  dot.className="dot "+(h>36?"old":"ok");tx.textContent="עודכן "+when;tx.title="לחיצה מושכת עכשיו מ־Financy"}
+function fitSel(root){try{const c=fitSel.c||(fitSel.c=document.createElement("canvas").getContext("2d"));root.querySelectorAll("select.catsel").forEach(el=>{const cs=getComputedStyle(el);c.font=cs.fontWeight+" "+cs.fontSize+" "+cs.fontFamily;const o=el.options[el.selectedIndex];if(!o)return;el.style.width=Math.ceil(c.measureText(o.text).width+parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight)+4)+"px"})}catch(_){}}
+document.addEventListener("change",e=>{const t=e.target;if(t&&t.matches&&t.matches("select.catsel"))fitSel(t.parentElement)});
+function render(){renderTabs();renderSync();
+  const ae=document.activeElement,keep=ae&&(ae.id==="q"||ae.id==="aiQ")?{id:ae.id,s:ae.selectionStart}:null;
+  const v={overview:vOverview,tx:vTx,rec:vRec,rules:vRules,ai:vAi}[S.tab]||vOverview;
+  const sEl=$("#sync");if(sEl)$("header.top .bar").appendChild(sEl);$("#view").innerHTML=(db&&!S.live&&!S.demo&&S.tab!=="ai")?`<div class="empty">טוען נתונים…</div>`:v();decor($("#view"));fitSel($("#view"));{const sl=$("#syncSlot");if(sl&&sEl)sl.appendChild(sEl)}$("#view").classList.toggle("home",S.tab==="overview");$("#view").classList.toggle("txv",S.tab!=="overview");document.body.classList.toggle("aichat",S.tab==="ai"&&aiChat());aiSave();{let bc=document.getElementById("backChat");const show=S.tab!=="ai"&&S.ai.jump&&S.ai.msgs.length;if(show&&!bc){bc=document.createElement("button");bc.id="backChat";bc.innerHTML=`<i class="cmark"></i>חזרה לשיחה`;bc.onclick=()=>{S.ai.jump=false;S.f.q="";S.showQ=false;S.ai.open=true;S.tab="ai";ls.set("cf.tab","ai");render()};document.body.appendChild(bc)}else if(!show&&bc)bc.remove()}if(document.body.classList.contains("aichat"))requestAnimationFrame(aiScroll);
+  if(keep){const q=$("#"+keep.id);if(q){q.focus();try{q.setSelectionRange(keep.s,keep.s)}catch(_){}}}}
+
+/* ---------- toast ---------- */
+let tT=null;function toast(msg,action){document.querySelectorAll(".toast").forEach(x=>x.remove());const t=document.createElement("div");t.className="toast";const sp=document.createElement("span");sp.textContent=msg;t.appendChild(sp);
+  if(action){const b=document.createElement("button");b.textContent=action.label;b.onclick=()=>{t.remove();action.fn()};t.appendChild(b)}
+  document.body.appendChild(t);clearTimeout(tT);tT=setTimeout(()=>t.remove(),action?8000:2200)}
+
+/* ---------- writes ---------- */
+async function put(path,data,okMsg){if(!db||S.demo&&path.startsWith("edits"))return true;try{await db.doc(path).set(data);if(okMsg)toast(okMsg);return true}catch(e){toast("השינוי לא נשמר. נסו שוב.");return false}}
+async function saveFc(id,patch){const cur={...(S.fc[id]||{}),...patch};Object.keys(cur).forEach(k=>{if(cur[k]==null||cur[k]===""||cur[k]===false)delete cur[k]});
+  S.fc[id]=cur;render();if(!db)return;
+  try{if(Object.keys(cur).length)await db.doc("forecast/"+id).set(cur);else await db.doc("forecast/"+id).delete()}catch(e){toast("השינוי לא נשמר. נסו שוב.")}}
+
+/* ---------- events ---------- */
+const view=$("#view");
+view.addEventListener("click",e=>{
+  if(e.target.closest("#rvGo")){S.tab="ai";ls.set("cf.tab","ai");S.ai.open=false;render();scrollTo({top:0});return}
+  const rva=e.target.closest("[data-rva]");if(rva){answerReview(rva.dataset.rva,+rva.dataset.rvb);return}
+  const rvt=e.target.closest("[data-rvt]");if(rvt){talkAbout(rvt.dataset.rvt);return}
+  const rvx=e.target.closest("[data-rvx]");if(rvx){rvHide(rvx.dataset.rvx);return}
+  const rvl=e.target.closest("[data-rvl]");if(rvl){const id=rvl.dataset.rvl;S.rv[id]={state:"later"};render();if(db&&!S.demo)db.doc("review/"+rvDocId(id)).set({id,state:"later",at:today()}).catch(()=>{});return}
+  if(e.target.closest("#rvLaterFold")){S.open=S.open||{};S.open.rvLater=!S.open.rvLater;render();return}
+  const rn=e.target.closest("[data-ren]");if(rn){S.renaming=rn.dataset.ren;render();const i=$("#renIn");if(i){i.focus();i.select()}return}
+  if(e.target.closest("[data-rencancel]")){S.renaming=null;render();return}
+  const rsv=e.target.closest("[data-rensave]");if(rsv){const from=rsv.dataset.rensave,to=($("#renIn")||{}).value;renameCat(from,to).then(ok=>{if(ok){S.renaming=null;render();toast("השם עודכן")}});return}
+  const fm=e.target.closest("[data-fxm]");if(fm){S.fxMode=fm.dataset.fxm;ls.set("cf.fxm",S.fxMode);render();return}
+  if(e.target.closest("#sortRem")){S.sortRem=S.sortRem===false;ls.set("cf.sortRem",S.sortRem?"1":"0");render();return}
+  const ir=e.target.closest("[data-irem]");if(ir){S.open=S.open||{};const k="r"+ir.dataset.irem;S.open[k]=S.open[k]===false;render();return}
+  const mm=e.target.closest("[data-mmore]");if(mm){S.open=S.open||{};S.open["m"+mm.dataset.mmore]=true;render();return}
+  const cl=e.target.closest("[data-cls]");if(cl){const k=cl.dataset.cls,cat=cl.dataset.cat,o=sortData().mer.find(x=>x.key===k);if(!o)return;const card=cl.closest(".sm");
+    const go=()=>classify(o.txns,cat,S.sortRem!==false,o.label).then(()=>toast(`${o.label} → ${cat}`,{label:"ביטול",fn:undoClassify}));if(card){card.classList.add("gone");setTimeout(go,260)}else go();return}
+  const ic=e.target.closest("[data-inc]");if(ic){const[m,id]=ic.dataset.inc.split("|"),t=txnsIn([m]).find(x=>x.id===id);if(!t)return;const cat=ic.dataset.cat,rem=S.sortRem!==false&&cat!==RN("כניסה חד־פעמית"),card=ic.closest(".sm");
+    const go=()=>classify([t],cat,rem,ruleKey(t.desc)).then(()=>toast(`${ruleKey(t.desc)} → ${cat}`,{label:"ביטול",fn:undoClassify}));if(card){card.classList.add("gone");setTimeout(go,260)}else go();return}
+  if(e.target.closest("#rulesFold")){S.open=S.open||{};S.open.rulesFold=!S.open.rulesFold;render();return}
+  const tq=e.target.closest("[data-txq]");if(tq){const[m,id]=tq.dataset.txq.split("|");const t=txnsIn([m]).find(x=>x.id===id);if(t){const a=Math.abs(Math.round(t.amt)).toLocaleString("he-IL");
+      const q=`מה זה "${merName(t.desc)}"? (${fmtD(t.d)}, ₪${a})`;
+      S.ai.from={tab:S.tab,y:scrollY};S.tab="ai";ls.set("cf.tab","ai");S.ai.open=false;aiAsk(q,SHORTQ);scrollTo({top:0})}return}
+  const wq=e.target.closest("[data-whatm],[data-whati]");if(wq){const d=sortData();let q="";
+    if(wq.dataset.whatm){const o=d.mer.find(x=>x.key===wq.dataset.whatm);if(o)q=`מה זה "${o.label}"? (${o.n} ${o.n===1?"חיוב":"חיובים"}, ₪${Math.round(o.sum).toLocaleString("he-IL")})`}
+    else{const t=d.inc.find(x=>ym(x.d)+"|"+x.id===wq.dataset.whati);if(t)q=`מה זו הכניסה "${t.desc}"? (${fmtD(t.d)}, ₪${Math.round(t.amt).toLocaleString("he-IL")})`}
+    if(q){S.ai.from={tab:S.tab,y:scrollY};S.tab="ai";ls.set("cf.tab","ai");S.ai.open=false;aiAsk(q,SHORTQ);S.ai.from={...S.ai.from};scrollTo({top:0})}return}
+  if(e.target.closest("#sortAsk")){const d=sortData();S.ai.draft=d.mer.length?`מה זה "${d.mer[0].label}" ואיזו קטגוריה מתאימה לו?`:"";S.tab="ai";ls.set("cf.tab","ai");render();scrollTo({top:0});return}
+  const fg=e.target.closest("[data-fxg]");if(fg){S.open=S.open||{};const k="fx"+fg.dataset.fxg;S.open[k]=!S.open[k];render();return}
+  const aq=e.target.closest("[data-aiq]");if(aq){aiAsk(aq.dataset.aiq);return}
+  if(e.target.closest("#aiSend")){const t=$("#aiQ");aiAsk(t?t.value:S.ai.draft);return}
+  if(e.target.closest("#aiStop")){aiCtl&&aiCtl.abort();return}
+  if(e.target.closest("#aiClear")){S.ai.open=false;S.ai.jump=false;const fr=S.ai.from;S.ai.from=null;if(fr&&fr.tab&&fr.tab!=="ai"){S.tab=fr.tab;ls.set("cf.tab",fr.tab);render();requestAnimationFrame(()=>scrollTo({top:fr.y||0}))}else{render();scrollTo({top:0})}return}
+  if(e.target.closest("#aiNew")){S.ai.from=null;if(S.ai.busy&&aiCtl)aiCtl.abort();S.ai.msgs=[];S.ai.open=false;S.ai.jump=false;S.ai.draft="";render();scrollTo({top:0});return}
+  if(e.target.closest("#aiCont")){S.ai.open=true;render();return}
+  const jl=e.target.closest("[data-jq]");if(jl){S.f.q=jl.dataset.jq;S.showQ=true;S.f.dir="";S.f.cat="";S.f.src="";if(jl.dataset.jm&&S.months[jl.dataset.jm])S.anchor=jl.dataset.jm;S.ai.jump=true;S.tab="tx";ls.set("cf.tab","tx");render();scrollTo({top:0});return}
+  const ok=e.target.closest("[data-aiok]");if(ok){const m=S.ai.msgs[+ok.dataset.aiok];if(m&&m.state==="pending"){m.state="done";applyActions(m.acts)}return}
+  const no=e.target.closest("[data-aino]");if(no){const m=S.ai.msgs[+no.dataset.aino];if(m){m.state="no";render()}return}
+  const jd=e.target.closest("[data-jdel]");if(jd){const id=jd.dataset.jdel,j=(S.jars||[]).find(x=>x.id===id);toast(`למחוק את "${j?j.name:""}"?`,{label:"מחיקה",fn:async()=>{if(db){try{await db.doc("jars/"+id).delete()}catch(_){toast("לא נמחק")}}}});return}
+  const hpB=e.target.closest("[data-hp]");if(hpB){S.hp=+hpB.dataset.hp;ls.set("cf.hp",String(S.hp));render();return}
+  const dirB=e.target.closest("[data-dir]");if(dirB){S.f.dir=dirB.dataset.dir;S.shown=150;render();return}
+  if(e.target.closest("#tSearch")){S.showQ=!(S.showQ||S.f.q);if(!S.showQ)S.f.q="";render();if(S.showQ){const q=$("#q");if(q)q.focus()}return}
+  if(e.target.closest("#tFilter")){S.showF=!(S.showF||S.f.cat||S.f.src);if(!S.showF){S.f.cat="";S.f.src=""}render();return}
+  if(e.target.id==="fClear"){S.f.cat="";S.f.src="";render();return}
+  const m=e.target.closest("[data-mode]");if(m){S.mode=m.dataset.mode;ls.set("cf.mode",S.mode);render();return}
+  const st=e.target.closest("[data-step]");if(st){const n=S.mode==="month"?1:S.mode==="quarter"?3:12;S.anchor=addM(S.anchor,+st.dataset.step*n);S.shown=150;render();return}
+  const mb=e.target.closest("[data-more]");if(mb){S.open=S.open||{};S.open[mb.dataset.more]=!S.open[mb.dataset.more];render();return}
+  const c=e.target.closest(".catrow,.rk");if(c){S.f.cat=c.dataset.cat;S.tab="tx";ls.set("cf.tab","tx");render();return}
+  const so=e.target.closest("[data-sort]");if(so){S.sort=so.dataset.sort;render();return}
+  if(e.target.id==="more"){S.shown+=150;render();return}
+  if(e.target.id==="nRefresh"||e.target.id==="nRetry"){loadNotion();return}
+  if(e.target.id==="vatBtn"){S.vat=!S.vat;ls.set("cf.vat",S.vat?"1":"0");render();return}
+  if(e.target.id==="fixReset"){S.fcfg={...S.fcfg,monthlyFixed:null};put("config/forecast",{monthlyFixed:null});render();return}
+  const sk=e.target.closest("[data-fskip]");if(sk){const id=sk.dataset.fskip;saveFc(id,{skip:!(S.fc[id]||{}).skip});return}
+  const rs=e.target.closest("[data-freset]");if(rs){saveFc(rs.dataset.freset,{date:null});return}
+  const dr=e.target.closest("[data-delrule]");if(dr){S.rules.splice(+dr.dataset.delrule,1);put("config/rules",{list:S.rules});render();return}
+  const dc=e.target.closest("[data-delcat]");if(dc){S.customCats.splice(+dc.dataset.delcat,1);put("config/categories",{custom:S.customCats,renames:S.catRen||{}});render();return}
+});
+let qT=null;
+view.addEventListener("input",e=>{if(e.target.id==="aiQ"){S.ai.draft=e.target.value;e.target.style.height="auto";e.target.style.height=Math.min(140,e.target.scrollHeight)+"px";return}if(e.target.id==="q"){clearTimeout(qT);const v=e.target.value;qT=setTimeout(()=>{S.f.q=v;S.shown=150;render()},180)}});
+view.addEventListener("change",e=>{const t=e.target;
+  if(t.id==="mSel"){S.anchor=t.value;S.shown=150;render();return}
+  if(t.id==="fSrc"){S.f.src=t.value;render();return}if(t.id==="fDir"){S.f.dir=t.value;render();return}
+  if(t.id==="fCat"){S.f.cat=t.value;render();return}if(t.id==="fInt"){S.f.intl=t.checked;render();return}
+  if(t.dataset.fdate){if(t.value)saveFc(t.dataset.fdate,{date:t.value});return}
+  if(t.id==="fixIn"){const v=t.value===""?null:+t.value;S.fcfg={...S.fcfg,monthlyFixed:v};put("config/forecast",{monthlyFixed:v},"נשמר");render();return}
+  if(t.classList.contains("catsel")){const month=t.dataset.m,id=t.dataset.id,cat=t.value,desc=t.dataset.desc;
+    const cur={...(S.edits[month]||{})};cur[id]={c:cat};S.edits[month]=cur;render();
+    if(db&&!S.demo)put("edits/"+month,{map:cur,updatedAt:new Date().toISOString()});
+    const key=desc.replace(/\s+\d[\d\s\-\/]*$/,"").trim().slice(0,40);
+    if(key&&!S.rules.some(r=>r.m===key))toast(`סווג כ״${cat}״`,{label:`תמיד לסווג ״${key}״ כך`,fn:()=>{S.rules.unshift({m:key,c:cat});put("config/rules",{list:S.rules});render()}})}
+});
+view.addEventListener("submit",e=>{e.preventDefault();
+  if(e.target.id==="ruleForm"){const m=$("#rMatch").value.trim();if(!m)return;S.rules.unshift({m,c:$("#rCat").value});put("config/rules",{list:S.rules},"החוק נוסף");render()}
+  if(e.target.id==="catForm"){const n=$("#cName").value.trim();if(!n||allCats().some(c=>c.n===n))return;S.customCats.push({n,k:$("#cKind").value});put("config/categories",{custom:S.customCats,renames:S.catRen||{}},"הקטגוריה נוספה");render()}});
+
+/* ---------- demo bank data (until the first real sync) ---------- */
+function makeDemo(){let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const months={},end=nowYm();
+  for(let k=11;k>=0;k--){const m=addM(end,-k),tx=[];let n=0;const add=(day,desc,amt,src,x={})=>tx.push({id:m+"-"+(n++),d:m+"-"+pad(day),desc,amt:Math.round(amt),src,...x});
+    add(1,"משכורת - מעסיק לדוגמה",14500,"bank");add(9,"העברה - הכנסה צדדית לדוגמה",2500+rnd()*2000,"bank");
+    add(2,"משכנתא",-5200,"bank");add(10,"ישראכרט חיוב חודשי",-(7000+rnd()*3000),"bank");add(15,"ארנונה עירייה",-640,"bank");add(1,"עמלת ניהול חשבון",-12,"bank");
+    add(20,"הפקדה לחיסכון",-1000,"bank");
+    const cards=[["שופרסל",-(380+rnd()*300)],["רמי לוי",-(450+rnd()*250)],["WOLT",-(120+rnd()*150)],["פז אפליקציה",-(280+rnd()*120)],["NETFLIX.COM",-55],["SPOTIFY",-26],["פרטנר תקשורת",-149],["חברת החשמל",-(380+rnd()*200)],["סופר-פארם",-(90+rnd()*160)],["מכבי שירותי בריאות",-120]];
+    for(const[dsc,a]of cards)add(10,dsc,a,"isracard",{pd:addM(m,-1)+"-"+pad(1+Math.floor(rnd()*27)),owner:rnd()>.5?"רן":"טל"});
+    if(rnd()>.6)add(10,"ZARA",-(250+rnd()*400),"isracard",{pd:addM(m,-1)+"-12",owner:"טל"});
+    months[m]={txns:tx}}return months}
+function useDemo(){S.demo=true;S.months=makeDemo();S.sync={balance:18430,balanceAt:new Date().toISOString()};render()}
+
+/* ---------- Financy (open banking) sync ---------- */
+let FIN_SERVER="financy";const FIN_PROVIDERS=p=>p==="masad";let finErr="";
+const FC_MAP={RENT:"דיור ומשכנתא",MORTGAGE:"דיור ומשכנתא",HOME:"דיור ומשכנתא",COMMUNICATIONS:"תקשורת ומנויים",UTILITIES:"חשבונות הבית",BILLS:"חשבונות הבית",
+  "INSURANCE_&_FEES":"בריאות וביטוחים",INSURANCE:"בריאות וביטוחים",HEALTH_FUND:"בריאות וביטוחים",HEALTHCARE:"בריאות וביטוחים",PHARMACY:"בריאות וביטוחים",EYECARE:"בריאות וביטוחים",
+  GROCERIES:"סופר ומזון",RESTAURANT:"מסעדות ומשלוחים","COFFEE_&_SNACKS":"מסעדות ומשלוחים",BARS:"מסעדות ומשלוחים","ALCOHOL_&_TOBACCO":"מסעדות ומשלוחים","FOOD_&_DRINKS_OTHER":"מסעדות ומשלוחים",
+  "CAR_&_FUEL":"רכב ודלק",PUBLIC_TRANSPORT:"תחבורה וחניה",TAXI:"תחבורה וחניה",TRANSPORT_OTHER:"תחבורה וחניה",
+  FLIGHTS:"פנאי וחופשות",VACATION:"פנאי וחופשות","CULTURE_&_EVENTS":"פנאי וחופשות",HOBBIES:"פנאי וחופשות","SPORTS_&_FITNESS":"פנאי וחופשות",LEISURE_OTHER:"פנאי וחופשות",
+  "CLOTHES_&_ACCESSORIES":"קניות וביגוד",ELECTRONICS:"קניות וביגוד","HOBBY_&_SPORTS_EQUIPMENT":"קניות וביגוד","BOOKS_&_GAMES":"קניות וביגוד",SHOPPING_OTHER:"קניות וביגוד",BEAUTY:"קניות וביגוד",
+  GIFTS:"מתנות ואירועים",CHARITY:"מתנות ואירועים","RENOVATION_&_REPAIRS":"בית וריהוט","FURNITURE_&_INTERIOR":"בית וריהוט",GARDEN:"בית וריהוט",HOME_IMPROVEMENTS_OTHER:"בית וריהוט",
+  KIDS:"ילדים וחינוך",EDUCATION:"ילדים וחינוך",CASH_WITHDRAWALS:"משיכת מזומן",SAVINGS:"חיסכון והשקעות",CAPITAL_MARKET:"חיסכון והשקעות",INVESTMENTS:"חיסכון והשקעות",
+  FEES:"מיסים ועמלות",INTEREST_RATES:"מיסים ועמלות",VAT:"מיסים ועמלות",LOANS:"מיסים ועמלות",
+  CREDIT_CARD_EXPENSES:"חיוב כרטיס אשראי",CREDIT_CARD_CHECKING:"חיוב כרטיס אשראי",
+  SALARY:"משכורות",SALARY_OTHER:"משכורות",NOT_RESERVE_DUTY:"הכנסות אחרות",RESERVE_DUTY:"הכנסות אחרות",BENEFITS_OTHER:"הכנסות אחרות",RECENT_PENSION:"הכנסות אחרות",PENSION_OTHER:"הכנסות אחרות",
+  REFUND:"החזרים וזיכויים",REIMBURSEMENTS_OTHER:"החזרים וזיכויים"};
+let finBusy=false;
+async function finCall(tool,input){const r=await mcp.callTool(FIN_SERVER,tool,input,{cache:false});let p=r&&r.payload;if(typeof p==="string"){try{p=JSON.parse(p)}catch(_){}}return p||{}}
+function finMap(t,acc){
+  const isCard=t.type==="CARD";const dt=t.date||{};
+  const d=String(isCard?(dt.transactionDate||dt.bookingDate||dt.valueDate):(dt.bookingDate||dt.valueDate||dt.transactionDate)||"").slice(0,10);
+  if(!d)return null;
+  const a=acc[t.accountId]||{};
+  const amt=Number(((t.amount||{}).chargedAmount||(t.amount||{}).originalAmount||{}).amount||0);
+  const o={id:String(t.id),d,desc:String(t.merchantName||(t.description||{}).description||"").trim(),amt:Math.round(amt*100)/100,
+    src:isCard?(/ישראכרט/.test(a.product||"")?"isracard":/מקס|max/i.test(a.product||"")?"max":"card"):"bank",acct:String(t.accountNumber||"").slice(-4)};
+  if(isCard&&dt.bookingDate&&String(dt.bookingDate).slice(0,10)!==d)o.chg=String(dt.bookingDate).slice(0,10);
+  if(isCard&&a.owner)o.owner=a.owner;
+  if(t.isCreditCardInstallment)o.inst="בתשלומים";
+  if(t.status==="PENDING")o.pend=true;
+  const oa=(t.amount||{}).originalAmount;if(oa&&oa.currency&&oa.currency!=="ILS")o.orig=oa.amount+" "+oa.currency;
+  const c=(t.changedCategory||t.category||{});if(c.sub&&c.sub!=="UNCATEGORIZED"&&c.sub!=="OTHER")o.fc=c.sub;
+  return o}
+async function finResolve(){try{const l=await mcp.listTools();const sv=(l.servers||[]).find(x=>/financy/i.test(x.server));if(sv)FIN_SERVER=sv.server;return sv||null}catch(e){return null}}
+async function syncFinancy(force){
+  if(!mcp){finErr="האתר לא קיבל גישה לחיבורים (פתחו אותו בתוך Claude)";renderSync();return}
+  if(!db||finBusy)return;
+  if(!S.canWrite){finErr="אין הרשאת עריכה באתר";renderSync();return}
+  const last=S.realSync&&S.realSync.source==="financy"&&S.realSync.lastRun;
+  if(!force&&last&&Date.now()-new Date(last).getTime()<3*36e5)return;
+  finBusy=true;finErr="";$("#syncText").textContent="מושך מ־Financy…";$("#syncDot").className="dot";
+  await finResolve();
+  try{
+    const ar=await finCall("list_accounts",{all:true});const accs=ar.data||[];const acc={};let bal=null,balAt=null;
+    for(const a of accs){if(!FIN_PROVIDERS(a.providerId))continue;const nm=String((a.ownerInfo||{}).fullName||"").trim().split(/\s+/);acc[a.id]={product:a.product||"",owner:a.accountType==="CARD"?nm[nm.length-1]:""};
+      if(a.accountType==="CHECKING"){const b=(a.balances||[]).find(x=>x.balanceType==="expected"&&!x.creditLimitIncluded)||(a.balances||[]).find(x=>x.balanceType==="closingBooked"&&!x.creditLimitIncluded);
+        if(b){bal=(bal||0)+Number(b.balanceAmount.amount);balAt=b.referenceDate}}}
+    const have=Object.keys(S.months).filter(m=>!S.demo).sort();
+    const cur=nowYm();let start=have.length?addM(have[have.length-1],-1):addM(cur,-12);if(start>addM(cur,-1))start=addM(cur,-1);
+    const ms=[];for(let m=start;m<=addM(cur,1);m=addM(m,1))ms.push(m);
+    const byM={};
+    let cursor=null,pages=0,got=0;const toD=eom(addM(cur,1)+"-01");
+    let lim=40;
+    for(;;){const inp={from:start+"-01",to:toD,limit:lim};if(cursor)inp.cursor=cursor;
+      let r;try{r=await finCall("list_transactions",inp)}catch(e){const msg=JSON.stringify((e&&e.result)||"")+String(e&&e.message);
+        if(/too large|RESULT_TOO_LARGE/i.test(msg)&&lim>5){lim=Math.max(5,Math.floor(lim/2));continue}throw e}
+      for(const t of (r.data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;got++;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}
+      cursor=r.nextPage||null;pages++;$("#syncText").textContent="מושך מ־Financy… "+got+" תנועות";
+      if(!cursor||pages>=200)break;}
+    let changed=0;
+    for(const m of ms){const map=byM[m];if(!map)continue;
+      const txns=[...map.values()].sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id));
+      const prev=S.demo?null:S.months[m];if(prev&&JSON.stringify(prev.txns)===JSON.stringify(txns))continue;
+      await db.doc("months/"+m).set({month:m,txns,updatedAt:new Date().toISOString()});changed++}
+    await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",balance:bal,balanceAt:balAt,changedMonths:changed});
+    if(force)toast(changed?`עודכנו ${changed} חודשים מ־Financy`:"הכול מעודכן");
+  }catch(e){const c=e&&e.code;finErr=({server_not_connected:"Financy לא מחובר לחשבון ה־Claude שלך",needs_reauth:"החיבור ל־Financy פג — מחברים מחדש בהגדרות",not_in_manifest:"צריך לאשר לאתר גישה ל־Financy",approval_required:"צריך לאשר לאתר גישה ל־Financy",selection_required:"יש יותר מחיבור Financy אחד — בחרו אחד"})[c]||("שגיאה מ־Financy: "+(c||"")+" "+String((e&&e.message)||"").slice(0,80));
+    if(c==="server_not_connected"||c==="needs_reauth"||c==="not_in_manifest"||c==="approval_required"){if(force)toast(c==="needs_reauth"?"החיבור ל־Financy פג. מחברים מחדש בהגדרות של Claude.":"אין לך חיבור ל־Financy ב־Claude. הנתונים יתעדכנו כשמי שמחובר יפתח את האתר.")}
+    else if(force)toast("לא הצלחתי למשוך מ־Financy. נסו שוב בעוד רגע.");
+    renderSync()}
+  finally{finBusy=false}}
+/* month swipe — wheel follows the finger on an interruptible spring; on commit the data updates in place:
+   digits roll (numericText-style), bars spring to their new length, category rows settle in. No blur. */
+(()=>{const v=$("#view"),EASE="cubic-bezier(.32,.72,0,1)";
+const K=300,C=2*Math.sqrt(300)*.95;
+let x=0,vel=0,goal=0,raf=null,drag=null,dir=0,tgt=null;
+const el=()=>({tr:v.querySelector(".mtrack"),num:$("#mvNum"),lbl:$("#mvLbl"),bars:[...v.querySelectorAll(".msect .vsb .r")],cats:[...v.querySelectorAll("main.home > section.card")]});
+const slot=()=>{const c=v.querySelector(".mcar");return c?c.offsetWidth*.36:120};
+const paint=()=>{const E=el(),S0=slot();if(!E.tr)return;E.tr.style.transform=`translateX(${x}px)`;
+  E.tr.querySelectorAll("i").forEach(i=>{const o=+i.dataset.o,f=Math.min(1,Math.abs(x-o*S0)/S0);i.style.opacity=(1-.6*f).toFixed(3);i.style.transform=`scale(${(1-.12*f).toFixed(3)})`;i.classList.toggle("c",f<.5)});
+  const p=drag?Math.min(1,Math.abs(x)/S0):0,o=(1-.28*p).toFixed(3);
+  [E.num,E.lbl,...E.bars].forEach(e=>e&&(e.style.opacity=o));E.cats.forEach(c=>c.style.opacity=(1-.18*p).toFixed(3))};
+const run=()=>{if(raf)return;let last=performance.now();const tick=t=>{const dt=Math.min(.032,(t-last)/1000);last=t;
+    vel+=(-K*(x-goal)-C*vel)*dt;x+=vel*dt;paint();
+    if(Math.abs(x-goal)<.3&&Math.abs(vel)<8){x=goal;vel=0;paint();raf=null;return}raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick)};
+const band=(d,lim)=>{const s=Math.sign(d),a=Math.abs(d);return s*lim*(1-1/(a*.55/lim+1))};
+/* digits roll like contentTransition(.numericText). Sign and ₪ are fixed outside the roll; digits align from the right
+   (commas always meet commas). Every roll starts from a clean rebuild of the last target and ends with a clean rebuild — no leftovers. */
+const slots=(box,str)=>{box.innerHTML=[...str].map(c=>`<span class="rc">${c}</span>`).join("")};
+const roll=(node,newD,up)=>{const box=node.querySelector(".roll");if(!box)return;const id=(node._rid=(node._rid||0)+1);
+  const from=node.dataset.to||box.textContent,to=nf.format(Math.abs(Math.round(newD)));node.dataset.to=to;
+  const sg=node.querySelector(".sg");if(sg)sg.textContent=newD>=0?"+":"−";node.classList.toggle("p",newD>=0);node.classList.toggle("n",newD<0);
+  slots(box,from);if(from===to)return;
+  const meas=document.createElement("span");meas.style.cssText="position:absolute;visibility:hidden;white-space:pre";node.appendChild(meas);
+  const W=ch=>{meas.textContent=ch||"";return meas.getBoundingClientRect().width};
+  const cur=[...box.children],A=[...from],B=[...to],n=Math.max(A.length,B.length),offA=n-A.length,offB=n-B.length,T=`.36s ${EASE}`;
+  for(let i=0;i<n;i++){const oc=i>=offA?A[i-offA]:null,nc=i>=offB?B[i-offB]:null;if(oc===nc)continue;const delay=(n-1-i)*16;
+    let r=oc!=null?cur[i-offA]:null;
+    if(!r){r=document.createElement("span");r.className="rc";box.insertBefore(r,box.firstChild)}
+    r.style.width=(oc==null?0:W(oc))+"px";
+    const col=document.createElement("span");col.className="rcol";const s0=document.createElement("span"),s1=document.createElement("span");s0.textContent=oc||"";s1.textContent=nc||"";
+    if(up){col.append(s0,s1);col.style.transform="translateY(0)"}else{col.append(s1,s0);col.style.transform="translateY(-50%)"}
+    r.textContent="";r.appendChild(col);r.style.opacity=oc==null?"0":"1";void r.offsetWidth;
+    r.style.transition=`width ${T} ${delay}ms, opacity .25s ${EASE} ${delay}ms`;r.style.width=(nc==null?0:W(nc))+"px";r.style.opacity=nc==null?"0":"1";
+    col.style.transition=`transform ${T} ${delay}ms`;col.style.transform=up?"translateY(-50%)":"translateY(0)"}
+  meas.remove();setTimeout(()=>{if(node._rid===id)slots(box,to)},n*16+420)};
+const tweenTxt=(b,from,to)=>{const t0=performance.now(),D=320;const f=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);b.innerHTML=moneyHTML(Math.round(from+(to-from)*e));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)};
+const snap=()=>{const E=el();const numTo=E.num?E.num.dataset.to:"";const cats={};v.querySelectorAll(".rk").forEach(r=>{const sp=r.querySelector(".rkbar span");cats[r.dataset.cat]=sp?sp.style.width:"0%"});
+  return{numTo,bars:E.bars.map(r=>({w:r.querySelector(".tr span").style.width,v:+(r.querySelector("b").textContent.replace(/[^\d]/g,""))})),cats}};
+const settle=(old,oldD,newD)=>{const E=el();
+  if(E.num){E.num.dataset.to=old.numTo||E.num.dataset.to;roll(E.num,newD,newD>=oldD)}
+  E.bars.forEach((r,i)=>{const sp=r.querySelector(".tr span"),nw=sp.style.width,b=r.querySelector("b"),nv=+(b.textContent.replace(/[^\d]/g,""));
+    if(old.bars[i]){sp.style.transition="none";sp.style.width=old.bars[i].w;void sp.offsetWidth;sp.style.transition=`width .42s ${EASE}`;sp.style.width=nw;tweenTxt(b,old.bars[i].v,nv)}});
+  v.querySelectorAll(".rk").forEach((r,i)=>{const sp=r.querySelector(".rkbar span");if(sp){const nw=sp.style.width;sp.style.transition="none";sp.style.width=old.cats[r.dataset.cat]||"0%";void sp.offsetWidth;sp.style.transition=`width .42s ${EASE} ${i*14}ms`;sp.style.width=nw}
+    if(!(r.dataset.cat in old.cats)){r.style.opacity="0";r.style.transition="none";void r.offsetWidth;r.style.transition=`opacity .25s ${EASE}`;r.style.opacity="1"}});
+  E.cats.forEach(c=>{c.style.transition=`opacity .2s ${EASE}`;c.style.opacity="1"})};
+document.addEventListener("touchstart",e=>{if(S.tab!=="overview"||e.touches.length!==1||!v.contains(e.target)||e.target.closest(".hpseg"))return;
+  if(raf){cancelAnimationFrame(raf);raf=null}const t=e.touches[0];drag={x0:t.clientX-x,y0:t.clientY,lock:null,hist:[[t.clientX,performance.now()]]};dir=0;tgt=null},{passive:true});
+document.addEventListener("touchmove",e=>{if(!drag||e.touches.length!==1)return;const t=e.touches[0],dx=t.clientX-drag.x0,dy=t.clientY-drag.y0;
+  if(!drag.lock){if(Math.abs(dx-x)<7&&Math.abs(dy)<7)return;drag.lock=Math.abs(dx-x)>Math.abs(dy)?"h":"v";if(drag.lock==="v"){drag=null;if(x)run();return}}
+  if(e.cancelable)e.preventDefault();drag.hist.push([t.clientX,performance.now()]);if(drag.hist.length>6)drag.hist.shift();
+  const d=dx>0?1:-1;if(d!==dir){dir=d;tgt=winNext(S.anchor,d)}
+  const S0=slot();x=tgt?Math.max(-S0*1.2,Math.min(S0*1.2,dx)):band(dx,S0*.35);vel=0;paint()},{passive:false});
+const end=()=>{if(!drag)return;const h=drag.hist,lk=drag.lock;drag=null;if(lk!=="h"){if(x)run();return}
+  let vx=0;if(h.length>1){const a=h[0],b=h[h.length-1],dt=(b[1]-a[1])/1000;if(dt>0)vx=(b[0]-a[0])/dt}
+  const S0=slot(),proj=x+vx*.18;vel=vx;
+  if(tgt&&Math.abs(proj)>S0*.5&&Math.sign(proj)===dir){
+    const old=snap(),oldD=winSum(S.anchor).d,newD=winSum(tgt).d;
+    S.anchor=tgt;S.shown=150;render();x-=dir*S0;paint();settle(old,oldD,newD);dir=0;tgt=null;goal=0;run()}
+  else{goal=0;run()}};
+document.addEventListener("touchend",end,{passive:true});document.addEventListener("touchcancel",end,{passive:true})})();
+/* transactions screen: swipe the month area (or anywhere) sideways to change month */
+(()=>{const v=$("#view");let st=null;
+document.addEventListener("touchstart",e=>{if(S.tab!=="tx"||e.touches.length!==1||!v.contains(e.target)||e.target.closest("select,input,.tbar2"))return;const t=e.touches[0];st={x:t.clientX,y:t.clientY,lock:null}},{passive:true});
+document.addEventListener("touchmove",e=>{if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
+  if(!st.lock){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;st.lock=Math.abs(dx)>Math.abs(dy)?"h":"v";if(st.lock==="v"){st=null;return}}
+  if(e.cancelable)e.preventDefault();st.dx=dx;const m=$("#tmon");if(m){m.style.transition="none";m.style.transform=`translateX(${dx*.35}px)`;m.style.opacity=String(1-Math.min(.5,Math.abs(dx)/400))}},{passive:false});
+const end=()=>{if(!st)return;const dx=st.dx||0,lk=st.lock;st=null;const m=$("#tmon");if(lk!=="h")return;
+  const dir=dx>0?1:-1,next=addM(S.anchor,dir);const EASE="cubic-bezier(.32,.72,0,1)";
+  if(Math.abs(dx)<60||next>nowYm()){if(m){m.style.transition=`transform .4s ${EASE},opacity .3s ${EASE}`;m.style.transform="";m.style.opacity=""}return}
+  S.anchor=next;S.shown=150;render();const n=$("#tmon"),l=$("#ledger");
+  [n,l].forEach(x=>{if(!x)return;x.style.transition="none";x.style.opacity="0";x.style.transform=`translateX(${-dir*24}px)`});
+  requestAnimationFrame(()=>requestAnimationFrame(()=>[n,l].forEach(x=>{if(!x)return;x.style.transition=`transform .42s ${EASE},opacity .3s ${EASE}`;x.style.opacity="1";x.style.transform="none"})))};
+document.addEventListener("touchend",end,{passive:true});document.addEventListener("touchcancel",end,{passive:true})})();
+/* pull to refresh */
+(()=>{const ind=document.createElement("div");ind.id="ptr";ind.innerHTML='<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>';document.body.appendChild(ind);
+let y0=null,dy=0,busy=false;const TH=60,MAX=95;const atTop=()=>(window.scrollY||document.documentElement.scrollTop||0)<=0;
+const pos=(d,rot)=>{ind.style.transform=`translate(-50%,${d}px)`;ind.firstChild.style.transform=`rotate(${rot}deg)`};
+let x0=0;document.addEventListener("touchstart",e=>{if(busy||e.touches.length!==1||!atTop()||(S.tab!=="overview"&&S.tab!=="tx")){y0=null;return}y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;ind.style.transition="none"},{passive:true});
+document.addEventListener("touchmove",e=>{if(y0==null||e.touches.length!==1)return;dy=e.touches[0].clientY-y0;if(Math.abs(e.touches[0].clientX-x0)>Math.abs(dy)){y0=null;ind.style.opacity=0;return}if(dy<=0){ind.style.opacity=0;return}if(!atTop()){y0=null;return}
+  if(e.cancelable)e.preventDefault();const d=Math.min(dy*.5,MAX);pos(d,d*4);ind.style.opacity=Math.min(1,d/40);ind.classList.toggle("ready",d>=TH)},{passive:false});
+const end=async()=>{if(y0==null)return;const d=Math.min(dy*.5,MAX);y0=null;ind.style.transition="transform .25s, opacity .25s";
+  if(d>=TH){busy=true;ind.classList.add("spin");pos(64,0);ind.style.opacity=1;try{await syncFinancy(true)}catch(_){}busy=false;ind.classList.remove("spin","ready")}
+  pos(0,0);ind.style.opacity=0};
+document.addEventListener("touchend",end,{passive:true});document.addEventListener("touchcancel",end,{passive:true})})();
+$("#sync").style.cursor="pointer";$("#sync").title="לחיצה מושכת עכשיו מ־Financy";$("#sync").addEventListener("click",()=>syncFinancy(true));
+
+/* ---------- Claude page ---------- */
+S.ai={msgs:[],draft:"",busy:false,live:"",form:false,open:false,jump:false};
+try{const sv=JSON.parse(ls.get("cf.chat","null"));if(sv&&Array.isArray(sv.msgs)){S.ai.msgs=sv.msgs;S.ai.open=!!sv.open&&sv.msgs.length>0}}catch(_){}
+const merName=d=>String(d||"").replace(/\s+\d[\d\s\-\/]*$/,"").trim();
+const mInfo=d=>{const M=S.merch;if(!M)return null;return M[merName(d).toLowerCase()]||null};
+const aiChat=()=>!!(S.ai&&((S.ai.open&&S.ai.msgs.length)||S.ai.busy));
+const aiSave=()=>{try{ls.set("cf.chat",JSON.stringify({msgs:S.ai.msgs.slice(-40).map(m=>({role:m.role,content:m.content,raw:m.raw,acts:m.acts,state:m.state})),open:S.ai.open}))}catch(_){}};
+const aiNames=()=>{const now=nowYm(),mm=[0,1,2,3,4,5].map(i=>addM(now,-i)),seen={};
+  for(const m of mm)for(const t of txnsIn([m])){const n=t.desc.replace(/\s+\d[\d\s\-\/]*$/,"").trim();if(n.length<4||/^\d+$/.test(n))continue;const k=n.toLowerCase();if(!seen[k])seen[k]={n,q:n,m}}
+  const ren=(S.fx&&S.fx.rename)||{};for(const k in ren){const r=String(ren[k]);if(r.length>=3){const lk=r.toLowerCase();const src=Object.values(seen).find(o=>o.q.toLowerCase().includes(k)||k.includes(o.q.toLowerCase()));if(!seen[lk])seen[lk]={n:r,q:k,m:src?src.m:""}}}
+  return Object.values(seen).sort((a,b)=>b.n.length-a.n.length).slice(0,400)};
+const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+const aiFmt=s=>{s=String(s||"");const out=[];let last=0;const L=/\[\[([^\]|]{1,80})\|([^\]|]{1,60})(?:\|(\d{4}-\d{2}))?\]\]/g;let mt;
+  const btn=(l,q,m)=>`<button class="alink" data-jq="${esc(q)}" data-jm="${m||""}">${esc(l)}</button>`;
+  let names=null,re=null;const plain=t=>{if(!t)return"";if(!names){names=aiNames();re=names.length?new RegExp("("+names.map(o=>reEsc(o.n)).join("|")+")","gi"):null}
+    let r="",p=0;if(re){re.lastIndex=0;let x;while((x=re.exec(t))){const o=names.find(o=>o.n.toLowerCase()===x[0].toLowerCase());r+=esc(t.slice(p,x.index))+(o?btn(x[0],o.q,o.m):esc(x[0]));p=x.index+x[0].length}}
+    return (r+esc(t.slice(p)))};
+  while((mt=L.exec(s))){out.push(plain(s.slice(last,mt.index)));out.push(btn(mt[1],mt[2],mt[3]));last=mt.index+mt[0].length}out.push(plain(s.slice(last)));
+  return out.join("").replace(/\*\*([^*\n]{1,120})\*\*/g,"<b>$1</b>")};
+const aiPlain=s=>String(s||"").replace(/\[\[([^\]|]{1,80})\|[^\]]*\]\]/g,"$1").replace(/\*\*/g,"");
+const jarsSum=()=>(S.jars||[]).reduce((a,j)=>a+(+j.amount||0),0);
+const aiIdeas=()=>{try{
+  const cur=nowYm(),p1=addM(cur,-1),mc=MONTHS[+cur.slice(5)-1],mp=MONTHS[+p1.slice(5)-1],td=today(),dn=+td.slice(8);
+  const L=txnsIn([cur]),T=totals(L),T1=totals(txnsIn([p1]));const past=[1,2,3].map(i=>addM(cur,-i)).filter(m=>S.months[m]);
+  const byCat=ms=>{const o={};for(const m of ms)for(const t of txnsIn([m])){if(t.kind==="int"||t.amt>=0)continue;o[t.cat]=(o[t.cat]||0)-t.amt}return o};
+  const now=byCat([cur]),avg=byCat(past);for(const k in avg)avg[k]/=Math.max(1,past.length);
+  const r=x=>Math.round(x/100)*100,ideas=[];const add=(score,t,c,q)=>ideas.push({score,t,c,q});
+  const up=Object.entries(now).filter(([k,v])=>k!==UNK&&avg[k]&&v>avg[k]*1.2&&v-avg[k]>300).sort((a,b)=>(b[1]-avg[b[0]])-(a[1]-avg[a[0]]))[0];
+  if(up)add(90,"להבין","#f5b94a",`למה ${up[0]} יצא ב${mc} ${money(up[1])}, יותר מהרגיל?`);
+  const d=T.inn-T.out,d1=T1.inn-T1.out;add(60,"להבין","#f5b94a",`למה ${mc} ${d>=d1?"טוב":"פחות טוב"} מ${mp}?`);
+  const card=L.concat(txnsIn([p1])).filter(t=>t.src!=="bank"&&t.chg&&t.chg>td).reduce((a,t)=>a-t.amt,0);
+  if(card>500)add(80,"לתכנן","#7aa2ff",`כמה יישאר בחשבון אחרי חיוב האשראי של ${money(card)}?`);
+  const unk={};for(const t of L)if(t.cat===UNK&&t.amt<0){const k=ruleKey(t.desc);unk[k]=(unk[k]||0)-t.amt}const u=Object.entries(unk).sort((a,b)=>b[1]-a[1])[0];
+  if(u&&u[1]>100)add(70,"לסדר","#c08cff",`מה זה "${u[0]}" ואיזו קטגוריה מתאימה?`);
+  const js=S.jars||[];const g=js.find(j=>j.goal&&j.amount<j.goal);
+  if(g)add(75,"כסף בצד","#8f91ff",`מתי נגיע ליעד של "${g.name}"?`);else if(!js.length){const free=Math.max(1000,r(Math.max(0,d1)*0.3));add(65,"כסף בצד","#8f91ff",`שים בצד ${money(free)} מהחודש לקופה`)}
+  const outAvg=past.length?past.reduce((a,m)=>a+totals(txnsIn([m])).out,0)/past.length:T.out;add(55,"לחסוך","#ff7d8a",`איפה הכי קל לחסוך ${money(Math.max(500,r(outAvg*0.05)))} בחודש?`);
+  const rest=RN("מסעדות ומשלוחים");if((avg[rest]||0)>800)add(68,"לחסוך","#ff7d8a",`כמה הוצאנו על ${rest} בשלושה חודשים, ואיך זה בהשוואה?`);
+  const big=L.filter(t=>t.amt<0&&t.kind!=="int").sort((a,b)=>a.amt-b.amt)[0];if(big&&-big.amt>1500)add(50,"להבין","#f5b94a",`מה ההוצאות הכי גדולות ב${mc}?`);
+  const fx=(()=>{try{return recurring()}catch(_){return[]}})();const subs=fx.filter(x=>x.g===RN("תקשורת ומנויים"));if(subs.length>=4)add(58,"לחסוך","#ff7d8a",`כמה עולים לנו כל המנויים (${subs.length}), ואיזה אפשר לבטל?`);
+  if(d<0)add(85,"לתכנן","#7aa2ff",`מה אפשר לעשות כדי לסגור את ${mc} בפלוס?`);else if(dn>=20)add(52,"לתכנן","#7aa2ff",`כמה צפוי להישאר בסוף ${mc}?`);
+  add(40,"לפני קנייה","#5ef0a4",`אפשר להרשות לעצמנו קנייה של ${money(Math.max(2000,r(Math.max(0,d)*0.5)))} החודש?`);
+  const mo=+cur.slice(5);if(mo>=10)add(45,"לתכנן","#7aa2ff",`כמה כדאי להפריש מעכשיו לחופשה בדצמבר?`);
+  let asked=[];try{asked=JSON.parse(ls.get("cf.asked","[]"))}catch(_){}
+  const seed=+td.replace(/-/g,"");return ideas.filter(i=>!asked.includes(i.q)).map(i=>({...i,score:i.score+((seed*31+i.q.length*7)%17)})).sort((a,b)=>b.score-a.score).slice(0,6).map(i=>[i.t,i.c,i.q]);
+}catch(_){return[["לחסוך","#ff7d8a","איפה הכי קל לנו לחסוך ₪1,000 בחודש?"]]}};
+function aiContext(){const cur=nowYm(),td=today();const bal=S.sync&&typeof S.sync.balance==="number"?Math.round(S.sync.balance):null;
+  const months=[0,1,2,3,4,5].map(i=>addM(cur,-i)).filter(m=>S.months[m]).map(m=>{const t=totals(txnsIn([m]));return{month:m,in:Math.round(t.inn),out:Math.round(t.out)}});
+  const list=txnsIn([cur]),exp={};for(const t of list){if(t.kind==="int"||t.amt>=0)continue;exp[t.cat]=(exp[t.cat]||0)-t.amt}
+  const card=list.concat(txnsIn([addM(cur,-1)])).filter(t=>t.src!=="bank"&&t.chg&&t.chg>td).reduce((a,t)=>a-t.amt,0);
+  const unk={};for(const t of list)if(t.cat===UNK&&t.amt<0){const k=fxKey(t.desc);unk[k]=(unk[k]||0)-t.amt}
+  return{today:td,bankBalance:bal,setAside:jarsSum(),freeToUse:bal==null?null:bal-jarsSum(),jars:(S.jars||[]).map(j=>({id:j.id,name:j.name,amount:j.amount,goal:j.goal||null,monthly:j.monthly||null})),
+    upcomingCardCharge:Math.round(card),months,thisMonthExpensesByCategory:Object.fromEntries(Object.entries(exp).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k,Math.round(v)])),
+    fixedIncome:recurringIncome().map(x=>({name:x.name,avgMonthly:Math.round(x.avg),variable:x.variable})),fixedCharges:recurring().map(x=>({key:x.key,name:x.name,group:x.g,avgMonthly:Math.round(x.avg),dayOfMonth:x.day,paidThisMonth:!!x.curAmt})),
+    merchantInfo:(()=>{const out={},q=(([...S.ai.msgs].reverse().find(m=>m.role==="user")||{}).content||"").toLowerCase(),M=S.merch||{};for(const t of txnsIn([cur,addM(cur,-1)])){const n=merName(t.desc),i=M[n.toLowerCase()];if(i&&!out[n])out[n]=i.w+(i.p?" · "+i.p:"")}for(const k in M){if(q&&k.length>=4&&q.includes(k)){const i=M[k];out[k]=i.w+(i.p?" · "+i.p:"")}}return out})(),
+    unclassifiedThisMonth:Object.entries(unk).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>({merchant:k,total:Math.round(v)})),categories:allCats().map(c=>c.n)}}
+const SHORTQ="(שאלה מהירה על חיוב אחד) ענה קצר מאוד: עד 3 שורות קצרות בלבד — מה העסק בגדול ומה כנראה נקנה שם. בלי נקודות, בלי פירוט ובלי שאלה בסוף. אם החיוב לא מסווג, שורה אחרונה: \"קטגוריה: …\" ואפשר להוסיף בלוק actions עם rule_add.";
+const AI_RULES=`אתה העוזר הפיננסי בתוך האתר "תזרים הבית" של רן וטל. ענה בעברית ובמספרים ב־₪. הסתמך רק על הנתונים שבהודעה הזו; אם חסר מידע, אמור זאת. merchantInfo מכיל מידע שנאסף מראש מחיפוש באינטרנט על כל בית עסק (מה הוא ואיפה) — השתמש בו כשמבקשים לדעת מה חיוב מסוים.
+קישורים: כשאתה מזכיר בית עסק או חיוב מסוים שאפשר לראות ברשימת התנועות, כתוב אותו כך: [[הטקסט שמוצג|מילת חיפוש|YYYY-MM]] — מילת החיפוש היא חלק קצר משם בית העסק בדיוק כפי שמופיע בנתונים (באותיות ובשפה של הנתונים), והחודש הוא החודש שבו החיוב מופיע. עד 3 קישורים בתשובה, רק כשזה עוזר.
+סגנון: התשובה מוצגת על מסך טלפון קטן. פתח במשפט אחד שעונה ישר על השאלה. אחריו, אם צריך, עד 3–5 נקודות קצרות (שורה אחת כל אחת), כל אחת עם המספר הרלוונטי. בלי הקדמות, בלי לחזור על השאלה, בלי סיכום בסוף. בדרך כלל עד כ־80 מילים. קצר לא אומר שטחי: חשוב בכל הכוח, ואל תשמיט מספר או אזהרה חשובים. אם יש עוד מה לפרט, סיים בשורה קצרה כמו "רוצים פירוט לפי חודשים?".
+"קופות" (jars) הן כסף ששמים בצד באופן וירטואלי: הכסף נשאר בעובר ושב, ורק מוצג כתפוס. אתה לא מזיז כסף אמיתי.
+כשמבקשים לשנות משהו, אל תגיד שזה בוצע — הצע, ובסוף התשובה הוסף בלוק:
+\`\`\`actions
+[ ...פעולות... ]
+\`\`\`
+פעולות מותרות בלבד:
+{"type":"jar_create","name":"...","amount":מספר,"goal":מספר|null,"monthly":מספר|null}
+{"type":"jar_update","id":"...","name"?:"...","amount"?:מספר,"goal"?:מספר,"monthly"?:מספר}
+{"type":"jar_delete","id":"..."}
+{"type":"rule_add","match":"טקסט בתיאור","category":"קטגוריה מהרשימה"}
+{"type":"fixed_rename","key":"...","name":"..."}
+{"type":"fixed_group","key":"...","group":"שם קטגוריה מהרשימה"}
+{"type":"fixed_hide","key":"..."}
+{"type":"fixed_include","key":"..."}
+{"type":"cat_rename","from":"שם קיים מהרשימה","to":"שם חדש"}
+הפעולות יבוצעו רק אחרי שרן או טל ילחצו "אישור". אם אין מה לשנות, אל תוסיף את הבלוק.`;
+const actLabel=a=>({jar_create:`קופה חדשה "${a.name}" עם ${money(+a.amount||0)}${a.goal?` (יעד ${money(+a.goal)})`:""}${a.monthly?`, ${money(+a.monthly)} בחודש`:""}`,
+  jar_update:`עדכון הקופה "${((S.jars||[]).find(j=>j.id===a.id)||{}).name||a.id}"${a.amount!=null?` ל־${money(+a.amount)}`:""}${a.goal!=null?`, יעד ${money(+a.goal)}`:""}${a.name?`, שם "${a.name}"`:""}`,
+  jar_delete:`מחיקת הקופה "${((S.jars||[]).find(j=>j.id===a.id)||{}).name||a.id}"`,
+  rule_add:`חוק: "${a.match}" ← ${a.category}`,fixed_rename:`שינוי שם: ${a.key} ← "${a.name}"`,
+  fixed_group:`העברה לקטגוריה: ${a.key} ← ${a.group}`,fixed_hide:`הסרה מהחיובים הקבועים: ${a.key}`,fixed_include:`הוספה לחיובים הקבועים: ${a.key}`,cat_rename:`שינוי שם קטגוריה: "${a.from}" ← "${a.to}"`}[a.type]||a.type);
+function splitActions(t){const m=t.match(/```actions\s*([\s\S]*?)```/);let acts=[];if(m){try{const v=JSON.parse(m[1]);if(Array.isArray(v))acts=v.filter(x=>x&&typeof x.type==="string")}catch(_){}}
+  const i=t.indexOf("```actions");return{text:(i>=0?t.slice(0,i):t).trim(),acts}}
+async function applyActions(acts){const fx={rename:{},group:{},hide:[],include:[],...(S.fx||{})};let fxCh=false,rCh=false;
+  for(const a of acts){try{
+    if(a.type==="jar_create"){const id="j"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);await put("jars/"+id,{name:String(a.name||"קופה"),amount:+a.amount||0,goal:a.goal!=null?+a.goal:null,monthly:a.monthly!=null?+a.monthly:null,created:today()})}
+    else if(a.type==="jar_update"){const j=(S.jars||[]).find(x=>x.id===a.id);if(j){const n={name:j.name,amount:j.amount,goal:j.goal??null,monthly:j.monthly??null,created:j.created||today()};for(const k of["name","amount","goal","monthly"])if(a[k]!=null)n[k]=k==="name"?String(a[k]):+a[k];await put("jars/"+a.id,n)}}
+    else if(a.type==="jar_delete"){if(db)await db.doc("jars/"+a.id).delete()}
+    else if(a.type==="rule_add"){if(a.match&&a.category){S.rules.unshift({m:String(a.match),c:String(a.category)});rCh=true}}
+    else if(a.type==="fixed_rename"){fx.rename={...fx.rename,[a.key]:String(a.name)};fxCh=true}
+    else if(a.type==="fixed_group"){fx.group={...fx.group,[a.key]:String(a.group)};fxCh=true}
+    else if(a.type==="cat_rename"){await renameCat(String(a.from||""),String(a.to||""))}
+    else if(a.type==="fixed_include"){fx.include=[...new Set([...(fx.include||[]),a.key])];fx.hide=(fx.hide||[]).filter(k=>k!==a.key);fxCh=true}
+    else if(a.type==="fixed_hide"){fx.hide=[...new Set([...(fx.hide||[]),a.key])];fxCh=true}
+  }catch(_){}}
+  if(rCh)await put("config/rules",{list:S.rules});if(fxCh){S.fx=fx;await put("config/fixed",fx)}toast("בוצע");render()}
+let aiCtl=null;
+function aiScroll(){const th=$("#aiThread");if(!th)return;if(document.body.classList.contains("aichat")){th.scrollTop=th.scrollHeight;return}const el=th.lastElementChild;if(!el)return;const r=el.getBoundingClientRect(),lim=innerHeight-160;if(r.bottom>lim)scrollBy({top:r.bottom-lim,behavior:"smooth"})}
+async function aiAsk(q,raw){q=String(q||"").trim();if(!q||S.ai.busy)return;try{const a=JSON.parse(ls.get("cf.asked","[]"));a.unshift(q);ls.set("cf.asked",JSON.stringify(a.slice(0,30)))}catch(_){}let sample=null;try{sample=window.claude?await window.claude.use("sample"):null}catch(_){sample=null}
+  try{document.activeElement&&document.activeElement.blur()}catch(_){}if(!aiChat())S.ai.msgs=[];S.ai.open=true;S.ai.jump=false;S.ai.msgs.push(raw?{role:"user",content:q,raw:q+"\n\n"+raw}:{role:"user",content:q});S.ai.draft="";S.ai.busy=true;S.ai.live="";render();requestAnimationFrame(aiScroll);
+  if(!sample){S.ai.busy=false;S.ai.msgs.push({role:"assistant",content:"אי אפשר לשאול את Claude מכאן כרגע. פתחו את האתר בתוך Claude ונסו שוב."});render();return}
+  aiCtl=new AbortController();
+  const turns=[{role:"user",content:AI_RULES+"\n\nנתוני הבית (JSON):\n"+JSON.stringify(aiContext())},...S.ai.msgs.slice(-10).map(m=>({role:m.role,content:m.raw||m.content}))];
+  try{const{text}=await sample(turns,{cache:false,signal:aiCtl.signal,onText:({text})=>{S.ai.live=aiPlain(splitActions(text).text);const el=$("#aiLive");if(el){el.textContent=S.ai.live;const th=$("#aiThread");if(th&&th.scrollHeight-th.scrollTop-th.clientHeight<120)th.scrollTop=th.scrollHeight}}});
+    const sp=splitActions(text);S.ai.msgs.push({role:"assistant",content:sp.text||"✓",raw:text,acts:sp.acts,state:sp.acts.length?"pending":null})}
+  catch(e){const map={not_granted:"צריך לאשר ל־Claude לענות מתוך האתר.",sampling_disabled:"Claude לא זמין בחשבון הזה.",rate_limited:"יותר מדי שאלות ברצף. נסו שוב עוד מעט.",cancelled:"",refused:"Claude לא יכול לענות על זה."};
+    const t=(e&&e.text)||"",msg=map[e&&e.code]??"משהו השתבש. נסו שוב.";if(t||msg)S.ai.msgs.push({role:"assistant",content:(splitActions(t).text?splitActions(t).text+"\n\n":"")+msg})}
+  S.ai.busy=false;S.ai.live="";aiCtl=null;render();requestAnimationFrame(aiScroll)}
+const STAR_SVG='<i class="cmark"></i>';
+
+/* ---------- Claude noticed: change detection after each sync ---------- */
+S.rv={};
+const tokens=s=>new Set(String(s).toLowerCase().split(/[^a-zא-ת0-9]+/).filter(w=>w.length>=4&&!/^(google|subs|monthly|בע|חיוב)$/.test(w)));
+function reviewItems(){const cur=nowYm(),p1=addM(cur,-1),p2=addM(cur,-2),p3=addM(cur,-3),p4=addM(cur,-4);if(!S.months[p1])return[];
+  const R=recurring(),keys=new Set(R.map(x=>x.key)),out=[],mn=m=>MONTHS[+m.slice(5)-1];
+  const seen={};for(const m of[cur,p1,p2,p3,p4])for(const t of txnsIn([m])){if(t.amt>=0||t.kind==="int")continue;const k=fxKey(t.desc);const o=seen[k]=seen[k]||{key:k,name:t.desc.replace(/\s+\d[\d\s\-\/]*$/,"").trim(),cat:t.cat,pm:{},n:{}};o.pm[m]=(o.pm[m]||0)-t.amt;o.n[m]=(o.n[m]||0)+1}
+  const fresh=Object.values(seen).filter(o=>!keys.has(o.key)&&(o.pm[cur]||o.pm[p1])&&!o.pm[p3]&&!o.pm[p4]&&Math.max(...Object.values(o.n))<=2);
+  for(const x of R){
+    if(x.flag==="miss"){const tk=tokens(x.name);const okAmt=o=>{const a=o.pm[cur]||o.pm[p1];return a>=x.avg*.5&&a<=x.avg*8};const y=fresh.find(o=>okAmt(o)&&[...tokens(o.name)].some(w=>tk.has(w)))||fresh.find(o=>okAmt(o)&&o.cat===x.cat&&o.cat!==UNK&&/מנוי|תקשורת/.test(o.cat));
+      if(y){const a=Math.round(y.pm[cur]||y.pm[p1]);const first=y.pm[p2]?p2:y.pm[p1]?p1:cur;
+        out.push({id:"swap|"+x.key+"|"+y.key,text:`המנוי <b>${esc(x.name)}</b> (${money(x.avg)}) הפסיק לרדת, וב${mn(first)} התחיל חיוב חדש: <b>${esc(y.name)}</b> על ${money(a)}. נראה שהתחלף. להחליף את השורה בקבועים?`,
+          ctx:`${x.name} (${Math.round(x.avg)} ₪ בחודש) הפסיק לרדת, ובמקביל התחיל ${y.name} (${a} ₪).`,
+          btns:[["להחליף",(()=>{const c=x.cat&&x.cat!==UNK?x.cat:RN("תקשורת ומנויים"),tk=[...tokens(y.name)].filter(w=>!/^(chatgpt|subs)$/.test(w))[0]||y.key;const a=[{type:"fixed_hide",key:x.key},{type:"fixed_include",key:y.key},{type:"fixed_rename",key:y.key,name:x.name.replace(/^google\s+/i,"")},{type:"fixed_group",key:y.key,group:c}];if(y.cat!==c)a.push({type:"rule_add",match:tk,category:c});return a})()],["לא, זה משהו אחר",null]]})}
+      else out.push({id:"miss|"+x.key+"|"+cur,text:`<b>${esc(x.name)}</b> (${money(x.avg)}) עוד לא ירד ב${mn(cur)}, למרות שבדרך כלל יורד ב־${x.day} לחודש.`,
+          ctx:`${x.name} (${Math.round(x.avg)} ₪) לא ירד החודש, בדרך כלל יורד ב-${x.day} לחודש.`,
+          btns:[["שולם בדרך אחרת",null],["הסתיים",[{type:"fixed_hide",key:x.key}]]]})}
+    else if(x.flag==="up")out.push({id:"up|"+x.key+"|"+Math.round(x.lastM),text:`<b>${esc(x.name)}</b> עלה ל־${money(x.lastM)} בחודש שעבר (בדרך כלל ${money(x.prevAvg)}).`,
+        ctx:`${x.name} עלה ל-${Math.round(x.lastM)} ₪ (בדרך כלל ${Math.round(x.prevAvg)} ₪).`,btns:[["בסדר, ידוע",null]]})}
+  const used=new Set(out.filter(o=>o.id.startsWith("swap|")).map(o=>o.id.split("|")[2]));
+  for(const o of Object.values(seen)){if(keys.has(o.key)||used.has(o.key)||o.cat===UNK)continue;if(!(o.pm[p1]&&o.pm[p2])||o.pm[p3]||o.pm[p4])continue;
+    if(Math.max(o.n[p1]||0,o.n[p2]||0)>1)continue;const a=o.pm[p1],b=o.pm[p2];if(Math.max(a,b)/Math.min(a,b)>1.3||a<15)continue;
+    out.push({id:"new|"+o.key,text:`<b>${esc(o.name)}</b> מופיע כל חודש מאז ${mn(p2)} (${money(a)}). להוסיף אותו לחיובים הקבועים?`,ctx:`${o.name} מופיע כל חודש מאז ${mn(p2)}, ${Math.round(a)} ₪.`,
+      btns:[["להוסיף",[{type:"fixed_include",key:o.key}]],["לא, זה לא קבוע",null]]})}
+  return out.filter(i=>!S.rv[i.id]||S.rv[i.id].state==="later").map(i=>({...i,later:!!(S.rv[i.id]&&S.rv[i.id].state==="later")}))}
+const rvDocId=id=>{const a=String(id).replace(/[^A-Za-z0-9_\-.~:@+]/g,"_");if(a===String(id).replace(/[ |*]/g,"_")&&!/[^\x00-\x7f]/.test(id))return a;let h=5381;for(const c of String(id))h=((h<<5)+h+c.codePointAt(0))>>>0;return "r"+h.toString(36)+"_"+String(id).length};
+const openReviews=()=>reviewItems().filter(i=>!i.later);
+async function answerReview(id,bi){const it=reviewItems().find(x=>x.id===id);if(!it)return;const b=it.btns[bi];S.rv[id]={state:b[1]?"done":"no",at:today()};render();
+  if(b[1])await applyActions(b[1]);if(db&&!S.demo){try{await db.doc("review/"+rvDocId(id)).set({id,state:S.rv[id].state,at:today()})}catch(_){}}toast("נשמר")}
+function talkAbout(id){const it=reviewItems().find(x=>x.id===id);if(!it)return;S.rv[id]={state:"talk",at:today()};if(db&&!S.demo){try{db.doc("review/"+rvDocId(id)).set({id,state:"talk",at:today()})}catch(_){}}S.ai.msgs=[{role:"assistant",content:it.text.replace(/<[^>]+>/g,""),raw:"(שאלה שהאתר העלה) "+it.ctx}];S.ai.draft="";S.ai.open=true;S.ai.jump=false;S.tab="ai";ls.set("cf.tab","ai");render();if(!/iPhone|iPad|iPod/.test(navigator.userAgent)&&!(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1))setTimeout(()=>{const q=$("#aiQ");if(q)q.focus()},60)}
+const rvCard=it=>`<div class="rvi" data-rvid="${esc(it.id)}"><button class="rvx" data-rvx="${esc(it.id)}" aria-label="${it.later?"להעלים סופית":"הסתר"}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button><div class="t">${it.text}</div><div class="rvb">${it.btns.map((b,i)=>`<button class="${i===0?"ok":""}" data-rva="${esc(it.id)}" data-rvb="${i}">${b[0]}</button>`).join("")}<span class="rvsp"></span><button class="talk" data-rvt="${esc(it.id)}" aria-label="לדבר על זה"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg></button></div></div>`;
+const rvHide=id=>{const cur=S.rv[id],st=cur&&cur.state==="later"?"gone":"later";S.rv[id]={state:st,at:today()};render();if(db&&!S.demo){try{db.doc("review/"+rvDocId(id)).set({id,state:st,at:today()}).catch(()=>{})}catch(_){}}toast(st==="gone"?"הוסר סופית":"הוסתר")};
+const reviewBlock=()=>{const all=reviewItems(),op=all.filter(i=>!i.later),lt=all.filter(i=>i.later);S.open=S.open||{};if(!all.length)return"";
+  return`${op.length?`<div class="rvh">שמתי לב ל${op.length===1?"דבר אחד":op.length+" דברים"}</div><div class="rvl">${op.map(rvCard).join("")}</div>`:""}
+  ${lt.length?`<button class="fold2" id="rvLaterFold"><span>הוסתרו (${lt.length})</span><span class="chev${S.open.rvLater?" o":""}">‹</span></button>${S.open.rvLater?`<div class="rvl">${lt.map(rvCard).join("")}</div>`:""}`:""}`};
+function vAi(){const bal=S.sync&&typeof S.sync.balance==="number"?S.sync.balance:null,js=S.jars||[],set=jarsSum();
+  const msgs=S.ai.msgs.map((m,i)=>m.role==="user"?`<div class="amsg me">${esc(m.content)}</div>`:`<div class="amsg cl"><div class="t">${aiFmt(m.content)}</div>${m.acts&&m.acts.length?`<div class="aprop"><div class="h">${m.state==="done"?"בוצע":m.state==="no"?"בוטל":"מה ישתנה אם תאשרו:"}</div>${m.acts.map(a=>`<div class="ai1">• ${esc(actLabel(a))}</div>`).join("")}${m.state==="pending"?`<div class="abtn"><button class="ok" data-aiok="${i}">אישור</button><button data-aino="${i}">ביטול</button></div>`:""}</div>`:""}</div>`).join("");
+  const chat=aiChat();
+  const ask=`<div class="aask${chat?" bottom":""}"><textarea id="aiQ" rows="1" placeholder="${chat?"כתבו תשובה…":"מה תרצו לדעת או לסדר?"}">${esc(S.ai.draft)}</textarea><button id="aiSend" aria-label="שליחה"${S.ai.busy?" disabled":""}><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button></div>`;
+  if(chat)return`<div class="aihdr"><span class="astar">${STAR_SVG}</span><b>Claude</b><button class="aglass txt" id="aiNew"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>שיחה חדשה</button><button class="aglass" id="aiClear" aria-label="חזרה"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button></div>
+  <div class="athread" id="aiThread">${msgs}${S.ai.busy?`<div class="amsg cl"><div class="t" id="aiLive">${esc(S.ai.live)||"חושב…"}</div><button class="linkbtn" id="aiStop">עצירה</button></div>`:""}</div>${ask}`;
+  return`<div class="aihdr"><span class="astar">${STAR_SVG}</span><b>שאלו את Claude</b></div>
+  ${S.ai.msgs.length?(()=>{const lu=[...S.ai.msgs].reverse().find(m=>m.role==="user");return`<button class="acont" id="aiCont"><span class="astar xs">${STAR_SVG}</span><span class="tx"><small>המשך את השיחה</small><span class="q">${esc(lu?lu.content:aiPlain(S.ai.msgs[0].content))}</span></span><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>`})():""}${reviewBlock()}${ask}
+  <span class="gsub">רעיונות לפי מה שקורה החודש</span><div class="aideas">${aiIdeas().map(([t,c,q])=>`<button class="aidea" data-aiq="${esc(q)}"><small style="color:${c}">${t}</small><span>${esc(q)}</span></button>`).join("")}</div>
+  <div class="ajars"><div class="h"><span>כסף בצד</span><span class="num">${money(set)}</span></div>
+    ${bal!=null?`<div class="afree"><span>פנוי לשימוש</span><b class="num">${money(bal-set)}</b></div>`:""}
+    ${js.length?js.map(j=>`<div class="ajar"><span class="n">${esc(j.name)}</span><span class="a num">${money(+j.amount||0)}</span>${j.goal?`<span class="bar"><span style="width:${Math.min(100,(+j.amount||0)/j.goal*100).toFixed(1)}%"></span></span>`:""}<span class="s">${j.goal?"יעד "+money(+j.goal):""}${j.monthly?(j.goal?" · ":"")+money(+j.monthly)+" בחודש":""}</span><button class="linkbtn" data-jdel="${esc(j.id)}">מחיקה</button></div>`).join("")
+    :`<div class="hint">עוד אין קופות.</div>`}</div>`}
+
+view.addEventListener("keydown",e=>{if(e.target.id==="aiQ"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();aiAsk(e.target.value)}});
+
+/* chat: keep header pinned to the visible top (works inside the iframe too) */
+(()=>{const vv=window.visualViewport,rs=document.documentElement.style,B=document.body;let hid=0;const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);if(IOS){B.classList.add("ios");rs.setProperty("--kb",Math.round(Math.max(screen.height,screen.width>screen.height?0:screen.height)*.46)+"px")}
+  const upd=()=>{const vt=vv?vv.offsetTop:0,kbI=B.classList.contains("kb"),top=IOS?0:Math.max(vt,kbI?hid:0),bot=vv?Math.min(innerHeight,vv.offsetTop+vv.height):innerHeight;
+    rs.setProperty("--vvt",top+"px");rs.setProperty("--vvh",Math.max(200,bot-top)+"px");
+    if(B.classList.contains("aichat")&&B.classList.contains("kb")){const th=$("#aiThread");if(th)th.scrollTop=th.scrollHeight}};
+  if(vv){vv.addEventListener("resize",upd);vv.addEventListener("scroll",upd)}addEventListener("resize",upd);addEventListener("scroll",upd,{passive:true});
+  const sen=document.createElement("div");sen.style.cssText="position:fixed;top:0;left:0;width:1px;height:100%;pointer-events:none;visibility:hidden";B.appendChild(sen);
+  if("IntersectionObserver"in window){const th=[];for(let i=0;i<=200;i++)th.push(i/200);
+    new IntersectionObserver(es=>{for(const e of es){hid=e.isIntersecting?Math.max(0,Math.round(e.intersectionRect.top-e.boundingClientRect.top)):0}upd()},{threshold:th}).observe(sen)}
+  const kick=()=>{upd();setTimeout(upd,80);setTimeout(upd,300);setTimeout(upd,600)};
+    const kbOff=()=>{if(!B.classList.contains("kb"))return;B.classList.remove("kb");kick()};
+  setInterval(()=>{if(B.classList.contains("kb")){const a=document.activeElement;if(!a||a.id!=="aiQ"||!document.hasFocus())kbOff()}},300);
+  let ts=null;document.addEventListener("touchstart",e=>{const t=e.touches[0];ts=t?{x:t.clientX,y:t.clientY,m:false}:null},{passive:true});
+  document.addEventListener("touchmove",e=>{const t=e.touches[0];if(ts&&t&&Math.hypot(t.clientX-ts.x,t.clientY-ts.y)>8)ts.m=true},{passive:true});
+  document.addEventListener("touchend",e=>{if(!B.classList.contains("kb")||!ts||ts.m)return;const t=e.target;if(t&&t.closest&&(t.closest("#aiQ")||t.closest("#aiSend")||t.closest("button")))return;const q=$("#aiQ");if(q)q.blur();kbOff()},{passive:true});
+  window.addEventListener("blur",kbOff);document.addEventListener("visibilitychange",()=>{if(document.hidden)kbOff()});
+  let tAt=0;if(IOS)document.addEventListener("touchend",e=>{const q=e.target&&e.target.closest&&e.target.closest("#aiQ");if(!q||document.activeElement===q)return;e.preventDefault();B.classList.add("kb");void q.offsetHeight;void document.body.offsetHeight;q.focus({preventScroll:true});kick()},{passive:false});
+  document.addEventListener("touchstart",e=>{if(e.target&&e.target.closest&&e.target.closest("#aiQ"))tAt=Date.now()},{passive:true,capture:true});
+  document.addEventListener("focusin",e=>{if(e.target&&e.target.id==="aiQ"){B.classList.add("kb");kick()}});
+  document.addEventListener("focusout",e=>{if(e.target&&e.target.id==="aiQ")setTimeout(()=>{const a=document.activeElement;if(!a||a.id!=="aiQ")kbOff()},80)});
+  upd()})();
+/* review: swipe card sideways to hide */
+(()=>{let c=null,x0=0,y0=0,dx=0,lock=null;
+  document.addEventListener("touchstart",e=>{const el=e.target.closest&&e.target.closest(".rvi");if(!el||e.touches.length!==1){c=null;return}c=el;x0=e.touches[0].clientX;y0=e.touches[0].clientY;dx=0;lock=null;c.style.transition="none"},{passive:true});
+  document.addEventListener("touchmove",e=>{if(!c)return;const t=e.touches[0];dx=t.clientX-x0;const dy=t.clientY-y0;if(!lock&&(Math.abs(dx)>8||Math.abs(dy)>8))lock=Math.abs(dx)>Math.abs(dy)?"x":"y";if(lock!=="x")return;if(e.cancelable)e.preventDefault();c.style.transform=`translateX(${dx}px)`;c.style.opacity=String(Math.max(.25,1-Math.abs(dx)/260))},{passive:false});
+  document.addEventListener("touchend",()=>{if(!c)return;const el=c;c=null;if(lock!=="x")return;if(Math.abs(dx)>90){el.style.transition="transform .2s ease-out,opacity .2s";el.style.transform=`translateX(${dx>0?420:-420}px)`;el.style.opacity="0";setTimeout(()=>rvHide(el.dataset.rvid),190)}else{el.style.transition="transform .25s cubic-bezier(.2,.9,.3,1.2),opacity .25s";el.style.transform="";el.style.opacity=""}});
+})();
+/* ---------- boot ---------- */
+S.anchor=nowYm();render();
+const demoTimer=setTimeout(()=>{if(!S.live&&!S.demo)useDemo()},2000);
+(async()=>{
+    try{mcp=window.claude&&await window.claude.use("mcp")}catch(_){mcp=null}
+  try{db=window.claude&&await window.claude.use("db")}catch(_){db=null}
+  if(db){try{const u=await window.claude.use("user");const c=u&&await u.can("data.write");if(c===false)S.canWrite=false}catch(_){}
+    const err=()=>{};
+    db.collection("months").onSnapshot(snap=>{S.live=true;clearTimeout(demoTimer);
+      if(snap.empty){if(!S.demo)useDemo();return}
+      if(S.demo){S.demo=false;S.sync=S.realSync||null}
+      const m={};snap.docs.forEach(d=>{m[d.id]=d.data()});S.months=m;render()},err);
+    db.collection("edits").onSnapshot(s=>{const e={};s.docs.forEach(d=>{e[d.id]=d.data().map||{}});S.edits=e;render()},err);
+    db.collection("forecast").onSnapshot(s=>{const f={};s.docs.forEach(d=>{f[d.id]={...d.data()}});S.fc=f;render()},err);
+    db.doc("config/rules").onSnapshot(s=>{S.rules=(s.exists&&s.data().list)?[...s.data().list]:[];render()},err);
+    db.doc("config/categories").onSnapshot(s=>{S.customCats=(s.exists&&s.data().custom)?[...s.data().custom]:[];S.catRen=(s.exists&&s.data().renames)?{...s.data().renames}:{};render()},err);
+    db.doc("config/forecast").onSnapshot(s=>{S.fcfg=s.exists?{...s.data()}:{};render()},err);
+    db.doc("config/fixed").onSnapshot(s=>{S.fx=s.exists?{...s.data()}:{};render()},err);
+    db.collection("review").onSnapshot(s=>{const r={};s.docs.forEach(d=>{const x=d.data();if(x&&x.id)r[x.id]={state:x.state,at:x.at}});S.rv=r;render()},err);
+    db.collection("merch").onSnapshot(s=>{const m={};for(const d of s.docs){const it=(d.data()||{}).items||{};for(const k in it)m[String(k).toLowerCase()]=it[k]}S.merch=m;render()},err);
+    db.collection("jars").onSnapshot(s=>{S.jars=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.created||"").localeCompare(String(b.created||"")));render()},err);
+    db.doc("config/sync").onSnapshot(s=>{S.realSync=s.exists?s.data():null;if(!S.demo)S.sync=S.realSync;render()},err);
+    setTimeout(()=>syncFinancy(false),2500);
+  }else{clearTimeout(demoTimer);if(!S.demo)useDemo()}
+  render();
+})();
+})();
+</script>
+
+<script type="application/json" id="keenest-manifest">{"mcp": [{"server": "financy", "tools": ["list_accounts", "list_transactions"]}]}</script><script>window.KEENEST_APP="tazrim-bayit";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=1"></script></body></html>

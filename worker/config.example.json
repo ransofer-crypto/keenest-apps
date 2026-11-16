@@ -1,0 +1,11 @@
+{
+  "secret": "PUT-THE-WORKER-SECRET-HERE",
+  "claudePath": "/opt/homebrew/bin/claude",
+  "maxParallel": 4,
+  "toolModel": "haiku",
+  "sampleModel": "sonnet",
+  "serverAliases": {},
+  "apps": {
+    "tazrim-bayit": { "servers": ["financy"] }
+  }
+}

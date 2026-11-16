@@ -1,0 +1,11 @@
+# Keenest apps (app.keenest.co.il)
+Options -Indexes
+DirectoryIndex index.html
+# worker/ and tools/ are code for the office Mac and for building, not web pages
+RedirectMatch 404 ^/(worker|tools)(/.*)?$
+RedirectMatch 404 /\.git
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|webmanifest)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
