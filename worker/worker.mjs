@@ -7,13 +7,17 @@
 //   kind "sample" -> ask Claude, stream the answer back
 // No packages needed (Node 18+). Settings: worker/config.json (see config.example.json).
 import { spawn, execFileSync } from "node:child_process";
-import { readFileSync, mkdirSync, existsSync, appendFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, appendFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import os from "node:os";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const CFG = JSON.parse(readFileSync(join(HERE, "config.json"), "utf8"));
+const CFG_PATH = join(HERE, "config.json");
+const CFG = JSON.parse(readFileSync(CFG_PATH, "utf8"));
+// First run: make our own secret, keep it only on this Mac, and register it once.
+if (!CFG.secret) { CFG.secret = randomBytes(32).toString("base64url"); writeFileSync(CFG_PATH, JSON.stringify(CFG, null, 2)); }
 const SB_URL = CFG.supabaseUrl || "https://ccqpmbcytrcxngnlooon.supabase.co";
 const SB_KEY = CFG.supabaseKey || "sb_publishable_SbkMpYDQN-0FA92vFKeVaA_85mQn7dJ";
 const SECRET = CFG.secret;
@@ -191,6 +195,7 @@ async function loop() {
     await new Promise((r) => setTimeout(r, 1500));
   }
 }
-if (!SECRET) { console.error("config.json is missing secret"); process.exit(1); }
 if (process.argv[2] === "--servers") { console.log(listServers(process.argv[3] || "")); process.exit(0); }
+const ok = await rpc("worker_register", { s: SECRET }).catch((e) => { log("register failed", e.message); return false; });
+if (!ok) { log("This Mac's secret is not the registered one. Ask Claude to reset the worker pairing."); process.exit(1); }
 loop();
