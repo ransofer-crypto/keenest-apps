@@ -108,6 +108,12 @@ function fromSavedFile(text) {
   if (!m) return null;
   try { return readFileSync(m[1], "utf8"); } catch { return null; }
 }
+function expandSaved(c) {
+  const t = typeof c === "string" ? c : Array.isArray(c) ? c.filter((x) => x && x.type === "text").map((x) => x.text).join("") : "";
+  const f = fromSavedFile(t);
+  if (f == null && /saved to/i.test(t)) log("saved result file not readable:", t.slice(0, 200));
+  return f != null ? f : c;
+}
 function parseToolContent(c) {
   if (c == null) return null;
   if (typeof c === "string") { const f = fromSavedFile(c); if (f != null) c = f; }
@@ -136,7 +142,8 @@ async function doMcp(job) {
   let result, isErr = false, sawCall = false;
   await runClaude(job.app, ["--model", CFG.toolModel || "haiku", "--tools", "", "--allowedTools", full, "--max-turns", "3"], prompt, (ev) => {
     if (ev.type === "assistant") for (const b of ev.message?.content || []) if (b.type === "tool_use") sawCall = true;
-    if (ev.type === "user") for (const b of ev.message?.content || []) if (b.type === "tool_result" && result === undefined) { result = b.content; isErr = !!b.is_error; }
+    // read a saved-to-file result right away: the file may be gone once Claude Code exits
+    if (ev.type === "user") for (const b of ev.message?.content || []) if (b.type === "tool_result" && result === undefined) { result = expandSaved(b.content); isErr = !!b.is_error; }
   }, 4 * 60 * 1000);
   if (result === undefined) throw Object.assign(new Error(sawCall ? "the tool gave no result" : `connector "${server}" is not connected on the office Mac`), { code: sawCall ? "tool_error" : "server_not_connected" });
   const payload = parseToolContent(result);
@@ -224,4 +231,5 @@ async function loop() {
 if (process.argv[2] === "--servers") { console.log(listServers(process.argv[3] || "")); process.exit(0); }
 const ok = await rpc("worker_register", { s: SECRET }).catch((e) => { log("register failed", e.message); return false; });
 if (!ok) { log("This Mac's secret is not the registered one. Ask Claude to reset the worker pairing."); process.exit(1); }
+await rpc("worker_hello", { s: SECRET, v: STARTED_AT.slice(0, 7) }).catch(() => {});
 loop();
