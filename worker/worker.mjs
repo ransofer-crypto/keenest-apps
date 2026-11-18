@@ -158,6 +158,33 @@ async function doMcp(job) {
   return { payload, content: Array.isArray(result) ? result : [{ type: "text", text: typeof result === "string" ? result : JSON.stringify(result) }] };
 }
 
+// kind "mcp_all": page a list tool to the end here on the Mac, so the site can be closed meanwhile.
+// payload: { server, tool, input, keep:[top-level fields to keep per item], limit }
+async function doMcpAll(job) {
+  const { server, tool, input = {}, keep = null } = job.payload || {};
+  let lim = Number(job.payload?.limit) || 60, cursor = null, pages = 0;
+  const data = [];
+  const pick = (o) => { if (!keep || !o || typeof o !== "object") return o; const r = {}; for (const k of keep) if (o[k] !== undefined) r[k] = o[k]; return r; };
+  for (;;) {
+    const inp = { ...input, limit: lim }; if (cursor) inp.cursor = cursor;
+    let out = null;
+    for (let i = 0; i < 3 && !out; i++) {
+      try { out = await doMcp({ ...job, payload: { server, tool, input: inp } }); }
+      catch (e) {
+        if (e.code === "RESULT_TOO_LARGE" && lim > 10) { lim = Math.max(10, Math.floor(lim / 2)); inp.limit = lim; i--; continue; }
+        if (i < 2 && ["server_not_connected", "timeout", "claude_failed", "tool_error"].includes(e.code)) { await new Promise((r) => setTimeout(r, 8000)); continue; }
+        throw e;
+      }
+    }
+    const p = out.payload || {};
+    for (const it of p.data || []) data.push(pick(it));
+    cursor = p.nextPage || null; pages++;
+    await update(job.id, "running", { partial: String(data.length) }).catch(() => {});
+    if (!cursor || pages >= 300) break;
+  }
+  return { payload: { data, pages } };
+}
+
 // kind "sample": a plain Claude answer, streamed
 async function doSample(job) {
   const { messages = [], system } = job.payload || {};
@@ -187,7 +214,7 @@ async function handle(job) {
   running.add(job.id);
   const t0 = Date.now();
   try {
-    const result = job.kind === "mcp" ? await doMcp(job) : job.kind === "sample" ? await doSample(job) : { ok: true };
+    const result = job.kind === "mcp" ? await doMcp(job) : job.kind === "mcp_all" ? await doMcpAll(job) : job.kind === "sample" ? await doSample(job) : { ok: true };
     await update(job.id, "done", { result });
     log("done", job.app, job.kind, job.payload?.server || "", job.payload?.tool || "", `${Date.now() - t0}ms`);
   } catch (e) {

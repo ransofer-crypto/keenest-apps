@@ -109,9 +109,15 @@
     opts = opts || {};
     if (!(await macAlive())) throw err("worker_offline", "המחשב במשרד לא מחובר כרגע, אז אי אפשר להריץ את זה עכשיו.");
     ensureJobsChannel();
-    var ins = await sb.from("app_jobs").insert({ app: APP, kind: kind, payload: payload }).select("id").single();
-    if (ins.error) throw err("queue_failed", ins.error.message);
-    var id = ins.data.id, lastPartial = "";
+    var id = null;
+    if (opts.reuse) { var old = await sb.from("app_jobs").select("id,status").eq("id", opts.reuse).maybeSingle(); if (old.data && old.data.status !== "error") id = old.data.id; }
+    if (!id) {
+      var ins = await sb.from("app_jobs").insert({ app: APP, kind: kind, payload: payload }).select("id").single();
+      if (ins.error) throw err("queue_failed", ins.error.message);
+      id = ins.data.id;
+    }
+    if (opts.onQueued) opts.onQueued(id);
+    var lastPartial = "";
     return new Promise(function (resolve, reject) {
       var done = false, poll = null, timer = null;
       function finish(row) {
@@ -131,6 +137,21 @@
   var mcpApi = {
     callTool: async function (server, tool, input) {
       var res = await runJob("mcp", { server: server, tool: tool, input: input || {} }, { timeout: 5 * 60 * 1000 });
+      return res || {};
+    },
+    // Runs the whole paging on the office Mac. If the page was closed mid-pull, the next open picks up the same job.
+    callToolAll: async function (server, tool, input, opts) {
+      opts = opts || {};
+      var key = "kjob." + APP + "." + server + "." + tool, saved = null;
+      try { saved = JSON.parse(localStorage.getItem(key) || "null"); } catch (e) {}
+      var payload = { server: server, tool: tool, input: input || {}, keep: opts.keep || null, limit: opts.limit || 60 };
+      var sig = JSON.stringify(input || {});
+      var res = await runJob("mcp_all", payload, {
+        timeout: 45 * 60 * 1000, onPartial: opts.onProgress ? function (t) { opts.onProgress(Number(t) || 0); } : null,
+        reuse: saved && saved.sig === sig && Date.now() - saved.at < 2 * 3600 * 1000 ? saved.id : null,
+        onQueued: function (id) { try { localStorage.setItem(key, JSON.stringify({ id: id, sig: sig, at: Date.now() })); } catch (e) {} }
+      });
+      try { localStorage.removeItem(key); } catch (e) {}
       return res || {};
     },
     listTools: async function () { return { servers: (MANIFEST.mcp || []).map(function (s) { return { server: s.server, tools: s.tools.map(function (t) { return typeof t === "string" ? { name: t } : t; }) }; }) }; }

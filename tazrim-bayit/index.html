@@ -1270,7 +1270,7 @@ async function syncFinancy(force){
   if(!S.canWrite){finErr="אין הרשאת עריכה באתר";renderSync();return}
   const last=S.realSync&&S.realSync.source==="financy"&&S.realSync.lastRun;
   if(!force&&last&&Date.now()-new Date(last).getTime()<3*36e5)return;
-  finBusy=true;finErr="";$("#syncText").textContent="מושך מ־Financy…";$("#syncDot").className="dot";
+  finBusy=true;finErr="";$("#syncText").textContent="מושך מ־Financy במחשב במשרד…";$("#syncDot").className="dot";
   await finResolve();
   try{
     const ar=await finCall("list_accounts",{all:true});const accs=ar.data||[];const acc={};let bal=null,balAt=null;const conns=new Set();
@@ -1281,21 +1281,17 @@ async function syncFinancy(force){
     const cur=nowYm();const full=S.realSync&&S.realSync.source==="financy"&&S.realSync.full;let start=have.length&&full?addM(have[have.length-1],-1):addM(cur,-12);if(start>addM(cur,-1))start=addM(cur,-1);
     const ms=[];for(let m=start;m<=addM(cur,1);m=addM(m,1))ms.push(m);
     const byM={};
-    let pages=0,got=0;const toD=eom(addM(cur,1)+"-01");const saved=new Set();let changed=0;
+    const toD=eom(addM(cur,1)+"-01");const saved=new Set();let changed=0;
     const saveM=async m=>{if(saved.has(m))return;saved.add(m);const map=byM[m];if(!map)return;
       const txns=[...map.values()].sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id));
       const prev=S.demo?null:S.months[m];if(prev&&JSON.stringify(prev.txns)===JSON.stringify(txns))return;
       await db.doc("months/"+m).set({month:m,txns,updatedAt:new Date().toISOString()});changed++};
-    let lim=60;
-    for(const conn of (conns.size?[...conns]:[null])){let cursor=null;
-    for(;;){const inp={from:start+"-01",to:toD,limit:lim};if(conn)inp.connection=conn;if(cursor)inp.cursor=cursor;
-      let r;try{r=await finCall("list_transactions",inp)}catch(e){const msg=JSON.stringify((e&&e.result)||"")+String(e&&e.message);
-        if((/too large|RESULT_TOO_LARGE/i.test(msg)||/^(timeout|claude_failed)$/.test((e&&e.code)||""))&&lim>25){lim=Math.max(25,Math.floor(lim/2));continue}throw e}
-      for(const t of (r.data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;got++;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}
-      cursor=r.nextPage||null;pages++;$("#syncText").textContent="מושך מ־Financy… "+got+" תנועות";
-      if(conns.size<=1&&cursor){let lo=null;for(const t of (r.data||[])){const o=finMap(t,acc);if(o&&(!lo||o.d<lo))lo=o.d}
-        if(lo){const sf=new Date(lo+"T12:00:00Z");sf.setUTCDate(sf.getUTCDate()+10);const cut=sf.toISOString().slice(0,7);for(const m of ms)if(m>cut)await saveM(m)}}
-      if(!cursor||pages>=200)break;}}
+    const KEEP=["id","type","date","accountId","accountNumber","amount","merchantName","description","isCreditCardInstallment","status","category","changedCategory","isDuplicate"];
+    for(const conn of (conns.size?[...conns]:[null])){const inp={from:start+"-01",to:toD};if(conn)inp.connection=conn;
+      const r=mcp.callToolAll?await mcp.callToolAll(FIN_SERVER,"list_transactions",inp,{keep:KEEP,limit:60,onProgress:n=>{$("#syncText").textContent="מושך מ־Financy במחשב במשרד… "+n+" תנועות"}})
+        :{payload:await finCall("list_transactions",{...inp,all:true})};
+      let rp=r&&r.payload;if(typeof rp==="string"){try{rp=JSON.parse(rp)}catch(_){rp={}}}
+      for(const t of ((rp||{}).data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}}
     saved.clear();for(const m of ms)await saveM(m);
     await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",full:true,balance:bal,balanceAt:balAt,changedMonths:changed});
     if(force)toast(changed?`עודכנו ${changed} חודשים מ־Financy`:"הכול מעודכן");
