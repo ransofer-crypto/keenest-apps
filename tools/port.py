@@ -17,6 +17,13 @@ def fix(m):
 html = re.sub(r"(<script\b[^>]*>)(.*?)</script>", fix, html, flags=re.S)
 sys.path.insert(0, str(pathlib.Path(__file__).parent)); from defer_after import defer_after
 
+has_icons = (out / "icons" / "apple-180.png").exists()
+icon_link = ('<link rel="apple-touch-icon" href="icons/apple-180.png?v=1"><link rel="icon" type="image/png" href="icons/icon-192.png?v=1">'
+             if has_icons else '<link rel="apple-touch-icon" href="../shared/logo.png">')
+icon_list = ([{"src": "icons/icon-192.png?v=1", "sizes": "192x192", "type": "image/png"},
+              {"src": "icons/icon-512.png?v=1", "sizes": "512x512", "type": "image/png"},
+              {"src": "icons/icon-512.png?v=1", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]
+             if has_icons else [{"src": "../shared/logo.png", "sizes": "512x512", "type": "image/png"}])
 title = re.search(r"<title>(.*?)</title>", html, re.S)
 title = title.group(1).strip() if title else app
 head_add = ('<link rel="manifest" href="manifest.webmanifest">'
@@ -24,7 +31,7 @@ head_add = ('<link rel="manifest" href="manifest.webmanifest">'
             '<meta name="mobile-web-app-capable" content="yes">'
             '<meta name="apple-mobile-web-app-status-bar-style" content="default">'
             f'<meta name="apple-mobile-web-app-title" content="{title}">'
-            '<link rel="apple-touch-icon" href="../shared/logo.png">')
+            + icon_link)
 html = html.replace("</title>", "</title>" + head_add, 1)
 tail = (f'<script type="application/json" id="keenest-manifest">{json.dumps(manifest, ensure_ascii=False)}</script>'
         f'<script>window.KEENEST_APP={json.dumps(app)};</script>'
@@ -39,5 +46,5 @@ out.mkdir(parents=True, exist_ok=True)
 (out / "manifest.webmanifest").write_text(json.dumps({
     "name": title, "short_name": title, "lang": "he", "dir": "rtl", "start_url": "./", "scope": "./",
     "display": "standalone", "background_color": "#E6E9EC", "theme_color": "#E6E9EC",
-    "icons": [{"src": "../shared/logo.png", "sizes": "512x512", "type": "image/png"}]}, ensure_ascii=False, indent=1), encoding="utf-8")
+    "icons": icon_list}, ensure_ascii=False, indent=1), encoding="utf-8")
 print("ok", out / "index.html")
