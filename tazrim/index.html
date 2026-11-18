@@ -2388,7 +2388,7 @@ ${batch.map(b=>b.t.id+" | "+b.t.d+" | "+Math.abs(b.t.amt)+" ₪ | "+b.why0).join
 Reply with ONLY a JSON object, no prose: {"<id>": {"c": "<category exactly as listed>", "why": "<short Hebrew reason, max 8 words>"}}. Empty object {} if none.`;
         try{const{text}=await sample([{role:"user",content:prompt}],{cache:false});const a=text.indexOf("{"),b=text.lastIndexOf("}");
           const res=a>=0?JSON.parse(text.slice(a,b+1)):{};const ok=new Set(allCats().map(x=>x.n));
-          for(const x of batch){const r=res[x.t.id];if(r&&ok.has(r.c))(out[x.m]=out[x.m]||{})[x.t.id]={c:r.c,auto:true,why:String(r.why||"Claude").slice(0,90)}}
+          for(const x of batch){const r=res[x.t.id];if(r&&ok.has(r.c)&&r.c!=="כללי"&&r.c!==UNK)(out[x.m]=out[x.m]||{})[x.t.id]={c:r.c,auto:true,why:String(r.why||"Claude").slice(0,90)}}
           const np={...tried};for(const x of batch)np[x.t.id]=now;await db.doc("config/research").set({...(S.research||{}),pay:np})}catch(_){}}}
     for(const[m,map]of Object.entries(out)){const cur={...(S.edits[m]||{})};let n=0;for(const id in map)if(!cur[id]){cur[id]=map[id];n++}
       if(n){S.edits[m]=cur;await db.doc("edits/"+m).set({map:cur,updatedAt:new Date().toISOString()})}}
