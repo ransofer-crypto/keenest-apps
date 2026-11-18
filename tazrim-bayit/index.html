@@ -1282,10 +1282,10 @@ async function syncFinancy(force){
     const ms=[];for(let m=start;m<=addM(cur,1);m=addM(m,1))ms.push(m);
     const byM={};
     let cursor=null,pages=0,got=0;const toD=eom(addM(cur,1)+"-01");
-    let lim=40;
+    let lim=250;
     for(;;){const inp={from:start+"-01",to:toD,limit:lim};if(cursor)inp.cursor=cursor;
       let r;try{r=await finCall("list_transactions",inp)}catch(e){const msg=JSON.stringify((e&&e.result)||"")+String(e&&e.message);
-        if(/too large|RESULT_TOO_LARGE/i.test(msg)&&lim>5){lim=Math.max(5,Math.floor(lim/2));continue}throw e}
+        if((/too large|RESULT_TOO_LARGE/i.test(msg)||(e&&e.code)==="timeout")&&lim>25){lim=Math.max(25,Math.floor(lim/2));continue}throw e}
       for(const t of (r.data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;got++;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}
       cursor=r.nextPage||null;pages++;$("#syncText").textContent="מושך מ־Financy… "+got+" תנועות";
       if(!cursor||pages>=200)break;}
