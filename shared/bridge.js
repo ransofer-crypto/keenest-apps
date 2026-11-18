@@ -86,16 +86,44 @@
       onSnapshot: function (cb, onErr) { var s = { c: c, i: i, cb: cb }; docSubs.push(s); dbReady.then(function () { cb(docSnap(c, i)); }, function (e) { onErr && onErr(e); }); return function () { docSubs = docSubs.filter(function (x) { return x !== s; }); }; }
     };
   }
-  function collRef(name) {
-    var c = String(name).replace(/^\/+|\/+$/g, "");
-    return {
+  // queries are worked out here in the page (all of a site's docs are already loaded)
+  var OPS = {
+    "==": function (a, b) { return a === b; }, "eq": function (a, b) { return a === b; },
+    "!=": function (a, b) { return a !== b; }, "ne": function (a, b) { return a !== b; },
+    "<": function (a, b) { return a < b; }, "lt": function (a, b) { return a < b; },
+    "<=": function (a, b) { return a <= b; }, "lte": function (a, b) { return a <= b; },
+    ">": function (a, b) { return a > b; }, "gt": function (a, b) { return a > b; },
+    ">=": function (a, b) { return a >= b; }, "gte": function (a, b) { return a >= b; },
+    "in": function (a, b) { return (b || []).indexOf(a) >= 0; }, "not-in": function (a, b) { return (b || []).indexOf(a) < 0; },
+    "array-contains": function (a, b) { return Array.isArray(a) && a.indexOf(b) >= 0; },
+    "array-contains-any": function (a, b) { return Array.isArray(a) && (b || []).some(function (x) { return a.indexOf(x) >= 0; }); }
+  };
+  function getF(d, f) { return String(f).split(".").reduce(function (o, k) { return o == null ? undefined : o[k]; }, d); }
+  function makeQuery(c, q) {
+    function snap() {
+      var base = collSnap(c), docs = base.docs.slice();
+      q.where.forEach(function (w) { var fn = OPS[w[1]] || OPS["=="]; docs = docs.filter(function (d) { return fn(getF(d.data(), w[0]), w[2]); }); });
+      q.order.forEach(function (o) { });
+      if (q.order.length) docs.sort(function (A, B) {
+        for (var k = 0; k < q.order.length; k++) { var f = q.order[k][0], dir = q.order[k][1] === "desc" ? -1 : 1; var a = getF(A.data(), f), b = getF(B.data(), f);
+          if (a === b) continue; if (a == null) return 1; if (b == null) return -1; return (a < b ? -1 : 1) * dir; }
+        return 0; });
+      if (q.lim != null) docs = docs.slice(0, q.lim);
+      return { empty: docs.length === 0, size: docs.length, docs: docs, forEach: function (f) { docs.forEach(f); } };
+    }
+    var api = {
       id: c, path: c,
+      where: function (f, op, v) { return makeQuery(c, { where: q.where.concat([[f, op, v]]), order: q.order, lim: q.lim }); },
+      orderBy: function (f, dir) { return makeQuery(c, { where: q.where, order: q.order.concat([[f, dir || "asc"]]), lim: q.lim }); },
+      limit: function (n) { return makeQuery(c, { where: q.where, order: q.order, lim: n }); },
       doc: function (id) { return docRef(c + "/" + (id || Math.random().toString(36).slice(2) + Date.now().toString(36))); },
       add: async function (data) { var d = this.doc(); await d.set(data); return d; },
-      get: async function () { await dbReady; return collSnap(c); },
-      onSnapshot: function (cb, onErr) { var s = { c: c, cb: cb }; collSubs.push(s); dbReady.then(function () { cb(collSnap(c)); }, function (e) { onErr && onErr(e); }); return function () { collSubs = collSubs.filter(function (x) { return x !== s; }); }; }
+      get: async function () { await dbReady; return snap(); },
+      onSnapshot: function (cb, onErr) { var s = { c: c, cb: function () { cb(snap()); } }; collSubs.push(s); dbReady.then(function () { cb(snap()); }, function (e) { onErr && onErr(e); }); return function () { collSubs = collSubs.filter(function (x) { return x !== s; }); }; }
     };
+    return api;
   }
+  function collRef(name) { return makeQuery(String(name).replace(/^\/+|\/+$/g, ""), { where: [], order: [], lim: null }); }
   var dbApi = { doc: docRef, collection: collRef };
 
   /* ---------------- jobs (Mac) ---------------- */
