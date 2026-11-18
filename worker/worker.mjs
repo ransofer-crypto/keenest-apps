@@ -104,7 +104,7 @@ function runClaude(app, args, prompt, onEvent, signalMs) {
 
 // Claude Code may put a big tool result in a file and hand back only a note with its path.
 function fromSavedFile(text) {
-  const m = String(text || "").match(/Output has been saved to (\S+?\.(?:txt|json))/);
+  const m = String(text || "").match(/saved to:?\s+(\/\S+?\.(?:txt|json))/i);
   if (!m) return null;
   try { return readFileSync(m[1], "utf8"); } catch { return null; }
 }
