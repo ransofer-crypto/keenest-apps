@@ -1295,11 +1295,23 @@ async function syncFinancy(force){
     saved.clear();for(const m of ms)await saveM(m);
     await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",full:true,balance:bal,balanceAt:balAt,changedMonths:changed});
     if(force)toast(changed?`עודכנו ${changed} חודשים מ־Financy`:"הכול מעודכן");
+    setTimeout(researchMerchants,1500);
   }catch(e){const c=e&&e.code;finErr=({server_not_connected:"Financy לא מחובר לחשבון ה־Claude שלך",needs_reauth:"החיבור ל־Financy פג — מחברים מחדש בהגדרות",not_in_manifest:"צריך לאשר לאתר גישה ל־Financy",approval_required:"צריך לאשר לאתר גישה ל־Financy",selection_required:"יש יותר מחיבור Financy אחד — בחרו אחד"})[c]||("שגיאה מ־Financy: "+(c||"")+" "+String((e&&e.message)||"").slice(0,80));
     if(c==="server_not_connected"||c==="needs_reauth"||c==="not_in_manifest"||c==="approval_required"){if(force)toast(c==="needs_reauth"?"החיבור ל־Financy פג. מחברים מחדש בהגדרות של Claude.":"אין לך חיבור ל־Financy ב־Claude. הנתונים יתעדכנו כשמי שמחובר יפתח את האתר.")}
     else if(force)toast("לא הצלחתי למשוך מ־Financy. נסו שוב בעוד רגע.");
     renderSync()}
   finally{finBusy=false}}
+/* merchants with no description yet → researched on Google in the office Mac's Chrome, written back into "merch" */
+async function researchMerchants(){
+  try{if(!mcp||!mcp.startBackground||S.demo||!S.merch)return;
+    const tried=(S.research&&S.research.tried)||{};const now=Date.now(),seen=new Map();
+    const ms=Object.keys(S.months||{}).sort().slice(-13);
+    for(const m of ms)for(const t of txnsIn([m])){const n=merName(t.desc);if(!n||n.length<2||S.merch[n.toLowerCase()])continue;
+      if(tried[n]&&now-tried[n]<7*864e5)continue;const c=seen.get(n);if(c)c.k++;else seen.set(n,{n,amt:Math.round(Math.abs(t.amt)),src:t.src==="bank"?"בנק":"כרטיס",k:1})}
+    const list=[...seen.values()].sort((a,b)=>b.k-a.k).slice(0,20);if(!list.length)return;
+    const r=await mcp.startBackground("research",{names:list.map(({n,amt,src})=>({n,amt,src})),cats:allCats().map(c=>c.n)},"merch");
+    if(r&&r.id&&!r.running){const nt={...tried};for(const x of list)nt[x.n]=now;await db.doc("config/research").set({tried:nt,at:new Date().toISOString()})}
+  }catch(e){}}
 /* month swipe — wheel follows the finger on an interruptible spring; on commit the data updates in place:
    digits roll (numericText-style), bars spring to their new length, category rows settle in. No blur. */
 (()=>{const v=$("#view"),EASE="cubic-bezier(.32,.72,0,1)";
@@ -1592,10 +1604,11 @@ const demoTimer=setTimeout(()=>{if(!S.live&&!S.demo)useDemo()},2000);
     db.doc("config/forecast").onSnapshot(s=>{S.fcfg=s.exists?{...s.data()}:{};render()},err);
     db.doc("config/fixed").onSnapshot(s=>{S.fx=s.exists?{...s.data()}:{};render()},err);
     db.collection("review").onSnapshot(s=>{const r={};s.docs.forEach(d=>{const x=d.data();if(x&&x.id)r[x.id]={state:x.state,at:x.at}});S.rv=r;render()},err);
+    db.doc("config/research").onSnapshot(x=>{S.research=x.exists?x.data():null},()=>{});
     db.collection("merch").onSnapshot(s=>{const m={};for(const d of s.docs){const it=(d.data()||{}).items||{};for(const k in it)m[String(k).toLowerCase()]=it[k]}S.merch=m;render()},err);
     db.collection("jars").onSnapshot(s=>{S.jars=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.created||"").localeCompare(String(b.created||"")));render()},err);
     db.doc("config/sync").onSnapshot(s=>{S.realSync=s.exists?s.data():null;if(!S.demo)S.sync=S.realSync;render()},err);
-    setTimeout(()=>syncFinancy(false),2500);
+    setTimeout(()=>syncFinancy(false),2500);setTimeout(researchMerchants,9000);
   }else{clearTimeout(demoTimer);if(!S.demo)useDemo()}
   render();
 })();

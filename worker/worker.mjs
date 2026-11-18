@@ -185,6 +185,51 @@ async function doMcpAll(job) {
   return { payload: { data, pages } };
 }
 
+// kind "research": look up unknown merchants on Google in the Mac's real Chrome (Claude in Chrome),
+// then write the descriptions straight into the site's "merch" docs. The site page can be closed.
+// payload: { names: [{ n, amt?, src? }], cats: [category names] }
+async function doResearch(job) {
+  const { names = [], cats = [] } = job.payload || {};
+  const list = names.slice(0, 20);
+  if (!list.length) return { added: 0 };
+  const today = new Date().toISOString().slice(0, 10);
+  const prompt =
+`You identify merchants from an Israeli family's bank and credit-card statements (city: Modiin; work in Kiryat Ono).
+For EACH name below, search Google in Chrome (use the claude-in-chrome browser tools: open one tab, go to https://www.google.com/search?q=<name>, read the results, open a result only if needed).
+Small Israeli businesses are found best this way. Only if the browser tools are not available at all, use WebSearch instead.
+Names are often cut off at ~20 characters and may include a branch/city.
+
+Names (with a sample amount in ILS and source):
+${list.map((x) => "- " + x.n + (x.amt != null ? "  (" + x.amt + " ₪" + (x.src ? ", " + x.src : "") + ")" : "")).join("\n")}
+
+Allowed categories (pick exactly one, spelled exactly): ${cats.join(" | ")}
+
+When done, reply with ONLY one JSON object, no prose, no code fences:
+{"<name exactly as given>": {"w": "<Hebrew, max ~12 words: what it is, e.g. 'רולדין — רשת מאפיות ובתי קפה, סניף מודיעין'>", "p": "<place in Hebrew, or 'אונליין', or ''>", "c": "<category>", "u": "<a useful URL or ''>", "conf": "high|med|low"}, ...}
+If you are not sure, start w with "לא ודאי — " and use conf "low". Never invent. Include every name.`;
+  let final = null, failed = null;
+  const beat = setInterval(() => update(job.id, "running", { partial: "searching" }).catch(() => {}), 60000);
+  try {
+    await runClaude(job.app, ["--chrome", "--model", CFG.researchModel || "sonnet", "--tools", "WebSearch",
+      "--allowedTools", "mcp__claude-in-chrome,WebSearch", "--max-turns", "200"], prompt, (ev) => {
+      if (ev.type === "result" && typeof ev.result === "string") final = ev.result;
+      if (ev.type === "result" && ev.is_error) failed = ev.result || "error";
+    }, 40 * 60 * 1000);
+  } finally { clearInterval(beat); }
+  if (failed && !final) throw Object.assign(new Error(String(failed)), { code: "failed" });
+  const txt = String(final || ""); const a = txt.indexOf("{"), b = txt.lastIndexOf("}");
+  let out = {};
+  try { out = JSON.parse(txt.slice(a, b + 1)); } catch { throw Object.assign(new Error("research reply was not JSON: " + txt.slice(0, 200)), { code: "failed" }); }
+  const items = {};
+  const okCat = new Set(cats);
+  for (const x of list) {
+    const r = out[x.n]; if (!r || !r.w) continue;
+    items[x.n] = { w: String(r.w).slice(0, 160), p: String(r.p || ""), c: okCat.has(r.c) ? r.c : "כללי", u: String(r.u || ""), conf: ["high", "med", "low"].includes(r.conf) ? r.conf : "med", src: "google", at: today };
+  }
+  const added = Object.keys(items).length ? await rpc("worker_add_merch", { s: SECRET, a: job.app, items }) : 0;
+  return { added, names: Object.keys(items) };
+}
+
 // kind "sample": a plain Claude answer, streamed
 async function doSample(job) {
   const { messages = [], system } = job.payload || {};
@@ -214,7 +259,7 @@ async function handle(job) {
   running.add(job.id);
   const t0 = Date.now();
   try {
-    const result = job.kind === "mcp" ? await doMcp(job) : job.kind === "mcp_all" ? await doMcpAll(job) : job.kind === "sample" ? await doSample(job) : { ok: true };
+    const result = job.kind === "mcp" ? await doMcp(job) : job.kind === "mcp_all" ? await doMcpAll(job) : job.kind === "research" ? await doResearch(job) : job.kind === "sample" ? await doSample(job) : { ok: true };
     await update(job.id, "done", { result });
     log("done", job.app, job.kind, job.payload?.server || "", job.payload?.tool || "", `${Date.now() - t0}ms`);
   } catch (e) {

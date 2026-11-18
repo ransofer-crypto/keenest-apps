@@ -154,6 +154,20 @@
       try { localStorage.removeItem(key); } catch (e) {}
       return res || {};
     },
+    // Starts a job on the office Mac and returns at once (the Mac writes the results itself). One at a time per key.
+    startBackground: async function (kind, payload, key) {
+      var k = "kbg." + APP + "." + key, saved = null;
+      try { saved = JSON.parse(localStorage.getItem(k) || "null"); } catch (e) {}
+      if (saved && Date.now() - saved.at < 60 * 60 * 1000) {
+        var old = await sb.from("app_jobs").select("status").eq("id", saved.id).maybeSingle();
+        if (old.data && (old.data.status === "queued" || old.data.status === "running")) return { id: saved.id, running: true };
+      }
+      if (!(await macAlive())) return { offline: true };
+      var ins = await sb.from("app_jobs").insert({ app: APP, kind: kind, payload: payload }).select("id").single();
+      if (ins.error) return { error: ins.error.message };
+      try { localStorage.setItem(k, JSON.stringify({ id: ins.data.id, at: Date.now() })); } catch (e) {}
+      return { id: ins.data.id };
+    },
     listTools: async function () { return { servers: (MANIFEST.mcp || []).map(function (s) { return { server: s.server, tools: s.tools.map(function (t) { return typeof t === "string" ? { name: t } : t; }) }; }) }; }
   };
 
