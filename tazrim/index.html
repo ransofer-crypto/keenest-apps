@@ -2204,7 +2204,7 @@ const FC_MAP={CREDIT_CARD_EXPENSES:"חיוב כרטיס אשראי",CREDIT_CARD_
   RESTAURANT:"אוכל והפקות",GROCERIES:"אוכל והפקות","COFFEE_&_SNACKS":"אוכל והפקות","FOOD_&_DRINKS_OTHER":"אוכל והפקות",ELECTRONICS:"ציוד והשכרות",CASH_WITHDRAWALS:"כללי",
   REFUND:"החזרים והכנסות אחרות",REIMBURSEMENTS_OTHER:"החזרים והכנסות אחרות"};
 let finBusy=false;
-async function finCall(tool,input){const r=await mcp.callTool(FIN_SERVER,tool,input,{cache:false});let p=r&&r.payload;if(typeof p==="string"){try{p=JSON.parse(p)}catch(_){}}return p||{}}
+async function finCall(tool,input){let r;for(let i=0;;i++){try{r=await mcp.callTool(FIN_SERVER,tool,input,{cache:false});break}catch(e){const c=e&&e.code;if(i<2&&/^(server_not_connected|timeout|claude_failed|tool_error|failed)$/.test(c||"")){await new Promise(z=>setTimeout(z,8000));continue}throw e}}let p=r&&r.payload;if(typeof p==="string"){try{p=JSON.parse(p)}catch(_){}}return p||{}}
 function finMap(t,acc){
   const isCard=t.type==="CARD";const dt=t.date||{};
   const d=String(isCard?(dt.transactionDate||dt.bookingDate||dt.valueDate):(dt.bookingDate||dt.valueDate||dt.transactionDate)||"").slice(0,10);
