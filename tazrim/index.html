@@ -2585,7 +2585,7 @@ const demoTimer=setTimeout(()=>{if(!S.live&&!S.demo)useDemo()},2000);
     db.doc("config/fixed").onSnapshot(s=>{S.fx=s.exists?{...s.data()}:{};render()},err);
     db.collection("review").onSnapshot(s=>{const r={};s.docs.forEach(d=>{const x=d.data();if(x&&x.id)r[x.id]={state:x.state,at:x.at}});S.rv=r;render()},err);
     db.doc("config/research").onSnapshot(x=>{S.research=x.exists?x.data():null},()=>{});
-    db.collection("merch").onSnapshot(s=>{const m={};for(const d of s.docs){const it=(d.data()||{}).items||{};for(const k in it)m[String(k).toLowerCase()]=it[k]}S.merch=m;render()},err);
+    db.collection("merch").onSnapshot(s=>{const m={};for(const d of s.docs){const it=(d.data()||{}).items||{};for(const k in it)m[String(k).toLowerCase()]=it[k]}S.merch=m;render();clearTimeout(window.__resT);window.__resT=setTimeout(researchMerchants,4000)},err);
     db.collection("saladd").onSnapshot(s=>{const m={};s.docs.forEach(d=>{m[d.id]=d.data()});S.saladd=m;render()},err);
     db.collection("salsplit").onSnapshot(s=>{const m={};s.docs.forEach(d=>{m[d.id]=d.data()});S.salsplit=m;render()},err);
     db.collection("match").onSnapshot(s=>{const m={};s.docs.forEach(d=>{m[d.id]=d.data()});S.match=m;S.mloaded=true;render();setTimeout(()=>repairMatches().then(autoMatch),800)},err);
