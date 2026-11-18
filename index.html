@@ -38,8 +38,14 @@ const SITES=[
   {n:"לידים",u:"leads/",live:true},
   {n:"תזרים קינסט",u:"tazrim/",live:true},
   {n:"שעון נוכחות",u:"https://keenest.co.il/clock/",live:true}]},
+ {g:"הפקה",items:[
+  {n:"תסריטים",u:"scripts/",live:true},
+  {n:"סטוריבורד",u:"storyboard/",live:true},
+  {n:"הפקת AI",u:"prod/",live:true}]},
  {g:"בית",items:[
-  {n:"תזרים הבית",u:"tazrim-bayit/",live:true}]}
+  {n:"תזרים הבית",u:"tazrim-bayit/",live:true},
+  {n:"המשימות שלי",u:"mytasks/",live:true},
+  {n:"לילה טוב",u:"sleep/",live:true}]}
 ];
 const full=u=>u.startsWith("http")?u:"https://app.keenest.co.il/"+u;
 const show=u=>full(u).replace(/^https:\/\//,"").replace(/\/$/,"");

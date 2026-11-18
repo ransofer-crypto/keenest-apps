@@ -176,13 +176,66 @@
     listTools: async function () { return { servers: (MANIFEST.mcp || []).map(function (s) { return { server: s.server, tools: s.tools.map(function (t) { return typeof t === "string" ? { name: t } : t; }) }; }) }; }
   };
 
-  function sampleApi(messages, opts) {
-    opts = opts || {};
-    return runJob("sample", { messages: messages, system: opts.system || null, model: opts.model || null }, {
-      signal: opts.signal, timeout: 8 * 60 * 1000,
-      onPartial: function (t) { if (opts.onText) opts.onText({ text: t }); }
-    }).then(function (r) { return { text: (r && r.text) || "" }; });
+  // ---------- files (Supabase Storage, public bucket "assets"; ids are random, so "/_blob/<id>" keeps working) ----------
+  function rid() { return (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, ""); }
+  var ASSET_BASE = SB_URL + "/storage/v1/object/public/assets/";
+  async function putFile(blob, type) {
+    var id = rid();
+    var up = await sb.storage.from("assets").upload(id, blob, { contentType: type || blob.type || "application/octet-stream", upsert: false });
+    if (up.error) throw err("upload_failed", up.error.message);
+    return { id: id, url: ASSET_BASE + id, sizeBytes: blob.size, contentType: type || blob.type || "" };
   }
+  var assetsApi = {
+    upload: function (blob, o) { return putFile(blob, o && o.type); },
+    list: async function () { return { assets: [], usage: {} }; },
+    delete: async function (id) { await sb.storage.from("assets").remove([String(id)]); return true; }
+  };
+
+  // ---------- sample: ask Claude on the office Mac ----------
+  var TIERS = { quick: "haiku", default: "sonnet", complex: "opus" };
+  async function sampleRun(input, opts) {
+    opts = opts || {};
+    var messages = typeof input === "string" ? [{ role: "user", content: input }] : input;
+    var images = [];
+    for (var k = 0; k < (opts.images || []).length; k++) { var b = opts.images[k]; images.push((await putFile(b, b.type)).url); }
+    var model = opts.model ? (/opus/.test(opts.model) ? "opus" : /haiku/.test(opts.model) ? "haiku" : "sonnet") : (TIERS[opts.modelTier] || null);
+    var last = "";
+    return runJob("sample", { messages: messages, system: opts.system || null, model: model, images: images }, {
+      signal: opts.signal, timeout: 10 * 60 * 1000,
+      onPartial: function (t) { if (opts.onText) opts.onText({ text: t, delta: t.slice(last.length) }); last = t; }
+    }).then(function (r) { return { text: (r && r.text) || "", truncated: false }; });
+  }
+  function parseJSON(t) {
+    t = String(t || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
+    try { return JSON.parse(t); } catch (e) {}
+    var a = t.search(/[\[{]/), b = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
+    if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch (e) {} }
+    throw err("invalid_json", "התשובה לא הייתה בפורמט הנכון", { text: t });
+  }
+  var sampleApi = function (input, opts) { return sampleRun(input, opts); };
+  sampleApi.json = function (input, opts) { return sampleRun(input, opts).then(function (r) { return parseJSON(r.text); }); };
+  sampleApi.limits = async function () { return { images: true }; };
+
+  // ---------- dictation: the phone/computer's own speech recognition (Hebrew) ----------
+  var dictationApi = (function () {
+    var R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!R) return null;
+    var rec = null, finals = [], states = [], api = { active: false };
+    function setState(st) { api.active = st !== "idle"; states.forEach(function (f) { try { f({ state: st }); } catch (e) {} }); }
+    api.onFinal = function (f) { finals.push(f); };
+    api.onState = function (f) { states.push(f); };
+    api.start = function () {
+      if (rec) return;
+      rec = new R(); rec.lang = "he-IL"; rec.continuous = true; rec.interimResults = false;
+      rec.onresult = function (e) { for (var i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) { var t = e.results[i][0].transcript; finals.forEach(function (f) { try { f({ text: t }); } catch (x) {} }); } };
+      rec.onend = function () { rec = null; setState("idle"); };
+      rec.onerror = function () {};
+      try { rec.start(); setState("listening"); } catch (e) { rec = null; setState("idle"); }
+    };
+    api.stop = function () { if (rec) try { rec.stop(); } catch (e) {} };
+    return api;
+  })();
+  var permissionsApi = { state: async function () { return "granted"; }, request: async function (l) { var o = {}; (l || []).forEach(function (k) { o[k] = "granted"; }); return o; }, manage: async function () {} };
 
   var me = null;
   var people = null;
@@ -208,7 +261,10 @@
       if (what === "sample") return sampleApi;
       if (what === "user") return userApi;
       if (what === "downloads") return downloadsApi;
-      throw err("not_available", what);
+      if (what === "assets") return assetsApi;
+      if (what === "dictation") return dictationApi;
+      if (what === "permissions") return permissionsApi;
+      return null;
     },
     keenest: { sb: sb, app: APP, signOut: async function () { await sb.auth.signOut(); location.reload(); } }
   };

@@ -235,15 +235,26 @@ If you are not sure, start w with "לא ודאי — " and use conf "low". Never
 
 // kind "sample": a plain Claude answer, streamed
 async function doSample(job) {
-  const { messages = [], system } = job.payload || {};
+  const { messages = [], system, images = [] } = job.payload || {};
+  // pictures the site attached: download them here so Claude can look at them
+  const files = [];
+  for (let i = 0; i < images.length && i < 12; i++) {
+    try {
+      const r = await fetch(images[i]); if (!r.ok) continue;
+      const ct = r.headers.get("content-type") || ""; const ext = /png/.test(ct) ? "png" : /webp/.test(ct) ? "webp" : /gif/.test(ct) ? "gif" : /pdf/.test(ct) ? "pdf" : "jpg";
+      const f = join(WORKDIR, `img-${job.id}-${i}.${ext}`); writeFileSync(f, Buffer.from(await r.arrayBuffer())); files.push(f);
+    } catch {}
+  }
   const conv = messages.map((m) => {
     const c = typeof m.content === "string" ? m.content : (m.content || []).map((x) => x.text || "").join("");
     return (m.role === "assistant" ? "ASSISTANT:\n" : "USER:\n") + c;
   }).join("\n\n");
   const prompt =
+    (files.length ? "The user attached these images. Look at each of them with the Read tool before answering (do not mention the file names):\n" + files.map((f) => "- " + f).join("\n") + "\n\n" : "") +
     (messages.length > 1 ? "Here is the conversation so far. Write only the next ASSISTANT reply, nothing else.\n\n" : "") + conv;
   let text = "", lastSent = 0, final = null, failed = null;
-  const args = ["--model", (job.payload && job.payload.model) || CFG.sampleModel || "sonnet", "--tools", "", "--strict-mcp-config", "--include-partial-messages", "--max-turns", "1"];
+  const args = ["--model", (job.payload && job.payload.model) || CFG.sampleModel || "sonnet", "--tools", files.length ? "Read" : "", "--strict-mcp-config", "--include-partial-messages", "--max-turns", files.length ? String(files.length + 2) : "1"];
+  if (files.length) args.push("--allowedTools", "Read");
   if (system) args.push("--append-system-prompt", system);
   await runClaude(job.app, args, prompt, (ev) => {
     if (ev.type === "stream_event" && ev.event?.type === "content_block_delta" && ev.event.delta?.type === "text_delta") {

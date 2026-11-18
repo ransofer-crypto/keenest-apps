@@ -1,0 +1,1 @@
+{"mcp":[{"server":"Google Calendar","tools":["create_event","update_event","delete_event"]},{"server":"Notion","tools":["notion-create-pages"]}]}
