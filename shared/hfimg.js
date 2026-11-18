@@ -19,7 +19,7 @@
   }
   function scan() {
     lastScan = Date.now();
-    try { if (typeof S !== "undefined" && S) walk(S.P || S.boards || S, new Set()); } catch (e) {}
+    try { if (typeof S !== "undefined" && S) walk(S, new Set()); } catch (e) {}
   }
   function idOf(src) { var m = /\/_blob\/([A-Za-z0-9_-]+)$/.exec(src || ""); return m && m[1]; }
 
