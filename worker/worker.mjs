@@ -48,7 +48,7 @@ const update = (job, st, extra = {}) =>
 
 // ---------- which Claude Code profile runs which site ----------
 function envFor(app) {
-  const env = { ...process.env, MAX_MCP_OUTPUT_TOKENS: String(CFG.maxToolTokens || 400000) };
+  const env = { ...process.env, MAX_MCP_OUTPUT_TOKENS: String(CFG.maxToolTokens || 400000), MCP_CONNECTION_NONBLOCKING: "false" }; // wait for the claude.ai connectors before running
   const prof = (CFG.apps && CFG.apps[app] && CFG.apps[app].profile) || null;
   if (prof) env.CLAUDE_CONFIG_DIR = prof.replace(/^~/, os.homedir());
   return env;
@@ -198,7 +198,9 @@ function head() { try { return execFileSync("git", ["-C", REPO, "rev-parse", "HE
 const STARTED_AT = head();
 function selfUpdate() {
   try {
-    execFileSync("git", ["-C", REPO, "pull", "--ff-only", "-q"], { encoding: "utf8", timeout: 60000 });
+    // GitHub is the only source of truth for this folder (config.json is not tracked, so it stays)
+    execFileSync("git", ["-C", REPO, "fetch", "-q", "origin", "main"], { encoding: "utf8", timeout: 60000 });
+    execFileSync("git", ["-C", REPO, "reset", "-q", "--hard", "origin/main"], { encoding: "utf8", timeout: 60000 });
     const now = head();
     if (now && STARTED_AT && now !== STARTED_AT) {
       log("new worker code", now.slice(0, 7), "— restarting when idle");
