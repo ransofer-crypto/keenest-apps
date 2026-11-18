@@ -123,7 +123,12 @@
       function finish(row) {
         if (done) return;
         if (row.partial && row.partial !== lastPartial && opts.onPartial) { lastPartial = row.partial; try { opts.onPartial(row.partial); } catch (e) {} }
-        if (row.status === "done") { done = true; cleanup(); resolve(row.result); }
+        if (row.status === "done") {
+          done = true; cleanup();
+          // realtime leaves out big results: read the row itself then
+          if (row.result == null) { sb.from("app_jobs").select("result").eq("id", id).single().then(function (r) { resolve(r.data ? r.data.result : null); }, function () { resolve(null); }); }
+          else resolve(row.result);
+        }
         else if (row.status === "error") { done = true; cleanup(); var e = row.error || {}; reject(err(e.code || "failed", e.message || "משהו השתבש במחשב במשרד.", { text: row.partial || "" })); }
       }
       function cleanup() { delete waiters[id]; clearInterval(poll); clearTimeout(timer); }

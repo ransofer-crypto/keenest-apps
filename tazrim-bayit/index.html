@@ -1291,6 +1291,7 @@ async function syncFinancy(force){
       const r=mcp.callToolAll?await mcp.callToolAll(FIN_SERVER,"list_transactions",inp,{keep:KEEP,limit:60,onProgress:n=>{$("#syncText").textContent="מושך מ־Financy במחשב במשרד… "+n+" תנועות"}})
         :{payload:await finCall("list_transactions",{...inp,all:true})};
       let rp=r&&r.payload;if(typeof rp==="string"){try{rp=JSON.parse(rp)}catch(_){rp={}}}
+      if(!rp||!Array.isArray(rp.data))throw Object.assign(new Error("no data from the Mac"),{code:"failed"});
       for(const t of ((rp||{}).data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}}
     saved.clear();for(const m of ms)await saveM(m);
     await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",full:true,balance:bal,balanceAt:balAt,changedMonths:changed});
@@ -1615,4 +1616,4 @@ const demoTimer=setTimeout(()=>{if(!S.live&&!S.demo)useDemo()},2000);
 })();
 </script>
 
-<script type="application/json" id="keenest-manifest">{"mcp": [{"server": "financy", "tools": ["list_accounts", "list_transactions"]}]}</script><script>window.KEENEST_APP="tazrim-bayit";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=2"></script></body></html>
+<script type="application/json" id="keenest-manifest">{"mcp": [{"server": "financy", "tools": ["list_accounts", "list_transactions"]}]}</script><script>window.KEENEST_APP="tazrim-bayit";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=3"></script></body></html>

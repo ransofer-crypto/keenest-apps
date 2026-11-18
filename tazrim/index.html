@@ -2245,6 +2245,7 @@ async function syncFinancy(force){
       const r=mcp.callToolAll?await mcp.callToolAll(FIN_SERVER,"list_transactions",inp,{keep:KEEP,limit:60,onProgress:n=>{$("#syncText").textContent="מושך מ־Financy במחשב במשרד… "+n+" תנועות"}})
         :{payload:await finCall("list_transactions",{...inp,all:true})};
       let rp=r&&r.payload;if(typeof rp==="string"){try{rp=JSON.parse(rp)}catch(_){rp={}}}
+      if(!rp||!Array.isArray(rp.data))throw Object.assign(new Error("no data from the Mac"),{code:"failed"});
       for(const t of ((rp||{}).data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}}
     for(const m of ms){const map=byM[m];if(!map)continue;
       const txns=[...map.values()].sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id));
@@ -2799,4 +2800,4 @@ html,body{overflow-x:clip}
 })();
 </script>
 
-<script type="application/json" id="keenest-manifest">{"mcp": [{"server": "financy", "tools": ["list_accounts", "list_transactions"]}, {"server": "Notion", "tools": ["notion-query-data-sources", "notion-update-page"]}]}</script><script>window.KEENEST_APP="tazrim";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=2"></script></body></html>
+<script type="application/json" id="keenest-manifest">{"mcp": [{"server": "financy", "tools": ["list_accounts", "list_transactions"]}, {"server": "Notion", "tools": ["notion-query-data-sources", "notion-update-page"]}]}</script><script>window.KEENEST_APP="tazrim";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=3"></script></body></html>
