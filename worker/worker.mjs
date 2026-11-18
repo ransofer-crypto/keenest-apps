@@ -207,11 +207,12 @@ Allowed categories (pick exactly one, spelled exactly): ${cats.join(" | ")}
 When done, reply with ONLY one JSON object, no prose, no code fences:
 {"<name exactly as given>": {"w": "<Hebrew, max ~12 words: what it is, e.g. 'רולדין — רשת מאפיות ובתי קפה, סניף מודיעין'>", "p": "<place in Hebrew, or 'אונליין', or ''>", "c": "<category>", "u": "<a useful URL or ''>", "conf": "high|med|low"}, ...}
 If you are not sure, start w with "לא ודאי — " and use conf "low". Never invent. Include every name.`;
-  let final = null, failed = null;
+  let final = null, failed = null; const used = new Set();
   const beat = setInterval(() => update(job.id, "running", { partial: "searching" }).catch(() => {}), 60000);
   try {
     await runClaude(job.app, ["--chrome", "--model", CFG.researchModel || "sonnet", "--tools", "WebSearch",
       "--allowedTools", "mcp__claude-in-chrome,WebSearch", "--max-turns", "200"], prompt, (ev) => {
+      if (ev.type === "assistant") for (const b of ev.message?.content || []) if (b.type === "tool_use") used.add(b.name);
       if (ev.type === "result" && typeof ev.result === "string") final = ev.result;
       if (ev.type === "result" && ev.is_error) failed = ev.result || "error";
     }, 40 * 60 * 1000);
@@ -222,12 +223,13 @@ If you are not sure, start w with "לא ודאי — " and use conf "low". Never
   try { out = JSON.parse(txt.slice(a, b + 1)); } catch { throw Object.assign(new Error("research reply was not JSON: " + txt.slice(0, 200)), { code: "failed" }); }
   const items = {};
   const okCat = new Set(cats);
+  const via = [...used].some((t) => t.startsWith("mcp__claude-in-chrome")) ? "google" : "web";
   for (const x of list) {
     const r = out[x.n]; if (!r || !r.w) continue;
-    items[x.n] = { w: String(r.w).slice(0, 160), p: String(r.p || ""), c: okCat.has(r.c) ? r.c : "כללי", u: String(r.u || ""), conf: ["high", "med", "low"].includes(r.conf) ? r.conf : "med", src: "google", at: today };
+    items[x.n] = { w: String(r.w).slice(0, 160), p: String(r.p || ""), c: okCat.has(r.c) ? r.c : "כללי", u: String(r.u || ""), conf: ["high", "med", "low"].includes(r.conf) ? r.conf : "med", src: via, at: today };
   }
   const added = Object.keys(items).length ? await rpc("worker_add_merch", { s: SECRET, a: job.app, items }) : 0;
-  return { added, names: Object.keys(items) };
+  return { added, names: Object.keys(items), via, tools: [...used] };
 }
 
 // kind "sample": a plain Claude answer, streamed
