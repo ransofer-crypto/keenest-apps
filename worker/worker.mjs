@@ -348,6 +348,15 @@ async function watchTick() {
 }
 setInterval(watchTick, 60 * 1000);
 
+// ---------- editor heartbeat: the editor page shows whether the Mac is alive and working ----------
+async function editorBeat() {
+  const working = agentRunning.has("editor_work") || agentRunning.has("editor_styles");
+  const d = { updatedAt: new Date().toISOString(), state: working ? "working" : "idle" };
+  if (!working) { d.project = null; d.label = null; }
+  try { await rpc("worker_docs_put", { s: SECRET, a: "editor", c: "editor", i: "status", d, merge: true }); } catch (e) { log("editor beat failed", String(e.message).slice(0, 120)); }
+}
+setInterval(editorBeat, 60 * 1000); editorBeat();
+
 const running = new Set();
 async function handle(job) {
   running.add(job.id);
