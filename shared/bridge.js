@@ -160,14 +160,14 @@
 
   /* ---------------- login ---------------- */
   var css = "#kLogin{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#E6E9EC;font-family:Rubik,system-ui,sans-serif;direction:rtl;color:#00203F;padding:24px}" +
-    "@media (prefers-color-scheme:dark){#kLogin{background:#0b1622;color:#E6E9EC}#kLogin .nm,#kLogin input{background:#13212f;color:#E6E9EC;border-color:#22374b}}" +
     "#kLogin .box{width:100%;max-width:340px;text-align:center}#kLogin img{height:30px;width:auto;margin-bottom:22px}@media (prefers-color-scheme:dark){#kLogin img{filter:brightness(0) invert(1)}}" +
     "#kLogin h1{font-size:20px;font-weight:600;margin:0 0 4px}#kLogin p{margin:0 0 22px;opacity:.65;font-size:14px}" +
     "#kLogin .nm{display:flex;align-items:center;gap:12px;width:100%;padding:13px 16px;margin-bottom:10px;border:1px solid #d3d8dd;border-radius:16px;background:#fff;font:inherit;font-size:16px;color:inherit;cursor:pointer;text-align:right}" +
     "#kLogin .av{width:32px;height:32px;border-radius:50%;background:#06B3E5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600}" +
     "#kLogin input{width:100%;box-sizing:border-box;padding:14px 16px;border:1px solid #d3d8dd;border-radius:16px;font:inherit;font-size:18px;text-align:center;letter-spacing:4px;background:#fff;color:inherit;outline:none}" +
     "#kLogin input:focus{border-color:#06B3E5}#kLogin .go{width:100%;margin-top:12px;padding:14px;border:0;border-radius:16px;background:#06B3E5;color:#fff;font:inherit;font-size:16px;font-weight:600;cursor:pointer}" +
-    "#kLogin .back{background:none;border:0;color:#06B3E5;font:inherit;margin-top:14px;cursor:pointer}#kLogin .warn{color:#FA1664;min-height:20px;margin:10px 0 0;opacity:1}";
+    "#kLogin .back{background:none;border:0;color:#06B3E5;font:inherit;margin-top:14px;cursor:pointer}#kLogin .warn{color:#FA1664;min-height:20px;margin:10px 0 0;opacity:1}" +
+    "@media (prefers-color-scheme:dark){#kLogin{background:#0b1622;color:#E6E9EC}#kLogin .nm,#kLogin input{background:#13212f;color:#E6E9EC;border-color:#22374b}}";
   function el(html) { var d = document.createElement("div"); d.innerHTML = html; return d.firstChild; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function loginScreen(title) {
