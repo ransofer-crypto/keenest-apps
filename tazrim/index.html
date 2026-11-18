@@ -2219,7 +2219,7 @@ function finMap(t,acc){
   if(t.status==="PENDING")o.pend=true;
   const oa=(t.amount||{}).originalAmount;if(oa&&oa.currency&&oa.currency!=="ILS")o.orig=oa.amount+" "+oa.currency;
   const c=(t.changedCategory||t.category||{});if(c.sub&&c.sub!=="UNCATEGORIZED"&&c.sub!=="OTHER")o.fc=c.sub;
-  if(!isCard){if(amt>0&&t.debtorName)o.payer=String(t.debtorName).slice(0,60);
+  if(!isCard){if(amt>0&&t.debtorName)o.payer=String(t.debtorName).slice(0,60);if(amt<0&&t.creditorName)o.payee=String(t.creditorName).slice(0,60);
     try{const ai=JSON.parse((t.description||{}).additionalInfo||"{}");if(ai.purposeDescription)o.purpose=String(ai.purposeDescription).replace(/\s+/g," ").trim().slice(0,90)}catch(_){}}
   return o}
 async function finResolve(){try{const l=await mcp.listTools();const sv=(l.servers||[]).find(x=>/financy/i.test(x.server));if(sv)FIN_SERVER=sv.server;return sv||null}catch(e){return null}}
@@ -2237,7 +2237,7 @@ async function syncFinancy(force){
       if(a.accountType==="CHECKING"){const b=(a.balances||[]).find(x=>x.balanceType==="expected"&&!x.creditLimitIncluded)||(a.balances||[]).find(x=>x.balanceType==="closingBooked"&&!x.creditLimitIncluded);
         if(b){bal=(bal||0)+Number(b.balanceAmount.amount);balAt=b.referenceDate}}}
     const have=Object.keys(S.months).filter(m=>!S.demo).sort();
-    const cur=nowYm();const full=S.realSync&&S.realSync.source==="financy"&&S.realSync.full;let start=have.length&&full?addM(have[have.length-1],-1):addM(cur,-12);if(start>addM(cur,-1))start=addM(cur,-1);
+    const cur=nowYm();const full=S.realSync&&S.realSync.source==="financy"&&S.realSync.full&&S.realSync.pv===2;let start=have.length&&full?addM(have[have.length-1],-1):addM(cur,-12);if(start>addM(cur,-1))start=addM(cur,-1);
     const ms=[];for(let m=start;m<=addM(cur,1);m=addM(m,1))ms.push(m);
     const byM={};const toD=eom(addM(cur,1)+"-01");let changed=0;
     const KEEP=["id","type","date","accountId","accountNumber","amount","merchantName","description","isCreditCardInstallment","status","category","changedCategory","isDuplicate","debtorName","creditorName"];
@@ -2251,9 +2251,9 @@ async function syncFinancy(force){
       const txns=[...map.values()].sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id));
       const prev=S.demo?null:S.months[m];if(prev&&JSON.stringify(prev.txns)===JSON.stringify(txns))continue;
       await db.doc("months/"+m).set({month:m,txns,updatedAt:new Date().toISOString()});changed++}
-    await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",full:true,balance:bal,balanceAt:balAt,changedMonths:changed});
+    await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",full:true,pv:2,balance:bal,balanceAt:balAt,changedMonths:changed});
     if(force)toast(changed?`עודכנו ${changed} חודשים מ־Financy`:"הכול מעודכן");
-    setTimeout(researchMerchants,1500);
+    setTimeout(researchMerchants,1500);setTimeout(autoPayees,3000);
   }catch(e){const c=e&&e.code;finErr=({server_not_connected:"Financy לא מחובר לחשבון ה־Claude שלך",needs_reauth:"החיבור ל־Financy פג — מחברים מחדש בהגדרות",not_in_manifest:"צריך לאשר לאתר גישה ל־Financy",approval_required:"צריך לאשר לאתר גישה ל־Financy",selection_required:"יש יותר מחיבור Financy אחד — בחרו אחד"})[c]||(c==="unavailable"||c==="server_unavailable"?"Financy לא עונה כרגע. ננסה שוב בעוד רגע":"לא הצלחתי למשוך תנועות מ־Financy");
     if(c==="server_not_connected"||c==="needs_reauth"||c==="not_in_manifest"||c==="approval_required"){if(force)toast(c==="needs_reauth"?"החיבור ל־Financy פג. מחברים מחדש בהגדרות של Claude.":"אין לך חיבור ל־Financy ב־Claude. הנתונים יתעדכנו כשמי שמחובר יפתח את האתר.")}
     else if(force)toast("לא הצלחתי למשוך מ־Financy. נסו שוב בעוד רגע.");
@@ -2349,6 +2349,51 @@ $("#sync").style.cursor="pointer";$("#sync").title="לחיצה מושכת עכש
 S.ai={msgs:[],draft:"",busy:false,live:"",form:false,open:false,jump:false};
 try{const sv=JSON.parse(ls.get("cf.chat","null"));if(sv&&Array.isArray(sv.msgs)){S.ai.msgs=sv.msgs;S.ai.open=!!sv.open&&sv.msgs.length>0}}catch(_){}
 const merName=d=>String(d||"").replace(/\s+\d[\d\s\-\/]*$/,"").trim();
+/* unclassified outgoing bank transfers → classified by who got the money (Financy) and Notion's suppliers.
+   Clear cases are decided here; the rest go to Claude Code on the office Mac, which only answers when sure. */
+let payBusy=false;
+const PN=x=>String(x||"").replace(/["'”״׳`.,()\-–—]/g," ").replace(/\s+/g," ").trim().toLowerCase();
+const PTOK=x=>PN(x).split(" ").filter(w=>w.length>=2&&!/^(בע|מ|בעמ|ltd|inc|ע|את|של|ו)$/.test(w));
+async function autoPayees(){
+  if(payBusy||!db||S.demo||!S.canWrite||!S.months)return;payBusy=true;
+  try{
+    const sup=((S.notion&&S.notion.suppliers)||[]).filter(x=>x.name);const supT=sup.map(x=>({x,t:PTOK(x.name)}));
+    const STAFF=[["רן","סופר"],["צפריר","אלבז"],["עדי","אברהם"]];
+    const tried=(S.research&&S.research.pay)||{};const now=Date.now();
+    const out={},ask=[];
+    for(const m of Object.keys(S.months).sort().slice(-13))for(const t of txnsIn([m])){
+      if(t.src!=="bank"||t.amt>=0||!(t.payee||t.purpose))continue;
+      if((S.edits[m]||{})[t.id]||categorize(t)!==UNK)continue;
+      const who=PN(t.payee),why0=(t.payee||"")+(t.purpose?" · "+t.purpose:""),pt=PTOK(t.payee),all=PN(t.payee+" "+(t.purpose||""));
+      let c=null,why="";
+      if(STAFF.some(n=>n.every(w=>who.includes(w)))||/משכורת|שכר עבודה/.test(all)){c="משכורות";why="משכורת — "+t.payee}
+      else if(/מס הכנסה|מע מ|מעמ|רשות המסים/.test(all)){c="מיסים ומע״מ";why=t.payee}
+      else if(/ביטוח לאומי|פנסיה|קרן השתלמות|גמל/.test(all)){c="ביטוח לאומי ופנסיה";why=t.payee}
+      else if(/קינסט/.test(who)){c="העברה פנימית";why="חשבון של קינסט"}
+      else{const hit=supT.find(({t:st})=>{const common=st.filter(w=>pt.includes(w));return common.length>=2||(common.length===1&&st.length===1&&pt.length<=2)});
+        if(hit){c="פרילנסרים וספקים";why="ספק בנושן: "+hit.x.name+" — "+t.payee}}
+      if(c){(out[m]=out[m]||{})[t.id]={c,auto:true,why:why.slice(0,90)}}
+      else if(!(tried[t.id]&&now-tried[t.id]<14*864e5))ask.push({t,m,why0})}
+    // the unclear ones: Claude Code on the Mac decides only when sure
+    if(ask.length){let sample=null;try{sample=window.claude?await window.claude.use("sample"):null}catch(_){}
+      if(sample){const batch=ask.slice(0,40);
+        const cats=allCats().filter(x=>x.k==="out").map(x=>x.n).join(" | ");
+        const prompt=`Keenest is a video production company in Israel. Below are outgoing bank transfers that could not be classified automatically, with who received the money and the transfer's purpose.
+Notion suppliers (freelancers and vendors Keenest works with): ${sup.map(x=>x.name).join(" | ")||"none"}.
+Staff: רן סופר, צפריר אלבז (owners), עדי אברהם (employee).
+Allowed categories: ${cats}.
+For each transfer decide a category ONLY when you are sure (e.g. the receiver is clearly one of the suppliers, an equipment rental house, the accountant, a tax/insurance body, or the purpose names a shoot/production). If unsure, leave it out.
+Transfers:
+${batch.map(b=>b.t.id+" | "+b.t.d+" | "+Math.abs(b.t.amt)+" ₪ | "+b.why0).join("\n")}
+Reply with ONLY a JSON object, no prose: {"<id>": {"c": "<category exactly as listed>", "why": "<short Hebrew reason, max 8 words>"}}. Empty object {} if none.`;
+        try{const{text}=await sample([{role:"user",content:prompt}],{cache:false});const a=text.indexOf("{"),b=text.lastIndexOf("}");
+          const res=a>=0?JSON.parse(text.slice(a,b+1)):{};const ok=new Set(allCats().map(x=>x.n));
+          for(const x of batch){const r=res[x.t.id];if(r&&ok.has(r.c))(out[x.m]=out[x.m]||{})[x.t.id]={c:r.c,auto:true,why:String(r.why||"Claude").slice(0,90)}}
+          const np={...tried};for(const x of batch)np[x.t.id]=now;await db.doc("config/research").set({...(S.research||{}),pay:np})}catch(_){}}}
+    for(const[m,map]of Object.entries(out)){const cur={...(S.edits[m]||{})};let n=0;for(const id in map)if(!cur[id]){cur[id]=map[id];n++}
+      if(n){S.edits[m]=cur;await db.doc("edits/"+m).set({map:cur,updatedAt:new Date().toISOString()})}}
+    render();
+  }catch(e){}finally{payBusy=false}}
 /* merchants with no description yet → researched on Google in the office Mac's Chrome, written back into "merch".
    Clear results (high confidence, a real category) also become classification rules. */
 const RES_SKIP=/^(העב|העברה|הפקדה|משיכ|שיק|צ'ק|הו"ק|הו”ק|הלוא|ריבית|רבית|עמלה|ע\.|דמי |מס |מע"מ|מע”מ|ביטוח לאומי|משכורת|זיכוי|חיוב)/;
@@ -2365,7 +2410,7 @@ async function researchMerchants(){
     const list=[...seen.values()].sort((a,b)=>b.k-a.k).slice(0,20);if(!list.length)return;
     const r=await mcp.startBackground("research",{names:list.map(({n,amt,src})=>({n,amt,src})),cats:allCats().map(c=>c.n),
       context:"These are from the business statements of Keenest, a video production company in Kiryat Ono / Tel Aviv, Israel (bank Hapoalim; Isracard and Max cards). Expenses are usually production costs (food on set, equipment, rentals, parking, fuel), software/AI tools and office costs; positive amounts from companies are usually client payments. A private person's name is described only as 'העברה לאדם פרטי' without researching the person."},"merch");
-    if(r&&r.id&&!r.running){const nt={...tried};for(const x of list)nt[x.n]=now;await db.doc("config/research").set({tried:nt,at:new Date().toISOString()})}
+    if(r&&r.id&&!r.running){const nt={...tried};for(const x of list)nt[x.n]=now;await db.doc("config/research").set({...(S.research||{}),tried:nt,at:new Date().toISOString()})}
   }catch(e){}}
 const mInfo=d=>{const M=S.merch;if(!M)return null;return M[merName(d).toLowerCase()]||null};
 const aiChat=()=>!!(S.ai&&((S.ai.open&&S.ai.msgs.length)||S.ai.busy));
@@ -2591,7 +2636,7 @@ const demoTimer=setTimeout(()=>{if(!S.live&&!S.demo)useDemo()},2000);
     db.collection("match").onSnapshot(s=>{const m={};s.docs.forEach(d=>{m[d.id]=d.data()});S.match=m;S.mloaded=true;render();setTimeout(()=>repairMatches().then(autoMatch),800)},err);
     db.collection("jars").onSnapshot(s=>{S.jars=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.created||"").localeCompare(String(b.created||"")));render()},err);
     db.doc("config/sync").onSnapshot(s=>{S.realSync=s.exists?s.data():null;if(!S.demo)S.sync=S.realSync;render()},err);
-    setTimeout(()=>syncFinancy(false),2500);setTimeout(researchMerchants,9000);
+    setTimeout(()=>syncFinancy(false),2500);setTimeout(researchMerchants,9000);setTimeout(autoPayees,15000);
     db.doc("notion/snapshot").onSnapshot(s=>{if(!s.exists||S.notion.state==="ok")return;const d=s.data();
       S.notion.projects=d.projects||[];S.notion.suppliers=d.suppliers||[];S.notion.at=d.at||null;lastSnap=JSON.stringify({projects:S.notion.projects,suppliers:S.notion.suppliers});render()},err);
   }else{clearTimeout(demoTimer);if(!S.demo)useDemo()}
