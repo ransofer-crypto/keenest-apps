@@ -189,12 +189,13 @@ async function doMcpAll(job) {
 // then write the descriptions straight into the site's "merch" docs. The site page can be closed.
 // payload: { names: [{ n, amt?, src? }], cats: [category names] }
 async function doResearch(job) {
-  const { names = [], cats = [] } = job.payload || {};
+  const { names = [], cats = [], context = "" } = job.payload || {};
   const list = names.slice(0, 20);
   if (!list.length) return { added: 0 };
   const today = new Date().toISOString().slice(0, 10);
   const prompt =
-`You identify merchants from an Israeli family's bank and credit-card statements (city: Modiin; work in Kiryat Ono).
+`You identify merchants from bank and credit-card statements. ${context || "They are from an Israeli family's household statements (home: Modiin; work: Kiryat Ono). A private person's name is described only as 'תשלום לאדם פרטי' without researching the person."}
+Bank operations that explain themselves (salary, Bit/PayBox transfers, cheques, card bills, loans, taxes, fees) need no search.
 For EACH name below, search Google in Chrome (use the claude-in-chrome browser tools: open one tab, go to https://www.google.com/search?q=<name>, read the results, open a result only if needed).
 Small Israeli businesses are found best this way. Only if the browser tools are not available at all, use WebSearch instead.
 Names are often cut off at ~20 characters and may include a branch/city.
