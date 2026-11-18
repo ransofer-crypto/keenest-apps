@@ -1278,24 +1278,26 @@ async function syncFinancy(force){
       if(a.accountType==="CHECKING"){const b=(a.balances||[]).find(x=>x.balanceType==="expected"&&!x.creditLimitIncluded)||(a.balances||[]).find(x=>x.balanceType==="closingBooked"&&!x.creditLimitIncluded);
         if(b){bal=(bal||0)+Number(b.balanceAmount.amount);balAt=b.referenceDate}}}
     const have=Object.keys(S.months).filter(m=>!S.demo).sort();
-    const cur=nowYm();let start=have.length?addM(have[have.length-1],-1):addM(cur,-12);if(start>addM(cur,-1))start=addM(cur,-1);
+    const cur=nowYm();const full=S.realSync&&S.realSync.source==="financy"&&S.realSync.full;let start=have.length&&full?addM(have[have.length-1],-1):addM(cur,-12);if(start>addM(cur,-1))start=addM(cur,-1);
     const ms=[];for(let m=start;m<=addM(cur,1);m=addM(m,1))ms.push(m);
     const byM={};
-    let pages=0,got=0;const toD=eom(addM(cur,1)+"-01");
-    let lim=120;
+    let pages=0,got=0;const toD=eom(addM(cur,1)+"-01");const saved=new Set();let changed=0;
+    const saveM=async m=>{if(saved.has(m))return;saved.add(m);const map=byM[m];if(!map)return;
+      const txns=[...map.values()].sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id));
+      const prev=S.demo?null:S.months[m];if(prev&&JSON.stringify(prev.txns)===JSON.stringify(txns))return;
+      await db.doc("months/"+m).set({month:m,txns,updatedAt:new Date().toISOString()});changed++};
+    let lim=60;
     for(const conn of (conns.size?[...conns]:[null])){let cursor=null;
     for(;;){const inp={from:start+"-01",to:toD,limit:lim};if(conn)inp.connection=conn;if(cursor)inp.cursor=cursor;
       let r;try{r=await finCall("list_transactions",inp)}catch(e){const msg=JSON.stringify((e&&e.result)||"")+String(e&&e.message);
         if((/too large|RESULT_TOO_LARGE/i.test(msg)||/^(timeout|claude_failed)$/.test((e&&e.code)||""))&&lim>25){lim=Math.max(25,Math.floor(lim/2));continue}throw e}
       for(const t of (r.data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;got++;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}
       cursor=r.nextPage||null;pages++;$("#syncText").textContent="מושך מ־Financy… "+got+" תנועות";
+      if(conns.size<=1&&cursor){let lo=null;for(const t of (r.data||[])){const o=finMap(t,acc);if(o&&(!lo||o.d<lo))lo=o.d}
+        if(lo){const sf=new Date(lo+"T12:00:00Z");sf.setUTCDate(sf.getUTCDate()+10);const cut=sf.toISOString().slice(0,7);for(const m of ms)if(m>cut)await saveM(m)}}
       if(!cursor||pages>=200)break;}}
-    let changed=0;
-    for(const m of ms){const map=byM[m];if(!map)continue;
-      const txns=[...map.values()].sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id));
-      const prev=S.demo?null:S.months[m];if(prev&&JSON.stringify(prev.txns)===JSON.stringify(txns))continue;
-      await db.doc("months/"+m).set({month:m,txns,updatedAt:new Date().toISOString()});changed++}
-    await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",balance:bal,balanceAt:balAt,changedMonths:changed});
+    saved.clear();for(const m of ms)await saveM(m);
+    await db.doc("config/sync").set({lastRun:new Date().toISOString(),source:"financy",full:true,balance:bal,balanceAt:balAt,changedMonths:changed});
     if(force)toast(changed?`עודכנו ${changed} חודשים מ־Financy`:"הכול מעודכן");
   }catch(e){const c=e&&e.code;finErr=({server_not_connected:"Financy לא מחובר לחשבון ה־Claude שלך",needs_reauth:"החיבור ל־Financy פג — מחברים מחדש בהגדרות",not_in_manifest:"צריך לאשר לאתר גישה ל־Financy",approval_required:"צריך לאשר לאתר גישה ל־Financy",selection_required:"יש יותר מחיבור Financy אחד — בחרו אחד"})[c]||("שגיאה מ־Financy: "+(c||"")+" "+String((e&&e.message)||"").slice(0,80));
     if(c==="server_not_connected"||c==="needs_reauth"||c==="not_in_manifest"||c==="approval_required"){if(force)toast(c==="needs_reauth"?"החיבור ל־Financy פג. מחברים מחדש בהגדרות של Claude.":"אין לך חיבור ל־Financy ב־Claude. הנתונים יתעדכנו כשמי שמחובר יפתח את האתר.")}
