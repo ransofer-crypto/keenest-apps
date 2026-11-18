@@ -15,6 +15,7 @@ def fix(m):
         return m.group(0)
     return '<script type="text/keenest-app">' + body + "</script>"
 html = re.sub(r"(<script\b[^>]*>)(.*?)</script>", fix, html, flags=re.S)
+sys.path.insert(0, str(pathlib.Path(__file__).parent)); from defer_after import defer_after
 
 title = re.search(r"<title>(.*?)</title>", html, re.S)
 title = title.group(1).strip() if title else app
@@ -32,6 +33,7 @@ if "</body>" in html:
     html = html.replace("</body>", tail + "</body>", 1)
 else:
     html = html.replace("</html>", tail + "</html>", 1)
+html = defer_after(html)
 out.mkdir(parents=True, exist_ok=True)
 (out / "index.html").write_text(html, encoding="utf-8")
 (out / "manifest.webmanifest").write_text(json.dumps({

@@ -1794,7 +1794,7 @@ boot();
 .kd .actions>*,.pop.kd .btns>*{flex:none!important}
 .kd .form{box-shadow:none!important;background:var(--sunk,rgb(127 140 160 / .1))!important}
 </style>
-<script>
+<script type="text/keenest-app">
 (function(){
   const X='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   const CLOSE=/^\s*(ביטול|סגירה)\s*$/;
@@ -1891,7 +1891,7 @@ html,body{overflow-x:clip}
 .tacts{display:flex;gap:8px;margin-top:10px}.tacts button{height:34px;padding:0 12px;border-radius:999px;background:var(--chip);color:var(--chipfg);font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}.tacts svg{width:16px;height:16px}
 .bub.her{position:relative;padding-left:40px}.bsay{position:absolute;left:8px;bottom:8px;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;color:var(--muted)}.bsay svg{width:14px;height:14px}
 </style>
-<script>
+<script type="text/keenest-app">
 (function(){
   const RM=matchMedia("(prefers-reduced-motion: reduce)");
   document.addEventListener("touchstart",()=>{},{passive:true});
@@ -1910,7 +1910,7 @@ html,body{overflow-x:clip}
   run();
 })();
 </script>
-<script>
+<script type="text/keenest-app">
 /* block pinch / double-tap zoom everywhere (iOS ignores user-scalable=no) */
 ["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
 document.addEventListener("touchmove",e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});

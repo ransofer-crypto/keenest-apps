@@ -9202,7 +9202,7 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 .kd .form input[type=datetime-local],.kd .form input[type=date]{padding-left:10px!important}
 
 </style>
-<script>
+<script type="text/keenest-app">
 /* ===== Keenest dialog language — header with title + X, one wide primary button ===== */
 (function(){
   const X='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
@@ -9295,7 +9295,7 @@ html,body{overflow-x:clip}
 @keyframes iosRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 </style>
-<script>
+<script type="text/keenest-app">
 /* ===== iOS motion layer (shared by all Keenest sites) ===== */
 (function(){
   const RM=matchMedia("(prefers-reduced-motion: reduce)");
@@ -10142,7 +10142,7 @@ body:has(.chsheet .chatcol) #fbw{display:none}
 .pron .prpk{all:unset;cursor:pointer;margin-inline-start:auto;font-weight:700;color:var(--accent-text,#06B3E5)}
 .pron .prpk.ok{color:#2fbf71}
 .pron .btns{margin-top:16px}
-</style><script>
+</style><script type="text/keenest-app">
 /* v388: ask Claude under a scene take – Claude sees the take (one frame per second) and the prompt that was sent; a fix goes into the scene's director note */
 S.skDraft=S.skDraft||{};S.skBusy=S.skBusy||{};S.skSheet=S.skSheet||{};
 function skTake(card){const pg=card.querySelector(".vbig.vpg");if(!pg)return null;let idx=S.pgIdx&&S.pgIdx[pg.dataset.pg];
@@ -10209,13 +10209,13 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 .ai2 input{min-height:46px!important;height:46px!important}
 .ai2>.bsm2,.ai2>button{height:46px!important;min-height:46px!important;padding:0 18px!important;font-size:14.5px!important;border-radius:999px!important;align-self:stretch!important}
 .sknote{margin-bottom:10px}
-</style><script>
+</style><script type="text/keenest-app">
 /* v396: no music, front-loaded – the end-of-prompt "no music" line alone was not enough (scene 2 came out with a score) */
 {const sVR=sceneVidReq;sceneVidReq=function(b,sc,i,tail){const p=sVR.apply(this,arguments);try{const after=q=>{let v=String(q.prompt||"");if(!v||/^NO MUSIC —/m.test(v)||(b&&b.vaudio===false))return;
   const line="NO MUSIC — the soundtrack of this clip is only the spoken lines and the natural sounds of this place, from the first frame to the last: no score, no song, no instruments, no beat, no musical sting.";
   const ar=v.indexOf("ACTIVE REFERENCES\n");const ae=ar>=0?v.indexOf("\n\n",ar):-1;q.prompt=ae>0?v.slice(0,ae)+"\n\n"+line+v.slice(ae):line+"\n\n"+v};
   if(p&&typeof p.then==="function")return p.then(q=>{try{after(q)}catch(_){}return q});if(p)after(p)}catch(_){}return p}}
-</script><script>
+</script><script type="text/keenest-app">
 /* v397: the prompt step lists every reference the take actually sends – read from the real request, in its order */
 function vfMediaImg(b,v){let hit=null;const walk=o=>{if(hit||!o||typeof o!=="object")return;if(Array.isArray(o)){o.forEach(walk);return}
   if(((o.gen&&o.gen.job===v)||o.media===v)&&(o.img||o.url)){hit=o;return}for(const k in o){const x=o[k];if(x&&typeof x==="object")walk(x)}};
@@ -10235,7 +10235,7 @@ function vfRefAll(b,key,i,E){try{const sc=scFind(b,key);if(!sc)return null;let q
   (E||[]).filter(e=>!locked(e)).forEach(e=>rows.push(`<div class="vfel off"><span class="ph"></span><span><b>אביזר · ${esc(e.name||"")}</b><small>לא נעול · לא נכנס</small></span></div>`));
   return rows.join("")}catch(_){return null}}
 </script>
-<style>.vfel .vfau{display:grid;place-items:center;color:#06B3E5}</style><script>
+<style>.vfel .vfau{display:grid;place-items:center;color:#06B3E5}</style><script type="text/keenest-app">
 /* v400: re-record one line only (the others keep their voices) */
 async function elGenLine(sid,k){const b=B();const s=b&&(b.shots||[]).find(x=>x.id===sid);const d=s&&s.dlg[k];if(!d)return;
   if(!tgOk(d)&&!d.tgNo){S.elBusy[sid]="Claude מוסיף תגיות…";render();try{const tg=__R(__c(),await elTag(b,s,[k]));const bb=B();const ss=bb&&(bb.shots||[]).find(x=>x.id===sid);const dd=ss&&ss.dlg[k];if(dd&&tg[k]){dd.tg={src:hsh(String(dd.text).trim()),txt:tg[k]};ss._ts=Date.now();saveB(bb)}}catch(_){}S.elBusy[sid]="";render()}
@@ -10248,7 +10248,7 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 .elre[disabled]{opacity:.4;cursor:default}
 .elre+.elpr{margin-inline-start:0}
 .elpl .spin{margin:0!important;width:16px!important;height:16px!important}
-</style><script>
+</style><script type="text/keenest-app">
 /* v404: a tap never moves the page – the tapped control stays where the finger is, through every re-render that follows it */
 S.anc=null;
 function ancSels(t){const out=[];let n=t;for(let i=0;n&&n!==document.body&&i<7;i++,n=n.parentElement){for(const a of n.attributes||[]){if(/^data-/.test(a.name)&&a.value&&a.value.length<120)out.push(`[${a.name}="${CSS.escape(a.value)}"]`)}if(n.id)out.push("#"+CSS.escape(n.id))}return out}
@@ -10259,7 +10259,7 @@ function ancFix(){const A=S.anc;if(!A)return;if(Date.now()-A.at>4000||A.step!==S
   for(const sel of A.sels){let L;try{L=document.querySelectorAll(sel)}catch(_){continue}if(L.length!==1)continue;const d=L[0].getBoundingClientRect().top-A.top;if(Math.abs(d)>2)window.scrollBy(0,d);return}}
 {const rA=render;render=function(){const r=rA.apply(this,arguments);try{if(S.anc){ancFix();requestAnimationFrame(ancFix)}}catch(_){}return r}}
 </script>
-<style>.vfdlt{opacity:.6;font-size:12.5px;white-space:nowrap}.vfdlt.over{color:#E5484D;opacity:1}</style><script>
+<style>.vfdlt{opacity:.6;font-size:12.5px;white-space:nowrap}.vfdlt.over{color:#E5484D;opacity:1}</style><script type="text/keenest-app">
 /* v406: suggest elements also before there are shots – reads the scenes; a suggested element is marked on its scenes */
 {const eS0=elSuggest;elSuggest=async function(){const b=B();if(!b)return;if((b.shots||[]).length)return eS0.apply(this,arguments);
   const SC=b.scenes||[];if(!SC.length&&!String(b.script||"").trim()){toast("קודם מדביקים תסריט");return}
@@ -10282,7 +10282,7 @@ ${SC.length?"הסצנות:\n"+SC.map(sc=>`סצנה ${sc.n}: ${String(scTxtOf(b,s
 <style>
 /* the "written on it" row borrowed the name of the small image badge class (.otx: absolute 20px circle) and pushed the page sideways */
 .oli.otx{position:static!important;width:auto!important;height:auto!important;border-radius:0!important;background:none!important;color:inherit!important;font-size:inherit!important;line-height:normal!important;padding:8px 0!important;cursor:auto!important}
-</style><script>
+</style><script type="text/keenest-app">
 /* v407: Claude casts every speaker – an existing voice from the library, or a new one designed from a description – and Ran approves before anything is saved */
 async function voiceCast(){const b=B();if(!b)return;const sp=speakers(b);if(!sp.length){toast("עוד אין דמויות");return}
   const p=pop(`<div class="kd-hd"><div class="kd-t"><h3>ליהוק קולות</h3><small>Claude בוחר · אתה מאשר</small></div><button class="kd-x" data-vx aria-label="סגירה">${I.x}</button></div><div class="elvl vcl"><div class="elwait"><span class="spin"></span>טוען את הקולות…</div></div>`,"kd elvp vcast");
@@ -10337,7 +10337,7 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 .vcast .vcsw{flex:none;font-weight:700;font-size:14px}
 .vcast .vcsum{font-size:13.5px;opacity:.7;margin-top:10px;line-height:1.5}
 .vcast .btns{margin-top:14px}
-</style><script>
+</style><script type="text/keenest-app">
 /* v408: faces centred in the "who is in the scene" avatars; staging text <-> dots stay in sync both ways */
 {const sWR=scnWhoRow;scnWhoRow=function(b,key){let h=sWR.apply(this,arguments);try{
   scnWho(b,key).forEach(w=>{const u=scnAv(b,w.name);if(!u)return;h=h.split(`<img src="${esc(u)}" alt="">`).join(vfFace(b,w.name))})}catch(_){}return h}}
@@ -10400,7 +10400,7 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 {const hF=hiFinish;hiFinish=async function(key){const r=__R(__c(),await hF.apply(this,arguments));try{const b=B();const sc=sceneObj(b,key);if(sc&&String(sc.stg||"").trim()){if(sc.dots)delete sc.dots.sync;sc.stgAt=Math.max(+sc.stgAt||0,(+(sc.dots&&sc.dots.at)||0)+1);saveB(b);dotsFromText(key)}}catch(_){}return r}}
 </script>
 <style>.scnav .vfav{width:100%!important;height:100%!important;border:0;margin:0!important}</style>
-<script>
+<script type="text/keenest-app">
 /* v413: zoom into part of the high view (crop frame keeps the image's shape); the cropped image is what Claude marks on and what goes to the clip */
 function hiCropVf(sc){const c=sc&&sc.hi&&sc.hi.crop;if(!c)return "";const f=v=>(v/100).toFixed(4);return `-vf "crop=iw*${f(c[2])}:ih*${f(c[2])}:iw*${f(c[0])}:ih*${f(c[1])}"`}
 S.cropEd=S.cropEd||{};
@@ -10450,7 +10450,7 @@ async function hiCropSave(key){const ed=S.cropEd[key];let b=B();let sc=sceneObj(
 .hcf i[data-c="sw"]{bottom:-10px;left:-10px}.hcf i[data-c="sw"]:after{bottom:6px;left:6px;border-width:0 0 3px 3px}
 .hcf i[data-c="se"]{bottom:-10px;right:-10px}.hcf i[data-c="se"]:after{bottom:6px;right:6px;border-width:0 3px 3px 0}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v414: the prompt is written in the background as soon as the shots and the voices are ready, and the dialogue transliteration runs at the same time – the take button no longer waits for it */
 S.kstAuto=S.kstAuto||{};S.trlPre=S.trlPre||{};
 function kstAutoRun(){let b;try{b=B()}catch(_){return}if(!b||S.step!=="video")return;
@@ -10462,13 +10462,13 @@ function kstAutoRun(){let b;try{b=B()}catch(_){return}if(!b||S.step!=="video")re
     setTimeout(()=>{kstApprove(id).catch(()=>{}).finally(()=>{try{render()}catch(_){}})},0)}catch(_){}})}
 {const rKA2=render;render=function(){const r=rKA2.apply(this,arguments);try{clearTimeout(S.kstAutoT);S.kstAutoT=setTimeout(kstAutoRun,1200)}catch(_){}return r}}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v415: the Seedance prompt is written by Opus (Sonnet only if Opus does not answer in 6 minutes); the model that actually wrote it is kept with the prompt and shown */
 {const kAM=kstApprove;kstApprove=async function(id){if(S.aiLast)delete S.aiLast.kst;const r=__R(__c(),await kAM.apply(this,arguments));
   try{const m=S.aiLast&&S.aiLast.kst;if(m){const b=B();const q=kstPart(b,id);if(q.sc&&kstOk(b,q.sc,q.p,q.i)){q.sc.vpM=q.sc.vpM||{};q.sc.vpM[q.i]=m.model||m.tier;saveB(b);render()}}}catch(_){}return r}}
 function mName(m){m=String(m||"");return /opus|complex/i.test(m)?"Opus":/sonnet|default/i.test(m)?"Sonnet":/haiku|quick/i.test(m)?"Haiku":m}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v416: Claude Q&A under the take folds up once its fix is in (or a newer one comes); the scene note shows two lines until tapped */
 S.skOpen=S.skOpen||{};S.skNt=S.skNt||{};
 document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest("[data-skt],[data-sknt],[data-skfix],[data-skno]");if(!x)return;
@@ -10487,7 +10487,7 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 .sknote>span{cursor:pointer;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
 .sknote.open>span{display:block;-webkit-line-clamp:unset}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v417: optional black-screen MP4 dialogue (b.dlgFmt="mp4"); v419: MP3 is the default again – the 3+3 test (16.11) favoured MP3 with Latin transliteration */
 function dlgMp4(b){return !!b&&b.dlgFmt==="mp4"}
 {const sVM=sceneVidReq;sceneVidReq=function(b,sc,i,tail){const p=sVM.apply(this,arguments);try{if(!p||!dlgMp4(b)||!sc)return p;const f=((sc.dlgf)||{})[i];if(!f||!f.vmedia)return p;
@@ -10497,7 +10497,7 @@ function dlgMp4(b){return !!b&&b.dlgFmt==="mp4"}
   v=v.replace("DIALOGUE AUDIO: the exact dialogue of this clip","DIALOGUE TRACK: a black-screen video whose sound is the exact dialogue of this clip (use only its sound – nothing of its picture)");
   v=v.split("@audio1").join(tag);p.prompt=v;p.generate_audio=true}catch(_){}return p}}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v418: Hebrew outside the dialogue quotes (e.g. a prop's Hebrew name in ACTIVE REFERENCES) no longer blocks the transliteration – only those words are translated, the quoted lines stay Latin */
 async function trOutside(t){const QR=/"[^"\n]*"|“[^”\n]*”/g;const parts=[];let last=0,m;while((m=QR.exec(t))){parts.push({q:false,s:t.slice(last,m.index)});parts.push({q:true,s:m[0]});last=m.index+m[0].length}parts.push({q:false,s:t.slice(last)});
   const HR=/[֐-׿](?:[֐-׿0-9'׳״\- ]*[֐-׿])?/g;const runs=[...new Set(parts.filter(x=>!x.q).flatMap(x=>x.s.match(HR)||[]))];if(!runs.length)return t;
@@ -10505,7 +10505,7 @@ async function trOutside(t){const QR=/"[^"\n]*"|“[^”\n]*”/g;const parts=[]
     const it=(r&&r.items)||[];runs.forEach((x,i)=>{const v=String(it[i]||"").trim();if(v&&!hasHeb(v))map[x]=v})}catch(_){}
   return parts.map(x=>x.q?x.s:x.s.replace(HR,w=>map[w]||w)).join("")}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v423: the world sample is only a check of the style prompt – it is no longer attached as a reference to characters, locations or frames (b.worldRef=true brings it back) */
 /* v420: compact player on every take – play/pause, a draggable bar (no longer fights the side swipe), time, speed ×1/×2/×4, full screen */
 S.vRate=S.vRate||1;
@@ -10559,14 +10559,14 @@ body.vfs-on{overflow:hidden}
 .vsl.vfs .vctl{left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom))}
 </style>
 <style>.permbar{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:9998;display:flex;align-items:center;gap:10px;background:#FFF3B0;color:#2F2F2F;border-radius:99px;padding:8px 8px 8px 16px;font-size:14px;font-weight:600;box-shadow:0 6px 20px rgb(0 0 0 / .25)}.permbar span{flex:1}.permbar button{border:0;background:#2F2F2F;color:#fff;border-radius:99px;padding:8px 14px;font:inherit;font-weight:700}.permbar button.x{background:none;color:#2F2F2F;padding:6px}</style>
-<script>
+<script type="text/keenest-app">
 /* v426: breaking a scene into shots gets the scene's own script rows – shots come only from them, so the next scene's lines are not repeated */
 function scRowsTxt(b,sc){try{const T=sceneRowTexts(b,sc);if(T.length)return T.map(r=>`${r.i}. ${r.part||`רואים: ${r.see||"—"} | שומעים: ${r.hear||"—"}`}`).join("\n");const rows=(sc&&Array.isArray(sc.rows))?sc.rows.map(Number):[];if(!rows.length)return "";const lines=String(b.script||"").split(/\n/);const out=[];let cur=null;
   const P=(sc&&sc.parts)||{};lines.forEach(l=>{const m=l.match(/^\s*(\d+)[.)]\s*(.*)$/);if(m){cur=+m[1];if(rows.includes(cur))out.push(P[cur]?`${cur}. ${P[cur]}`:l.trim())}else if(cur!=null&&rows.includes(cur)&&!P[cur]&&l.trim())out.push(l.trim())});return out.join("\n")}catch(_){return ""}}
 {const sPR=shotPrompt;shotPrompt=function(b,only){let t=sPR.apply(this,arguments);try{if(!only)return t;const key=String(only).split(" ")[0];const sc=scFind(b,key);const rt=scRowsTxt(b,sc);if(!rt)return t;
   t=t.replace("\nהתסריט:\n",`\nסצנה ${key} היא בדיוק השורות האלה בתסריט (${sc.rows.join(", ")}):\n${rt}\nכל השוטים של הקריאה הזאת באים רק מהשורות האלה – לא מתחילים לפני השורה הראשונה ולא ממשיכים אחרי האחרונה. מה שבשורות אחרות שייך לסצנות אחרות ולא חוזר כאן.\n${sc.loc?`המקום של הסצנה קבוע: ${sc.loc} – loc של כל שוט בסצנה = בדיוק זה.\n`:""}${(()=>{try{const W=scnWho(b,key).filter(w=>!w.bg).map(w=>w.name);return W.length&&sc.who?`מי בסצנה: ${W.join(", ")}.\n`:""}catch(_){return ""}})()}${String(sc.stg||"").trim()?`העמדות שנקבעו לסצנה (לא לשנות): ${String(sc.stg).trim().slice(0,700)}\n`:""}כיתובים, טייטלים וכל מה שכתוב "על המסך:" (כשזה לא טקסט שנמצא בעולם עצמו, כמו שלט או מסך טלפון) מוסיפים בעריכה – לא שוט ולא חלק משוט. מוזיקה לא נכנסת לשוטים.\nלא ממציאים: בשוטים (subject, desc, cast, audio) רק אנשים, חפצים, פעולות וצלילים שכתובים בשורות האלה. בלי עמיתים, ניצבים, עוברים ושבים או אנשי רקע שלא כתובים, ובלי פרטים במקום (חלונות, נוף, רהיטים מיוחדים) שלא כתובים בשורות או בתיאור המקום.\n\nהתסריט:\n`)}catch(_){}return t}}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v427: all voices of a scene part in one go – one confirm with the total, then every shot is recorded at the same time; each line shows "מכין את הקול…" until it is ready */
 async function elGenMany(sids,all,pid){let b=B();if(!b||!sids.length)return;S.vfVBusy=S.vfVBusy||{};if(pid)S.vfVBusy[pid]="מכין את השורות…";render();
   const plan=[];
@@ -10586,7 +10586,7 @@ async function elGenMany(sids,all,pid){let b=B();if(!b||!sids.length)return;S.vf
     let i=0;const work=async()=>{for(;;){const x=plan[i++];if(!x)return;try{__R(__c(),await elGenRun(x.sid,x.ks))}catch(_){}}};
     try{__R(__c(),await Promise.all([work(),work(),work()]))}finally{if(pid)delete S.vfVBusy[pid];render()}})}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v429: under the high view, one row per person – what Claude understood in plain Hebrew, and sit / stand / other to correct it; a change rewrites the staging text */
 const POSES=[["sit","יושב"],["stand","עומד"],["other","אחר"]];
 function poseTxt(b,key){try{const sc=sceneObj(b,key);const P=(sc.dots&&sc.dots.pose)||{};const wn=posWho(b,key).map(w=>w.name);const rt=scRowsTxt(b,sc);const pre=rt?`השורות של הסצנה בתסריט – מי נמצא, אם יושב או עומד ומה עושה באים מכאן (ולא ממה שנראה בתמונה):
@@ -10623,7 +10623,7 @@ document.addEventListener("keydown",e=>{const x=e.target;if(x.dataset&&x.dataset
 .pseg button.on{background:var(--ink,#F2F5F8);color:var(--bg,#03080F)}
 .pact{flex-basis:100%;height:40px;border-radius:99px;border:1.5px solid var(--line,rgb(255 255 255/.12));background:transparent;color:inherit;padding:0 14px;font:inherit;font-size:16px}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v430: positions follow the script. Each scene remembers the script rows its positions were written from; when those rows change, the scene list says so and offers to reset. Any scene can also be reset by hand. Reset clears who / text / dots / poses (location and the high view stay) and Claude writes them again from the rows. */
 function rowSig(b,sc){const t=sceneRowTexts(b,sc).map(r=>r.part||(r.see+" | "+r.hear)).join("\n").replace(/\s+/g," ").trim()+"@"+String(sc&&sc.loc||"");let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return "r433:"+(h>>>0).toString(36)}
 const sigOld=sc=>!String((sc&&sc.rowSig)||"").startsWith("r433:");
@@ -10655,7 +10655,7 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 .rtag{display:inline-block;font-size:12px;font-weight:700;color:#2F2F2F;background:#F7E7A6;border-radius:99px;padding:2px 8px;margin-inline-start:6px;vertical-align:2px}
 .rrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0 2px}.rrow .rtag{margin:0;position:static}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v433: one source of truth for what each scene is – its rows in the script table (with the part of a split row). Re-split matches old scenes by the text of their rows, never by numbers; shots, transitions and crowd follow their scene or are set aside. The scene's own location wins over its shots. */
 function sceneRowTexts(b,sc){try{const R=b.scrRows||[];const P=(sc&&sc.parts)||{};return ((sc&&sc.rows)||[]).map(Number).filter(i=>R[i-1]).map(i=>({i,see:String(R[i-1].see||""),hear:String(R[i-1].hear||""),part:String(P[i]||P[String(i)]||"")}))}catch(_){return []}}
 function allRowsSig(b){const R=(b.scrRows||[]).map(r=>[String(r.see||"").trim(),String(r.hear||"").trim()]);while(R.length&&!R[R.length-1][0]&&!R[R.length-1][1])R.pop();return hsh(JSON.stringify(R))}
@@ -10680,7 +10680,7 @@ function scnMerge(bb,sc){const old=(bb.scenes||[]).slice();const used=new Set();
 /* remember the row texts of every scene while the split is valid, so the next re-split can recognise them */
 {const rn=render;render=function(){try{const b=B();if(b&&(b.scenes||[]).length&&scnRowsOK(b)&&(!b.scnRowsSig||(b.scenes||[]).some(sc=>sigOld(sc)&&(sc.rows||[]).length))){if(!b.scnRowsSig)b.scnRowsSig=allRowsSig(b);(b.scenes||[]).forEach(sc=>{if(sigOld(sc)&&(sc.rows||[]).length)sc.rowSig=rowSig(b,sc)});setTimeout(()=>saveB(b),0)}}catch(_){}return rn.apply(this,arguments)}}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v434: the rest of the QA list – rename / delete everywhere, continuity from the same place, no forced wide on an intercut return, high view tied to the location image, hand-edited prompt tied to its shots, people outside the who-list pruned, people in the rows but missing from the who-list flagged */
 function renameAll(b,kind,from,to){const sw=n=>n===from?to:n;const rx=t=>{const e=from.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return String(t||"").replace(new RegExp(`(^|[^\\u05D0-\\u05EAa-zA-Z0-9]|(?:^|[^\\u05D0-\\u05EA])[ובהלכמש])${e}(?![\\u05D0-\\u05EAa-zA-Z0-9])`,"g"),(m,p)=>p+to)};
   if(kind==="chars"){(b.shots||[]).forEach(s=>{s.cast=(s.cast||[]).map(sw);(s.dlg||[]).forEach(d=>{if(d.who===from)d.who=to});s.subject=rx(s.subject);s.desc=rx(s.desc)});
@@ -10731,7 +10731,7 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
 /* self-test: wrappers that patch prompt text by matching it – warn in the console if a marker stopped matching */
 setTimeout(()=>{try{const b=B();if(!b||!(b.scenes||[]).length)return;const k=String(b.scenes[0].n);const t=shotPrompt(b,k);const miss=[];if(!/היא בדיוק השורות/.test(t)&&scRowsTxt(b,b.scenes[0]))miss.push("shotPrompt rows");if(!/לא ממציאים/.test(t)&&scRowsTxt(b,b.scenes[0]))miss.push("shotPrompt no-invent");if(miss.length)console.warn("[selftest] prompt markers missing:",miss)}catch(e){console.warn("[selftest]",e)}},4000);
 </script>
-<script>
+<script type="text/keenest-app">
 /* v437: live-replay fixes (17.11) –
    H2: block 2+ of a long scene continues from the END STATE of the block before it, not from an older scene;
    H3: a re-split carries every element's scene numbers through the same old→new map as the shots (a fresh or unmatched split clears them, so the scene assignment runs again from the rows);
@@ -10815,11 +10815,11 @@ document.addEventListener("click",e=>{const x=e.target.closest&&e.target.closest
   if(op==="ok"){sc.implOk=sc.implOk||{};sc.implOk[w.name]=1;saveB(b);render()}else scnWhoSet(k,W=>W.splice(+i,1))},true);
 
 </script>
-<script>
+<script type="text/keenest-app">
 /* v438: characters and locations are always made once there is a script – entering style / characters / locations with none of them starts the breakdown by itself (once per visit) */
 {const rCL=render;render=function(){const r=rCL.apply(this,arguments);try{const b=B();if(b&&S.view==="prod"&&["style","chars","locs","els"].includes(S.step)&&(b.script||"").trim()&&!(b.chars||[]).length&&!(b.locs||[]).length&&!S.thinking.all){S.brkAuto=S.brkAuto||{};if(!S.brkAuto[b.id]){S.brkAuto[b.id]=1;setTimeout(()=>{try{breakdown()}catch(_){}},0)}}}catch(_){}return r}}
 </script>
-<script>
+<script type="text/keenest-app">
 /* v439: robustness fixes (17.11, from the layer-3 QA report) –
    H1: a step that waits for Claude / Higgsfield goes on in the production it started in, even if you open another one meanwhile
        (the "busy" spinners are kept per production too); if that production was deleted, the step stops quietly;
@@ -11105,7 +11105,7 @@ function vTimeout(p,ms,err){let t,acc=0,last=Date.now();return Promise.race([p,n
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #nav.nav{box-shadow:0 12px 30px rgb(0 0 0 / .5),0 0 0 1px rgb(255 255 255 / .06)!important}}
 :root[data-theme="dark"] #nav.nav{box-shadow:0 12px 30px rgb(0 0 0 / .5),0 0 0 1px rgb(255 255 255 / .06)!important}
 textarea.olook2.kaclamp{overflow:hidden!important;-webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent);mask-image:linear-gradient(to bottom,#000 55%,transparent);cursor:pointer}
-</style><script>
+</style><script type="text/keenest-app">
 /* v440: one way to ask Claude, the same on every item (Ran chose option ג, 17.11).
    Every item – character / location / element card, the world sample, each scene in עמדות, each scene part in וידאו, the script –
    gets a "⋯" beside its title. Its menu (the app's own .menu, grows in from the button) starts with "לבקש מ־Claude" (CLOGO),
@@ -11435,7 +11435,7 @@ html.knxon .totop{bottom:calc(158px + env(safe-area-inset-bottom,0px))!important
 /* one scene open at a time: no "open all" on these two steps */
 [data-call="frames|open"],[data-call="video|open"]{display:none!important}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v442: (1) "מה עכשיו" – one sticky bar just above the bottom nav with the single next thing to do in the whole production
    (pipeline order: script → style → characters → locations → elements → voices → dialogue lines → positions per scene → video takes),
    a small "אחר כך: …" line with the item after it, and one button that goes (and scrolls) to the exact place. Hidden when nothing is
@@ -11611,7 +11611,7 @@ html.knxon .totop{bottom:calc(158px + env(safe-area-inset-bottom,0px))!important
 small{font-size:12px}
 code,kbd,samp,pre{font-size:13.5px}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v443: (A) the "מה עכשיו" bar (#knx, v442) is the one place for "what's missing": the top-of-step notices it already covers are removed
    (frames: "חסרים לוקיישנים נעולים…" + "ללוקיישנים", "יש דמויות או לוקיישנים בלי גרסה נעולה"; video: "חסרים קולות לחלק משורות הדיאלוג → לקולות";
    the "חסר: ליצור את הקולות" button prefix; the empty-step "לתסריט" button). Errors/failures, stale-version bars and the permission bar stay.
@@ -11750,7 +11750,7 @@ code,kbd,samp,pre{font-size:13.5px}
 /* toast undo: one style on every site – bold, no underline; palette blue that reads on the yellow pill */
 :root:root:root:root body .toast :is(.tundo,.undo,button,a){color:#B4570A!important;font-weight:800!important;text-decoration:none!important}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v444: (1) palette – the shot-timeline segment colours (KST_COL) come from the palette (each ≥4.5:1 with the white label on it);
    (2) one word per idea in UI text (the strings themselves were edited in place, every layer that repeats them included – kHintPre too):
        עמדות = the positions step and its image ("תמונת העמדות", "לעמדות"); "פריים" stays only for a shot's start/end frame (shot mode / image-model term);
@@ -11791,7 +11791,7 @@ button.bmrow span{color:var(--lnk);font-weight:700}
 .bmempty .bs{width:auto;padding:0 22px}
 @media (prefers-reduced-motion:reduce){.bmv button{transition:none}}
 </style>
-<script>
+<script type="text/keenest-app">
 /* v445: Blender camera move – a 4th tab "בלנדר" on עמדות (Ran chose option א on mk_blender, 18.11).
    Pick one of 4 moves (קשת · קריין · מעקב · פוש־אין), direction/amount (editable), length = the first shot of the clip.
    ONE source: the dolls are the scene's dots (sc.dots.pts on the high view) + who-list + poses – the same data the text and the dots
