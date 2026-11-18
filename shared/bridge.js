@@ -23,16 +23,17 @@
 
   /* ---------------- db ---------------- */
   var cache = {};            // "coll\u0000id" -> data
+  var META = { fromCache: false, hasPendingWrites: false };
   var docSubs = [], collSubs = [];
   var dbReady = null;
 
   function key(c, i) { return c + "\u0000" + i; }
-  function docSnap(c, i) { var d = cache[key(c, i)]; return { id: i, exists: d !== undefined, data: function () { return clone(d); }, ref: { path: (c ? c + "/" : "") + i } }; }
+  function docSnap(c, i) { var d = cache[key(c, i)]; return { id: i, exists: d !== undefined, data: function () { return clone(d); }, ref: { path: (c ? c + "/" : "") + i }, metadata: META }; }
   function collSnap(c) {
     var docs = [];
     Object.keys(cache).forEach(function (k) { var p = k.split("\u0000"); if (p[0] === c) docs.push(docSnap(p[0], p[1])); });
     docs.sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
-    return { empty: docs.length === 0, size: docs.length, docs: docs, forEach: function (f) { docs.forEach(f); } };
+    return { empty: docs.length === 0, size: docs.length, docs: docs, forEach: function (f) { docs.forEach(f); }, metadata: META, docChanges: function () { return []; } };
   }
   function notify(c, i) {
     docSubs.forEach(function (s) { if (s.c === c && s.i === i) try { s.cb(docSnap(c, i)); } catch (e) { console.error(e); } });
@@ -109,7 +110,7 @@
           if (a === b) continue; if (a == null) return 1; if (b == null) return -1; return (a < b ? -1 : 1) * dir; }
         return 0; });
       if (q.lim != null) docs = docs.slice(0, q.lim);
-      return { empty: docs.length === 0, size: docs.length, docs: docs, forEach: function (f) { docs.forEach(f); } };
+      return { empty: docs.length === 0, size: docs.length, docs: docs, forEach: function (f) { docs.forEach(f); }, metadata: META, docChanges: function () { return []; } };
     }
     var api = {
       id: c, path: c,
