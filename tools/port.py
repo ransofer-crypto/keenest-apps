@@ -27,7 +27,7 @@ head_add = ('<link rel="manifest" href="manifest.webmanifest">'
 html = html.replace("</title>", "</title>" + head_add, 1)
 tail = (f'<script type="application/json" id="keenest-manifest">{json.dumps(manifest, ensure_ascii=False)}</script>'
         f'<script>window.KEENEST_APP={json.dumps(app)};</script>'
-        '<script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=5"></script>')
+        '<script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=6"></script>')
 if "</body>" in html:
     html = html.replace("</body>", tail + "</body>", 1)
 else:

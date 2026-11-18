@@ -7,6 +7,7 @@
 //   node kdb.mjs merge <app> <coll> <id> '<json>'      (top-level merge into the doc)
 //   node kdb.mjs del   <app> <coll> <id>
 //   node kdb.mjs batch <app> '@ops.json'               ([{op:"set"|"merge"|"del", coll, id, data}])
+//   node kdb.mjs upload <app> <file>                   (puts a file online, prints {id,url}; up to 50 MB)
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -60,5 +61,12 @@ try {
       n++;
     }
     out({ ok: n });
+  } else if (cmd === "upload") {
+    const f = rest[0];
+    const ext = (f.split(".").pop() || "").toLowerCase();
+    const CT = { mp4: "video/mp4", mov: "video/quicktime", mp3: "audio/mpeg", m4a: "audio/mp4", wav: "audio/wav", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif", pdf: "application/pdf", xml: "application/xml", srt: "application/x-subrip", vtt: "text/vtt", json: "application/json", txt: "text/plain", zip: "application/zip" };
+    const r = await fetch(`${SB_URL}/functions/v1/worker_upload`, { method: "POST", headers: { "x-worker-secret": S, "Content-Type": CT[ext] || "application/octet-stream" }, body: readFileSync(f) });
+    const t = await r.text(); if (!r.ok) throw new Error("upload: " + r.status + " " + t);
+    process.stdout.write(t + "\n");
   } else throw new Error("unknown command " + cmd);
 } catch (e) { console.error(String(e.message || e)); process.exit(1); }

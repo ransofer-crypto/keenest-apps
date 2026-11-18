@@ -286,6 +286,7 @@ async function doAgent(job) {
   const prompt = body.split("{{KDB}}").join(kdb) + `\n\nNow (Israel time): ${il}. Epoch ms now: ${now.getTime()}.` + (text ? "\n\n" + text : "");
   const servers = (meta.servers || "").split(",").map((x) => x.trim()).filter(Boolean);
   const allowed = ["Bash(node:*)", "Bash(python3:*)", "Bash(cat:*)", "Bash(jq:*)", "Read", "Write", "WebSearch", "WebFetch"];
+  if (meta.bash === "all") allowed.push("Bash", "Edit", "Glob", "Grep");
   for (const sv of servers) { try { allowed.push("mcp__" + serverId(job.app, sv)); } catch {} }
   const env = { KDB_APPS: meta.apps || job.app };
   let final = null, failed = null;

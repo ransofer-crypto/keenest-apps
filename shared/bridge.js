@@ -326,6 +326,7 @@
     if (!m2.data) { await sb.auth.signOut(); alert("אין לך גישה לאתר הזה"); location.reload(); return; }
     me = { id: s.user.id, email: s.user.email };
     try { var e = await sb.rpc("my_emp"); if (e.data) { var x = Array.isArray(e.data) ? e.data[0] : e.data; if (x && x.name) me.name = x.name; } } catch (er) {}
+    if (!me.name) { try { var pp = await loadPeople(); if (pp[me.id]) me.name = pp[me.id].name; } catch (er) {} }
     dbReady = loadAll();
     dbReady.catch(function (e) { console.error("db load failed", e); });
     runAppScripts();
