@@ -357,6 +357,53 @@ async function editorBeat() {
 }
 setInterval(editorBeat, 60 * 1000); editorBeat();
 
+// ---------- nightly backup to the Mac: all site data, our file copies, and the full-size Higgsfield originals ----------
+const BACKUP = join(os.homedir(), "Keenest-Backup");
+const BACKUP_STATE = join(os.homedir(), ".keenest-worker", "backup-state.json");
+let backingUp = false;
+function israelNow() {
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).map((x) => [x.type, x.value]));
+  return { day: `${p.year}-${p.month}-${p.day}`, h: +p.hour, m: +p.minute };
+}
+async function fetchTo(url, file) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${r.status}`);
+  writeFileSync(file, Buffer.from(await r.arrayBuffer()));
+}
+async function backup() {
+  if (backingUp) return;
+  backingUp = true;
+  const t0 = Date.now(); let got = 0, failed = 0;
+  try {
+    const { existsSync, statSync } = await import("node:fs");
+    const list = await rpc("worker_backup_files", { s: SECRET });
+    const day = israelNow().day;
+    const dataDir = join(BACKUP, "data", day); mkdirSync(dataDir, { recursive: true });
+    for (const a of list.apps) writeFileSync(join(dataDir, `${a}.json`), JSON.stringify(await rpc("worker_backup_app", { s: SECRET, a })));
+    const fdir = join(BACKUP, "files"); mkdirSync(fdir, { recursive: true });
+    for (const f of list.assets) {
+      const ext = (f.type || "").includes("mp4") ? ".mp4" : (f.type || "").includes("png") ? ".png" : (f.type || "").includes("jpeg") ? ".jpg" : "";
+      const file = join(fdir, f.id + ext);
+      if (existsSync(file) && statSync(file).size === f.size) continue;
+      try { await fetchTo(`${SB_URL}/storage/v1/object/public/assets/${f.id}`, file); got++; } catch { failed++; }
+    }
+    const hdir = join(BACKUP, "higgsfield"); mkdirSync(hdir, { recursive: true });
+    for (const u of list.hf) {
+      const file = join(hdir, u.split("/").pop());
+      if (existsSync(file)) continue;
+      try { await fetchTo(u, file); got++; } catch { failed++; }
+    }
+    writeFileSync(BACKUP_STATE, JSON.stringify({ day, at: new Date().toISOString(), got, failed }));
+    log("backup done", day, `new ${got}`, `failed ${failed}`, `${Math.round((Date.now() - t0) / 1000)}s`);
+  } catch (e) { log("backup failed", String(e.message).slice(0, 200)); }
+  finally { backingUp = false; }
+}
+setInterval(() => {
+  const n = israelNow();
+  let last = ""; try { last = JSON.parse(readFileSync(BACKUP_STATE, "utf8")).day; } catch {}
+  if (last !== n.day && (n.h > 3 || (n.h === 3 && n.m >= 20))) backup();
+}, 5 * 60 * 1000);
+
 const running = new Set();
 async function handle(job) {
   running.add(job.id);
@@ -386,7 +433,7 @@ function selfUpdate() {
     const now = head();
     if (now && STARTED_AT && now !== STARTED_AT) {
       log("new worker code", now.slice(0, 7), "— restarting when idle");
-      const t = setInterval(() => { if (running.size === 0 && agentRunning.size === 0) { clearInterval(t); process.exit(0); } }, 2000);
+      const t = setInterval(() => { if (running.size === 0 && agentRunning.size === 0 && !backingUp) { clearInterval(t); process.exit(0); } }, 2000);
     }
   } catch (e) { log("self-update failed", String(e.message).slice(0, 200)); }
 }
