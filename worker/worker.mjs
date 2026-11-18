@@ -48,7 +48,7 @@ const update = (job, st, extra = {}) =>
 
 // ---------- which Claude Code profile runs which site ----------
 function envFor(app) {
-  const env = { ...process.env };
+  const env = { ...process.env, MAX_MCP_OUTPUT_TOKENS: String(CFG.maxToolTokens || 400000) };
   const prof = (CFG.apps && CFG.apps[app] && CFG.apps[app].profile) || null;
   if (prof) env.CLAUDE_CONFIG_DIR = prof.replace(/^~/, os.homedir());
   return env;
@@ -102,8 +102,16 @@ function runClaude(app, args, prompt, onEvent, signalMs) {
   });
 }
 
+// Claude Code may put a big tool result in a file and hand back only a note with its path.
+function fromSavedFile(text) {
+  const m = String(text || "").match(/Output has been saved to (\S+?\.(?:txt|json))/);
+  if (!m) return null;
+  try { return readFileSync(m[1], "utf8"); } catch { return null; }
+}
 function parseToolContent(c) {
   if (c == null) return null;
+  if (typeof c === "string") { const f = fromSavedFile(c); if (f != null) c = f; }
+  else if (Array.isArray(c)) { const t = c.filter((x) => x && x.type === "text").map((x) => x.text).join(""); const f = fromSavedFile(t); if (f != null) c = f; }
   if (typeof c === "string") { try { return JSON.parse(c); } catch { return c; } }
   if (Array.isArray(c)) {
     const texts = c.filter((x) => x && x.type === "text").map((x) => x.text);
@@ -132,9 +140,10 @@ async function doMcp(job) {
   }, 4 * 60 * 1000);
   if (result === undefined) throw Object.assign(new Error(sawCall ? "the tool gave no result" : `connector "${server}" is not connected on the office Mac`), { code: sawCall ? "tool_error" : "server_not_connected" });
   const payload = parseToolContent(result);
+  if (typeof payload === "string" && /exceeds maximum allowed tokens|RESULT_TOO_LARGE/i.test(payload)) isErr = true;
   if (isErr) {
     const msg = typeof payload === "string" ? payload : JSON.stringify(payload);
-    let code = "tool_error";
+    let code = /exceeds maximum allowed tokens|too large/i.test(msg) ? "RESULT_TOO_LARGE" : "tool_error";
     if (/permission|not allowed|denied/i.test(msg)) code = "server_not_connected";
     if (/auth|token|expired|unauthori[sz]ed|reconnect/i.test(msg)) code = "needs_reauth";
     throw Object.assign(new Error(msg.slice(0, 2000)), { code, result: payload });
@@ -180,12 +189,27 @@ async function handle(job) {
   } finally { running.delete(job.id); }
 }
 function hebrew(e) {
-  const m = { server_not_connected: "החיבור הזה לא מחובר ב-Claude Code במחשב במשרד.", needs_reauth: "החיבור פג במחשב במשרד וצריך להתחבר מחדש.", timeout: "לקח יותר מדי זמן. נסו שוב.", not_in_manifest: "לאתר הזה אין הרשאה לחיבור הזה." };
+  const m = { RESULT_TOO_LARGE: "RESULT_TOO_LARGE", server_not_connected: "החיבור הזה לא מחובר ב-Claude Code במחשב במשרד.", needs_reauth: "החיבור פג במחשב במשרד וצריך להתחבר מחדש.", timeout: "לקח יותר מדי זמן. נסו שוב.", not_in_manifest: "לאתר הזה אין הרשאה לחיבור הזה." };
   return (m[e.code] || "משהו השתבש במחשב במשרד.") + (e.code === "tool_error" ? " " + String(e.message).slice(0, 300) : "");
 }
 
+const REPO = join(HERE, "..");
+function head() { try { return execFileSync("git", ["-C", REPO, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(); } catch { return ""; } }
+const STARTED_AT = head();
+function selfUpdate() {
+  try {
+    execFileSync("git", ["-C", REPO, "pull", "--ff-only", "-q"], { encoding: "utf8", timeout: 60000 });
+    const now = head();
+    if (now && STARTED_AT && now !== STARTED_AT) {
+      log("new worker code", now.slice(0, 7), "— restarting when idle");
+      const t = setInterval(() => { if (running.size === 0) { clearInterval(t); process.exit(0); } }, 2000);
+    }
+  } catch (e) { log("self-update failed", String(e.message).slice(0, 200)); }
+}
+setInterval(selfUpdate, 3 * 60 * 1000);
+
 async function loop() {
-  log("Keenest worker started", os.hostname());
+  log("Keenest worker started", os.hostname(), STARTED_AT.slice(0, 7));
   for (;;) {
     try {
       const free = MAX_PARALLEL - running.size;
