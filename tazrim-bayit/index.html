@@ -1247,7 +1247,7 @@ const FC_MAP={RENT:"דיור ומשכנתא",MORTGAGE:"דיור ומשכנתא",
   SALARY:"משכורות",SALARY_OTHER:"משכורות",NOT_RESERVE_DUTY:"הכנסות אחרות",RESERVE_DUTY:"הכנסות אחרות",BENEFITS_OTHER:"הכנסות אחרות",RECENT_PENSION:"הכנסות אחרות",PENSION_OTHER:"הכנסות אחרות",
   REFUND:"החזרים וזיכויים",REIMBURSEMENTS_OTHER:"החזרים וזיכויים"};
 let finBusy=false;
-async function finCall(tool,input){const r=await mcp.callTool(FIN_SERVER,tool,input,{cache:false});let p=r&&r.payload;if(typeof p==="string"){try{p=JSON.parse(p)}catch(_){}}return p||{}}
+async function finCall(tool,input){let r;for(let i=0;;i++){try{r=await mcp.callTool(FIN_SERVER,tool,input,{cache:false});break}catch(e){const c=e&&e.code;if(i<2&&/^(server_not_connected|timeout|claude_failed|tool_error|failed)$/.test(c||"")){await new Promise(z=>setTimeout(z,8000));continue}throw e}}let p=r&&r.payload;if(typeof p==="string"){try{p=JSON.parse(p)}catch(_){}}return p||{}}
 function finMap(t,acc){
   const isCard=t.type==="CARD";const dt=t.date||{};
   const d=String(isCard?(dt.transactionDate||dt.bookingDate||dt.valueDate):(dt.bookingDate||dt.valueDate||dt.transactionDate)||"").slice(0,10);
@@ -1273,22 +1273,23 @@ async function syncFinancy(force){
   finBusy=true;finErr="";$("#syncText").textContent="מושך מ־Financy…";$("#syncDot").className="dot";
   await finResolve();
   try{
-    const ar=await finCall("list_accounts",{all:true});const accs=ar.data||[];const acc={};let bal=null,balAt=null;
-    for(const a of accs){if(!FIN_PROVIDERS(a.providerId))continue;const nm=String((a.ownerInfo||{}).fullName||"").trim().split(/\s+/);acc[a.id]={product:a.product||"",owner:a.accountType==="CARD"?nm[nm.length-1]:""};
+    const ar=await finCall("list_accounts",{all:true});const accs=ar.data||[];const acc={};let bal=null,balAt=null;const conns=new Set();
+    for(const a of accs){if(!FIN_PROVIDERS(a.providerId))continue;if(a.connectionId)conns.add(a.connectionId);const nm=String((a.ownerInfo||{}).fullName||"").trim().split(/\s+/);acc[a.id]={product:a.product||"",owner:a.accountType==="CARD"?nm[nm.length-1]:""};
       if(a.accountType==="CHECKING"){const b=(a.balances||[]).find(x=>x.balanceType==="expected"&&!x.creditLimitIncluded)||(a.balances||[]).find(x=>x.balanceType==="closingBooked"&&!x.creditLimitIncluded);
         if(b){bal=(bal||0)+Number(b.balanceAmount.amount);balAt=b.referenceDate}}}
     const have=Object.keys(S.months).filter(m=>!S.demo).sort();
     const cur=nowYm();let start=have.length?addM(have[have.length-1],-1):addM(cur,-12);if(start>addM(cur,-1))start=addM(cur,-1);
     const ms=[];for(let m=start;m<=addM(cur,1);m=addM(m,1))ms.push(m);
     const byM={};
-    let cursor=null,pages=0,got=0;const toD=eom(addM(cur,1)+"-01");
-    let lim=250;
-    for(;;){const inp={from:start+"-01",to:toD,limit:lim};if(cursor)inp.cursor=cursor;
+    let pages=0,got=0;const toD=eom(addM(cur,1)+"-01");
+    let lim=120;
+    for(const conn of (conns.size?[...conns]:[null])){let cursor=null;
+    for(;;){const inp={from:start+"-01",to:toD,limit:lim};if(conn)inp.connection=conn;if(cursor)inp.cursor=cursor;
       let r;try{r=await finCall("list_transactions",inp)}catch(e){const msg=JSON.stringify((e&&e.result)||"")+String(e&&e.message);
-        if((/too large|RESULT_TOO_LARGE/i.test(msg)||(e&&e.code)==="timeout")&&lim>25){lim=Math.max(25,Math.floor(lim/2));continue}throw e}
+        if((/too large|RESULT_TOO_LARGE/i.test(msg)||/^(timeout|claude_failed)$/.test((e&&e.code)||""))&&lim>25){lim=Math.max(25,Math.floor(lim/2));continue}throw e}
       for(const t of (r.data||[])){if(t.isDuplicate||!acc[t.accountId])continue;const o=finMap(t,acc);if(!o)continue;got++;(byM[ym(o.d)]=byM[ym(o.d)]||new Map()).set(o.id,o)}
       cursor=r.nextPage||null;pages++;$("#syncText").textContent="מושך מ־Financy… "+got+" תנועות";
-      if(!cursor||pages>=200)break;}
+      if(!cursor||pages>=200)break;}}
     let changed=0;
     for(const m of ms){const map=byM[m];if(!map)continue;
       const txns=[...map.values()].sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id));
