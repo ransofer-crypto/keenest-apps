@@ -1,0 +1,1 @@
+{"mcp":[{"server":"Gmail","tools":["send_message"]},{"server":"Keenest Morning","tools":["morning_account","morning_search_clients","morning_create_client","morning_create_document","morning_get_document"]},{"server":"Notion","tools":["notion-create-pages"]},{"server":"Google Calendar","tools":["create_event","update_event","delete_event"]}]}

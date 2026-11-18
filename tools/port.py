@@ -11,7 +11,7 @@ html = pathlib.Path(src).read_text(encoding="utf-8")
 
 def fix(m):
     tag, body = m.group(1), m.group(2)
-    if "src=" in tag or "window.claude" not in body:
+    if "src=" in tag or ("window.claude" not in body and "claude.use" not in body):
         return m.group(0)
     return '<script type="text/keenest-app">' + body + "</script>"
 html = re.sub(r"(<script\b[^>]*>)(.*?)</script>", fix, html, flags=re.S)
@@ -27,7 +27,7 @@ head_add = ('<link rel="manifest" href="manifest.webmanifest">'
 html = html.replace("</title>", "</title>" + head_add, 1)
 tail = (f'<script type="application/json" id="keenest-manifest">{json.dumps(manifest, ensure_ascii=False)}</script>'
         f'<script>window.KEENEST_APP={json.dumps(app)};</script>'
-        '<script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=3"></script>')
+        '<script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=4"></script>')
 if "</body>" in html:
     html = html.replace("</body>", tail + "</body>", 1)
 else:

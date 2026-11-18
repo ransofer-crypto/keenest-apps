@@ -82,9 +82,9 @@ function serverId(app, server) {
 }
 
 // ---------- run Claude Code once, reading its stream ----------
-function runClaude(app, args, prompt, onEvent, signalMs) {
+function runClaude(app, args, prompt, onEvent, signalMs, extraEnv) {
   return new Promise((resolve, reject) => {
-    const p = spawn(CLAUDE, ["-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", ...args], { env: envFor(app), cwd: WORKDIR });
+    const p = spawn(CLAUDE, ["-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", ...args], { env: { ...envFor(app), ...(extraEnv || {}) }, cwd: WORKDIR });
     let buf = "", errText = "";
     const timer = setTimeout(() => { p.kill("SIGTERM"); reject(Object.assign(new Error("timeout"), { code: "timeout" })); }, signalMs);
     p.stdout.on("data", (d) => {
@@ -257,12 +257,91 @@ async function doSample(job) {
   return { text: final ?? text };
 }
 
+
+// kind "agent": a longer Claude Code task from worker/tasks/<task>.md, with web search, the Mac's
+// connectors and the kdb command for the sites' data. Also started by the schedule below.
+const agentRunning = new Set();
+async function doAgent(job) {
+  const { task, text = "" } = job.payload || {};
+  if (!/^[a-z_]+$/.test(task || "")) throw Object.assign(new Error("bad task"), { code: "bad_request" });
+  const md = readFileSync(join(HERE, "tasks", task + ".md"), "utf8");
+  const head = md.match(/^---\n([\s\S]*?)\n---\n/);
+  const meta = {};
+  if (head) for (const l of head[1].split("\n")) { const i = l.indexOf(":"); if (i > 0) meta[l.slice(0, i).trim()] = l.slice(i + 1).trim(); }
+  const body = (head ? md.slice(head[0].length) : md).replace(/\{\{include:([a-z_]+)\}\}/g, (_, f) => readFileSync(join(HERE, "tasks", f + ".md"), "utf8"));
+  const kdb = `node "${join(HERE, "kdb.mjs")}"`;
+  const now = new Date();
+  const il = now.toLocaleString("he-IL", { timeZone: "Asia/Jerusalem", weekday: "long", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const prompt = body.split("{{KDB}}").join(kdb) + `\n\nNow (Israel time): ${il}. Epoch ms now: ${now.getTime()}.` + (text ? "\n\n" + text : "");
+  const servers = (meta.servers || "").split(",").map((x) => x.trim()).filter(Boolean);
+  const allowed = ["Bash(node:*)", "Bash(python3:*)", "Bash(cat:*)", "Bash(jq:*)", "Read", "Write", "WebSearch", "WebFetch"];
+  for (const sv of servers) { try { allowed.push("mcp__" + serverId(job.app, sv)); } catch {} }
+  const env = { KDB_APPS: meta.apps || job.app };
+  let final = null, failed = null;
+  agentRunning.add(task);
+  const beat = setInterval(() => job.id && update(job.id, "running", { partial: "working" }).catch(() => {}), 60000);
+  try {
+    await runClaude(job.app, ["--model", meta.model || CFG.agentModel || "opus", "--allowedTools", allowed.join(","), "--max-turns", meta.turns || "400"], prompt, (ev) => {
+      if (ev.type === "result" && typeof ev.result === "string") final = ev.result;
+      if (ev.type === "result" && ev.is_error) failed = ev.result || "error";
+    }, (Number(meta.minutes) || 50) * 60 * 1000, env);
+  } finally { clearInterval(beat); agentRunning.delete(task); }
+  if (failed && !final) throw Object.assign(new Error(String(failed)), { code: "failed" });
+  log("agent", task, String(final || "").slice(0, 300));
+  return { text: final || "" };
+}
+async function runAgentNow(app, task, text) {
+  if (agentRunning.has(task)) return;
+  const t0 = Date.now();
+  try { await doAgent({ id: null, app, payload: { task, text } }); log("agent done", task, `${Math.round((Date.now() - t0) / 1000)}s`); }
+  catch (e) { log("agent error", task, String(e.message).slice(0, 300)); }
+}
+
+// ---------- schedule (Israel time), from worker/schedule.json ----------
+const SCHED_STATE = join(os.homedir(), ".keenest-worker", "schedule-state.json");
+function ilParts(d = new Date()) {
+  const f = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Jerusalem", weekday: "short", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
+  const p = Object.fromEntries(f.formatToParts(d).map((x) => [x.type, x.value]));
+  return { day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(p.weekday), date: `${p.year}-${p.month}-${p.day}`, min: Number(p.hour) * 60 + Number(p.minute) };
+}
+function scheduleTick() {
+  let list = [], state = {};
+  try { list = JSON.parse(readFileSync(join(HERE, "schedule.json"), "utf8")); } catch { return; }
+  try { state = JSON.parse(readFileSync(SCHED_STATE, "utf8")); } catch {}
+  const t = ilParts();
+  for (const it of list) {
+    if (it.days && !it.days.includes(t.day)) continue;
+    for (const at of [].concat(it.at)) {
+      const [h, m] = at.split(":").map(Number), due = h * 60 + m;
+      const key = `${it.task}|${t.date}|${at}`;
+      if (t.min >= due && t.min < due + (it.grace || 90) && !state[key]) {
+        state[key] = Date.now();
+        try { writeFileSync(SCHED_STATE, JSON.stringify(state)); } catch {}
+        log("scheduled", it.task, at);
+        runAgentNow(it.app, it.task, it.text || "");
+      }
+    }
+  }
+}
+setInterval(scheduleTick, 30 * 1000);
+
+// ---------- watchers: run a task as soon as a site leaves work for it ----------
+async function watchTick() {
+  let list = [];
+  try { list = JSON.parse(readFileSync(join(HERE, "schedule.json"), "utf8")).filter((x) => x.watch); } catch { return; }
+  for (const it of list) {
+    if (agentRunning.has(it.task)) continue;
+    try { const n = await rpc("worker_docs_waiting", { s: SECRET, a: it.app, c: it.watch }); if (n > 0) runAgentNow(it.app, it.task, ""); } catch (e) { log("watch failed", it.task, String(e.message).slice(0, 120)); }
+  }
+}
+setInterval(watchTick, 60 * 1000);
+
 const running = new Set();
 async function handle(job) {
   running.add(job.id);
   const t0 = Date.now();
   try {
-    const result = job.kind === "mcp" ? await doMcp(job) : job.kind === "mcp_all" ? await doMcpAll(job) : job.kind === "research" ? await doResearch(job) : job.kind === "sample" ? await doSample(job) : { ok: true };
+    const result = job.kind === "mcp" ? await doMcp(job) : job.kind === "mcp_all" ? await doMcpAll(job) : job.kind === "research" ? await doResearch(job) : job.kind === "sample" ? await doSample(job) : job.kind === "agent" ? await doAgent(job) : { ok: true };
     await update(job.id, "done", { result });
     log("done", job.app, job.kind, job.payload?.server || "", job.payload?.tool || "", `${Date.now() - t0}ms`);
   } catch (e) {
@@ -286,7 +365,7 @@ function selfUpdate() {
     const now = head();
     if (now && STARTED_AT && now !== STARTED_AT) {
       log("new worker code", now.slice(0, 7), "— restarting when idle");
-      const t = setInterval(() => { if (running.size === 0) { clearInterval(t); process.exit(0); } }, 2000);
+      const t = setInterval(() => { if (running.size === 0 && agentRunning.size === 0) { clearInterval(t); process.exit(0); } }, 2000);
     }
   } catch (e) { log("self-update failed", String(e.message).slice(0, 200)); }
 }

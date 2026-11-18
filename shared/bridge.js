@@ -185,7 +185,21 @@
   }
 
   var me = null;
-  var userApi = { can: async function () { return true; }, get: async function () { return me; }, profile: async function () { return me; }, me: function () { return me; } };
+  var people = null;
+  async function loadPeople() { if (!people) { try { var r = await sb.rpc("app_user_names", { a: APP }); people = r.data || {}; } catch (e) { people = {}; } } return people; }
+  // ids saved by the old Claude pages
+  var OLD_IDS = { "u_XAWTdF8szS64Sd5iFzu5dg": "רן סופר", "u_mmwlJxXU0YcqNZZs1VdIIQ": "צפריר אלבז" };
+  var userApi = {
+    id: async function () { return me && me.id; },
+    me: async function () { return me; }, get: async function () { return me; }, profile: async function () { return me; },
+    can: async function () { return true; },
+    canEdit: async function () { var p = await loadPeople(); return !!(me && p[me.id] && p[me.id].role === "admin"); },
+    profiles: async function (ids) { var p = await loadPeople(), out = {}; (ids || []).forEach(function (id) { var n = (p[id] && p[id].name) || OLD_IDS[id]; if (n) out[id] = { name: n }; }); return out; }
+  };
+  var downloadsApi = { save: async function (o) {
+    var blob = o.data instanceof Blob ? o.data : new Blob([o.data], { type: o.mimeType || "application/octet-stream" });
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = o.filename || "file"; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000); return true; } };
 
   window.claude = {
     use: async function (what) {
@@ -193,6 +207,7 @@
       if (what === "mcp") return mcpApi;
       if (what === "sample") return sampleApi;
       if (what === "user") return userApi;
+      if (what === "downloads") return downloadsApi;
       throw err("not_available", what);
     },
     keenest: { sb: sb, app: APP, signOut: async function () { await sb.auth.signOut(); location.reload(); } }

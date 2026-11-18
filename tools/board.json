@@ -1,0 +1,1 @@
+{"mcp":[{"server":"Notion","tools":["notion-query-data-sources","notion-update-page","notion-create-pages","notion-delete-pages"]},{"server":"Google Calendar","tools":["create_event","update_event","delete_event"]}]}
