@@ -2228,7 +2228,7 @@ async function syncFinancy(force){
   if(!db||finBusy)return;
   if(!S.canWrite){finErr="אין הרשאת עריכה באתר";renderSync();return}
   const last=S.realSync&&S.realSync.source==="financy"&&S.realSync.lastRun;
-  if(!force&&last&&Date.now()-new Date(last).getTime()<3*36e5)return;
+  if(!force&&last&&S.realSync.pv===2&&Date.now()-new Date(last).getTime()<3*36e5)return;
   finBusy=true;finErr="";$("#syncText").textContent="מושך מ־Financy במחשב במשרד…";$("#syncDot").className="dot";
   await finResolve();
   try{
