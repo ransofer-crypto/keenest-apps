@@ -1771,7 +1771,18 @@ async function boot(){
   DB.doc("state/fam").onSnapshot(s=>{const k=s.exists&&s.data().key;if(k&&/^[A-Za-z0-9]{20,64}$/.test(k)){if(k!==S.famKey){S.famKey=k;S.convOk={};if(!S.projView&&S.tab==="night")render();setTimeout(checkNewConv,300)}}
     else if(!S.famMade){S.famMade=true;const a=new Uint8Array(18);crypto.getRandomValues(a);const nk=[...a].map(x=>"abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x%56]).join("")+Date.now().toString(36);
       DB.doc("state/fam").set({key:nk,at:Date.now()}).catch(()=>{})}},()=>{});
-  DB.doc("state/weather").onSnapshot(s=>{S.weather=s.exists?s.data():null;if(!S.projView&&S.tab==="night"||S.projView==="evening")render()},()=>{});
+  DB.doc("state/weather").onSnapshot(s=>{const d=s.exists?s.data():null;if(d&&(!S.weather||(+d.at||0)>(+S.weather.at||0)))S.weather=d;if(!S.projView&&S.tab==="night"||S.projView==="evening")render()},()=>{});
+  /* weather straight from Open-Meteo (Kiryat Ono), every 30 min; no scheduled task needed */
+  const wxLoad=async()=>{try{
+    const u="https://api.open-meteo.com/v1/forecast?latitude=32.064&longitude=34.856&current=temperature_2m,weather_code,cloud_cover,precipitation&hourly=precipitation_probability,precipitation&forecast_hours=10&timezone=Asia%2FJerusalem";
+    const j=await (await fetch(u)).json();const c=j.current||{},h=j.hourly||{};
+    const code=+c.weather_code||0,rainCode=(code>=51&&code<=67)||(code>=80&&code<=82)||code>=95;
+    const pp=(h.precipitation_probability||[]).some(x=>x>=50),pr=(h.precipitation||[]).some(x=>x>=0.2);
+    const kind=rainCode||pp||pr||(+c.precipitation||0)>0?"rain":(code===3||code===45||code===48||(+c.cloud_cover||0)>=70)?"clouds":"clear";
+    const t=Math.round(+c.temperature_2m);const note=(kind==="rain"?"גשם":kind==="clouds"?"מעונן":"בהיר")+(isFinite(t)?", "+t+"°":"");
+    S.weather={kind,at:Date.now(),note,src:"open-meteo"};if(!S.projView&&S.tab==="night"||S.projView==="evening")render();
+  }catch(e){}};
+  wxLoad();setInterval(wxLoad,30*60e3);
   DB.doc("state/sync").onSnapshot(s=>{S.syncText=s.exists?(s.data().text||""):"";S.syncLoaded=true;scheduleSync()},()=>{});
   DB.doc("state/plan").onSnapshot(s=>{if(s.exists){const p=s.data();S.planBase=JSON.parse(JSON.stringify(p));const W=p.who&&typeof p.who==="object"?p.who:null;S.plan={stage:Math.min(4,Math.max(0,+p.stage||0)),tonight:cs(p.tonight,600),tonightAt:+p.tonightAt||0,evening:cleanEve(p.evening),day:p.day&&typeof p.day==="object"?{...p.day,t:cs(p.day.t,80),d:cs(p.day.d,600)}:null,who:W?{kids:W.kids==="טל"?"טל":"רן",noam:W.noam==="רן"?"רן":"טל",at:+W.at||0}:null,stageSnooze:p.stageSnooze&&typeof p.stageSnooze==="object"&&isYmd(p.stageSnooze.until)?{stage:cn(p.stageSnooze.stage,0,4),until:p.stageSnooze.until}:null}}
     S.planLoaded=true;makeEvening();archiveEve();
