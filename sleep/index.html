@@ -351,6 +351,7 @@ html,body{overscroll-behavior:none}
 .nnav button{display:flex;align-items:center;gap:4px;height:32px;font-size:13.5px;font-weight:600;color:var(--muted);font-family:inherit}
 .nnav button svg{width:15px;height:15px}.nnav button:last-child svg{transform:scaleX(-1)}.nnav button[disabled]{opacity:.35}
 .psub{position:absolute;top:calc(88px + env(safe-area-inset-top));right:22px;font-size:13.5px;font-weight:600;color:var(--muted);z-index:2}
+.appver{text-align:center;font-size:11px;color:var(--muted);opacity:.45;margin:28px 0 6px;direction:rtl}
 /* reveal */
 #revealHost:empty{display:none}
 .nrv{position:fixed;inset:0;z-index:60;background:radial-gradient(circle at 50% 28%,#1F3A6B,#0E1E3A 72%);display:flex;flex-direction:column;align-items:center;padding:calc(48px + env(safe-area-inset-top)) 26px calc(28px + env(safe-area-inset-bottom));overflow:hidden;color:#EEF2F7;animation:iosFade .35s ease both}
@@ -1179,6 +1180,8 @@ function nightView(){
   ${d.comment?`<div class="sec">מה היועצת אומרת</div><p class="prose">${esc(d.comment)}</p>`:""}
   <button class="wide" data-act="save">נכון, לשמור</button>`;
 }
+/* מעלים את המספר בכל שינוי שעולה לאתר */
+const APP_VER="1.0 · 19.11 08:30";
 function weekView(){
   const L=scored(),last=L[0];
   let top="";
@@ -1196,6 +1199,7 @@ function weekView(){
   ${weekSum()}
   ${doneN(lastNight(0))?"":`<div class="nrow" data-act="log" style="margin-top:14px"><div class="nl"><span class="sdot empty big"></span></div><div class="nb"><b>${heDate(lastNight(0))}</b><div class="nchips"><span class="miss">עוד לא מילאתם – למלא עכשיו</span></div></div></div>`}
   <button class="nall" data-act="allnights">כל הימים והלילות</button>
+  <div class="appver">גרסה ${APP_VER}</div>
 `;
 }
 function weekKey(){return ymd(new Date())}
