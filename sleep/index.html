@@ -1261,15 +1261,18 @@ function reveal(n,pending){
 }
 async function scoreAdj(rec){
   if(!SAMPLE)return{};
-  const from=new Date(rec.date+"T12:00").getTime(),to=from+36*3600e3;
-  const talk=(S.allChat||[]).filter(m=>m.at>=from-6*3600e3&&m.at<=to).map(m=>(m.who==="ai"?"יועצת":m.who==="voice"?"סיכום שיחה קולית":"הורה")+": "+m.text).join("\n").slice(-4000);
+  const from=winStart(rec.date),to=Math.max(winStart(nextDay(rec.date)),Date.now());
+  const talk=(S.allChat||[]).filter(m=>m.who!=="ai"&&m.at>=from&&m.at<=to).map(m=>(m.who==="voice"?"סיכום שיחה קולית":"הורה")+": "+m.text).join("\n").slice(-4000);
+  let plan="";try{const e=await DB.doc("eves/"+rec.date).get();if(e&&e.exists){const x=e.data();plan=[x.short,...(x.steps||[]).map(t=>t.t+": "+t.d)].filter(Boolean).join("\n").slice(0,1500)}}catch(_){}
   const extra=[rec.note,...(S.notes||[]).filter(x=>x.at>=from&&x.at<=to).map(x=>x.text)].filter(Boolean).join("\n");
   if(!talk&&!extra)return{};
   try{const r=await askJSON(`את מחשבת ציון ללילה של ילד בן כמעט 3 (נטע). הציון הבסיסי כבר חושב מהשאלון: ${nScore(rec)}.
 נתוני השאלון: ${JSON.stringify(nChips(rec))}
-מה ההורים כתבו או אמרו על הלילה והערב:
+${plan?`התוכנית שתוכננה לערב הזה:\n${plan}\n`:""}מה ההורים כתבו או אמרו על הלילה והערב הזה בלבד:
 ${extra}
 ${talk}
+
+חשוב: מתייחסים רק לדברים שההורים כתבו או סיפרו שקרו בערב ובלילה האלה. לא מסיקים מעצות, מתנאים ("אם יהיה חום") או מלילות קודמים. כל דבר שההורים כתבו בטקסט החופשי נלקח בחשבון. עמידה בתוכנית (למשל בקבוק שניתן מחוץ למיטה, בלי להרים) = חיובי, גם אם הלילה עצמו היה קשה.
 
 החזירי JSON בלבד: {"adj": מספר בין -1 ל-1 (תיקון לציון לפי דברים שלא נמדדים בשאלון, למשל נטע ביקש בעצמו ללכת לישון = חיובי, בכי ארוך או ויכוח = שלילי; 0 אם אין משהו משמעותי), "why": "ציטוט או תיאור קצר מאוד, עד 8 מילים, בלי מרכאות"}`);
     const adj=Math.round(Math.max(-1,Math.min(1,+r.adj||0))*10)/10;return adj?{adj,adjWhy:String(r.why||"").replace(/["״]/g,"").trim().slice(0,70)}:{}}catch(_){return{}}
@@ -1725,15 +1728,15 @@ async function writePlan(){if(!DB)return;archiveEve();try{const mine={stage:S.pl
     if(out.stage!==mine.stage&&out.evening&&out.evening.stage!==out.stage)out.evening=null;
     await DB.doc("state/plan").set(out)}catch(e){toast(e&&e.code==="invalid_argument"?"אין הרשאה לשמור":"השמירה לא הצליחה")}}
 async function saveNight(){
-  const d=S.draft;const prevN=S.nights.find(n=>n.date===d.date);const rec={date:d.date,stage:prevN&&prevN.stage!=null?prevN.stage:S.plan.stage,at:Date.now(),note:(d.note||"").trim()};rec.firstAt=prevN&&!prevN.part&&(+prevN.firstAt||+prevN.at)||rec.at;if(prevN&&prevN.adj){rec.adj=prevN.adj;rec.adjWhy=prevN.adjWhy||""}
+  const d=S.draft;const prevN=S.nights.find(n=>n.date===d.date);const rec={date:d.date,stage:prevN&&prevN.stage!=null?prevN.stage:S.plan.stage,at:Date.now(),note:(d.note||"").trim()};rec.firstAt=prevN&&!prevN.part&&(+prevN.firstAt||+prevN.at)||rec.at;
   FIELDS.forEach(f=>{if(d[f.k])rec[f.k]=d[f.k]});if(rec.feelB||rec.feelN)delete rec.feel;
   if(UID)rec.by=UID;
   const showRv=nScore(rec)!=null;let res;const done=new Promise(r=>res=r);
   if(showRv)reveal(rec,done);
-  const fin=async()=>{const[a]=await Promise.all([Promise.race([scoreAdj(rec),new Promise(r=>setTimeout(()=>r({}),7000))]),new Promise(r=>setTimeout(r,1500))]);Object.assign(rec,a);return rec};
+  const fin=async()=>{const[a]=await Promise.all([Promise.race([scoreAdj(rec),new Promise(r=>setTimeout(()=>r({}),7000))]),new Promise(r=>setTimeout(r,1500))]);if(a.adj){rec.adj=a.adj;rec.adjWhy=a.adjWhy}else{delete rec.adj;delete rec.adjWhy}return rec};
   if(!DB){await fin();S.nights=[rec,...S.nights.filter(n=>n.date!==rec.date)].sort((a,b)=>a.date<b.date?1:-1);S.projView=null;render();res(rec);if(!showRv)toast("נשמר רק במכשיר הזה");return}
   try{await DB.doc("nights/"+rec.date).set(rec);S.projView=null;render();scrollTo(0,0);
-    if(showRv){await fin();res(rec);if(rec.adj)DB.doc("nights/"+rec.date).set(rec).catch(()=>{})}else toast("הלילה נשמר")}
+    if(showRv){await fin();res(rec);DB.doc("nights/"+rec.date).set(rec).catch(()=>{})}else toast("הלילה נשמר")}
   catch(e){$("#revealHost").innerHTML="";toast(e&&e.code==="invalid_argument"?"אין הרשאה לשמור":e&&e.code==="quota_exceeded"?"נגמר המקום לשמירה":"השמירה לא הצליחה, נסו שוב")}
 }
 async function boot(){
