@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Keenest · האתרים</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Keenest"><link rel="apple-touch-icon" href="shared/logo.png">
+<meta name="apple-mobile-web-app-title" content="Keenest"><link rel="apple-touch-icon" href="/shared/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap">
 <style>
 :root{--bg:#E6E9EC;--ink:#00203F;--sub:#5b6b7b;--line:#d3d9df;--blue:#06B3E5;--pink:#FA1664}
@@ -32,7 +32,7 @@ div.row .nm{color:var(--sub)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;background:#FFF3B8;color:#4a3d00;border-radius:999px;padding:8px 18px;font-size:14px;white-space:nowrap;pointer-events:none;transition:opacity .35s ease,transform .35s ease}
 .toast.in{opacity:1;transform:translate(-50%,0)}
 </style></head><body>
-<header class="top"><button class="tg" id="tg" aria-label="מצב תצוגה"></button><img src="shared/logo.png" alt="Keenest"></header>
+<header class="top"><button class="tg" id="tg" aria-label="מצב תצוגה"></button><img src="/shared/logo.png" alt="Keenest"></header>
 <main><h1>האתרים של קינסט</h1><div id="list"></div></main>
 <script>
 /* The list of sites. live:true = already on app.keenest.co.il */
@@ -55,7 +55,9 @@ const SITES=[
 ];
 const full=u=>u.startsWith("http")?u:"https://app.keenest.co.il/"+u;
 const show=u=>full(u).replace(/^https:\/\//,"").replace(/\/$/,"");
-document.getElementById("list").innerHTML=SITES.map(s=>`<h2>${s.g}</h2>`+s.items.map(i=>i.live
+/* app.keenest.co.il/team: the same page for the team, without the personal sites */
+const TEAM=/^\/team\/?$/.test(location.pathname);
+document.getElementById("list").innerHTML=SITES.filter(s=>!(TEAM&&s.g==="בית")).map(s=>`<h2>${s.g}</h2>`+s.items.map(i=>i.live
  ?`<a class="row" href="${full(i.u)}"><div><div class="nm">${i.n}</div><div class="ad">${show(i.u)}</div></div><span class="ic"><button class="cp cpy" data-cp="${full(i.u)}" aria-label="העתקת קישור"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button><button class="cp" data-cp="${full(i.u)}" aria-label="פתיחה בכרום"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></button><span class="go">‹</span></span></a>`
  :`<div class="row"><div><div class="nm">${i.n}</div><div class="ad">${show(i.u)}</div></div><span class="soon">בקרוב</span></div>`).join("")).join("");
 /* copy a site's link (the button sits inside the row, so it must not open the site) */

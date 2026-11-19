@@ -11,5 +11,10 @@ RedirectMatch 404 /\.git
     Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
 </IfModule>
+# app.keenest.co.il/team = the sites page without the personal (בית) sites
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^team/?$ /index.html [L]
+</IfModule>
 # files the sites saved (pictures, videos): kept in Supabase Storage, same ids as on the old Claude pages
 RedirectMatch 302 ^/(?:[a-z-]+/)?_blob/([A-Za-z0-9_-]+)$ https://ccqpmbcytrcxngnlooon.supabase.co/storage/v1/object/public/assets/$1
