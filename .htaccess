@@ -1,6 +1,8 @@
 # Keenest apps (app.keenest.co.il)
 Options -Indexes
 DirectoryIndex index.html
+# phones only read the app icon list when it is served as a manifest
+AddType application/manifest+json .webmanifest
 # worker/ and tools/ are code for the office Mac and for building, not web pages
 RedirectMatch 404 ^/(worker|tools)(/.*)?$
 RedirectMatch 404 /\.git
