@@ -1074,7 +1074,7 @@ function viewTopics(){
     h+=`<div class="cat">${esc(c)}</div><div class="tps">${ts.map(t=>{const n=openOf(t.id).length;return `<div class="tpc"><button class="f1" data-opentp="${t.id}"><b>${esc(t.name)}</b><small>${n?n+' פתוחות':'אין משימות פתוחות'}</small></button><button class="ed" data-edittopic="${t.id}" aria-label="עריכה">${K.pen}</button></div>`}).join('')}</div>`});
   return h+`<button class="wide soft" style="margin-top:22px" data-newtopic>+ נושא חדש</button>`;
 }
-const OPICON={add:['+',''],update:['✎',''],postpone:['→',''],done:['✓',''],drop:['✕','r'],addTopic:['+','']};
+const OPICON={add:['+',''],update:['✎',''],postpone:['→',''],done:['✓',''],drop:['✕','r'],addTopic:['+',''],wait:['⧗',''],step:['+','']};
 function opLine(o){
   const t=o.id&&S.tasks.find(x=>x.id===o.id);const old=t?esc(t.text):'';
   const tn=o.topic?(S.topics.find(x=>x.id===o.topic)?.name||(o._newTopicName)||''):'';
@@ -1085,6 +1085,8 @@ function opLine(o){
     case 'postpone':return `${old}<em>${o.day?'ל'+dayLabel(resolveDay(o.day)):'בלי תאריך'}</em>`;
     case 'done':return `${old}<em>בוצעה</em>`;
     case 'drop':return `${old}<em>לא רלוונטית</em>`;
+    case 'wait':return `${old}<em>מחכה ל${esc(o.who||'')}</em>`;
+    case 'step':return `${esc(o.text)}<em>צעד חדש</em>`;
   }return '';
 }
 function viewChat(){
@@ -1231,8 +1233,8 @@ async function initClaude(){
   S.sampleChecked=true;autoFocus();
   try{dict=await claude.use('dictation')}catch(_){dict=null}
   if(dict){const mic=document.getElementById('cMic');mic.hidden=false;mic.innerHTML=IC.mic;
-    dict.onFinal(({text})=>{if(dictTarget){const p=document.querySelector('#layer .pop');const b=p&&p.querySelector('#fT');if(b){b.value=(b.value?b.value+' ':'')+text.trim()}return}const b=document.getElementById('cIn');b.value=(b.value?b.value:text.replace(/^\s+/,''))+(b.value?text:'');grow()});
-    dict.onState(({state})=>{const on=state!=='idle';if(dictTarget){const p=document.querySelector('#layer .pop');const fm=p&&p.querySelector('#fM');if(fm)fm.classList.toggle('on',on);if(!on&&state==='idle'){const was=dictTarget;dictTarget=null;if(p&&was==='form')tidy(p)}return}mic.classList.toggle('on',on)});
+    dict.onFinal(({text})=>{if(typeof dictTarget==='string'&&dictTarget.startsWith('ask:')){const k=dictTarget.slice(4);const i=document.getElementById('ask-'+k);if(i){i.value=(i.value?i.value+' ':'')+text.trim();S.rowDraft[k]=i.value}return}if(dictTarget){const p=document.querySelector('#layer .pop');const b=p&&p.querySelector('#fT');if(b){b.value=(b.value?b.value+' ':'')+text.trim()}return}const b=document.getElementById('cIn');b.value=(b.value?b.value:text.replace(/^\s+/,''))+(b.value?text:'');grow()});
+    dict.onState(({state})=>{const on=state!=='idle';document.querySelectorAll('[data-askmic]').forEach(b=>b.classList.toggle('on',on&&dictTarget==='ask:'+b.dataset.askmic));if(dictTarget){const p=document.querySelector('#layer .pop');const fm=p&&p.querySelector('#fM');if(fm)fm.classList.toggle('on',on);if(!on&&state==='idle'){const was=dictTarget;dictTarget=null;if(p&&was==='form')tidy(p)}return}mic.classList.toggle('on',on)});
     mic.onclick=()=>{if(dict.active()){dict.stop().catch(()=>{})}else dict.start().catch(e=>{if(e.code==='not_granted'||e.code==='unavailable')mic.hidden=true})}}
   render();
 }
@@ -1318,7 +1320,7 @@ function resolveDay(d){if(d==null||d==='')return null;if(d==='today')return toda
 function dataBlock(){
   const td=today();
   const tps=S.topics.map(t=>`${t.id} | ${t.name} | ${t.cat||''}${t.note?' | '+t.note:''}`).join('\n');
-  const open=S.tasks.filter(active).map(t=>`${t.id} | ${t.text} | נושא:${t.topic||'-'} | יום:${t.day||'-'}${t.note?' | הערה:'+t.note:''}`).join('\n');
+  const open=S.tasks.filter(active).map(t=>`${t.id} | ${t.text} | נושא:${t.topic||'-'} | יום:${t.day||'-'}${t.note?' | הערה:'+t.note:''}${t.log&&t.log.length?' | עדכון אחרון:'+t.log[t.log.length-1].text:''}`).join('\n');
   const rec=S.tasks.filter(t=>!active(t)&&((t.doneAt||t.droppedAt||0)>Date.now()-14*864e5)).map(t=>`${t.id} | ${t.text} | ${t.done?'בוצעה':'לא רלוונטית'}`).join('\n');
   return `התאריך היום: ${td} (יום ${DOW[new Date().getDay()]})\n\nנושאים (id | שם | קטגוריה | תיאור):\n${tps||'-'}\n\nמשימות פתוחות (id | טקסט | נושא | יום):\n${open||'-'}\n\nנסגרו לאחרונה:\n${rec||'-'}`;
 }
@@ -1337,14 +1339,16 @@ const RULES=`אתה העוזר של רן בתוך האתר "המשימות של�
  {"type":"postpone","id":"...","day":"tomorrow|+3|YYYY-MM-DD|null"},
  {"type":"done","id":"..."},
  {"type":"drop","id":"..."},
- {"type":"addTopic","key":"new1","name":"...","cat":"..."}
+ {"type":"addTopic","key":"new1","name":"...","cat":"..."},
+ {"type":"wait","id":"...","who":"למי או למה מחכים"},
+ {"type":"step","id":"...","text":"צעד קצר"}
 ]}`;
 function cleanOps(ops){
   if(!Array.isArray(ops))return [];
   const keys={};
   ops.forEach(o=>{if(o&&o.type==='addTopic'&&o.key&&o.name)keys[o.key]=String(o.name)});
   return ops.filter(o=>{if(!o||!OPICON[o.type])return false;
-    if(['update','postpone','done','drop'].includes(o.type))return S.tasks.some(t=>t.id===o.id);
+    if(o.type==='step'&&!o.text)return false;if(['update','postpone','done','drop','wait','step'].includes(o.type))return S.tasks.some(t=>t.id===o.id);
     if(o.type==='add'){if(!o.text)return false;if(o.topic&&!S.topics.some(t=>t.id===o.topic)){if(keys[o.topic])o._newTopicName=keys[o.topic];else o.topic=''}return true}
     if(o.type==='addTopic')return !!o.name;return false});
 }
@@ -1369,10 +1373,19 @@ async function sendChat(){
 async function askRow(id){
   const t=S.tasks.find(x=>x.id===id);const inp=document.getElementById('ask-'+id);const msg=(inp?inp.value:S.rowDraft[id]||'').trim();
   if(!t||!msg||S.rowAI[id]?.busy)return;
-  S.rowDraft[id]='';const a={busy:true};S.rowAI[id]=a;render();
-  const input=`${RULES}\n\nמצב הרשימה עכשיו:\n${dataBlock()}\n\nרן מדבר על משימה אחת: ${t.id} | ${t.text}${t.note?' | הערה: '+t.note:''}\nמה שהוא אומר עליה:\n${msg}\n\nהעדף לשנות את המשימה הזו עצמה (update/postpone/done/drop); הוסף משימות חדשות רק אם הוא מבקש או שזה נובע ישירות.`;
-  try{const r=await sample.json(input,{cache:false});a.busy=false;a.reply=String(r?.reply||'').trim();a.ops=cleanOps(r?.ops);a.state=a.ops.length?'pending':null;if(!a.reply&&!a.ops.length)a.reply='לא הבנתי מה לשנות.'}
-  catch(e){a.busy=false;a.reply=e.code==='rate_limited'?'יותר מדי בקשות כרגע. נסה שוב עוד רגע.':(e.code==='not_granted'||e.code==='sampling_disabled')?'אין לי הרשאה לענות כאן.':'משהו השתבש. נסה שוב.'}
+  S.rowDraft[id]='';
+  const log=[...(t.log||[]),{at:Date.now(),text:msg}];await upd(id,{log});
+  if(!sample){render();return}
+  const a={busy:true};S.rowAI[id]=a;render();
+  const hist=log.slice(-6).map(l=>`${new Date(l.at).toISOString().slice(0,10)} ${l.by==='c'?'קלוד':'רן'}: ${l.text}`).join('\n');
+  const input=`${RULES}\n\nמצב הרשימה עכשיו:\n${dataBlock()}\n\nרן כתב עדכון או שאלה על משימה אחת: ${t.id} | ${t.text}${t.note?' | הערה: '+t.note:''}${t.wait?' | מחכה ל'+t.wait.who:''}${t.steps&&t.steps.length?' | צעדים: '+t.steps.map(x=>(x.done?'[בוצע] ':'[ ] ')+x.text).join('; '):''}\nיומן העדכונים של המשימה (האחרון בסוף):\n${hist}\n\nאם זה עדכון התקדמות, המשימה לא נגמרה אלא אם הוא אומר במפורש שסיים. התאם אותה לפי העדכון: postpone ליום שבו כדאי לבדוק שוב, wait אם מחכים למישהו או למשלוח, step לצעד הבא שנשאר. reply: משפט אחד קצר שאומר מה עדכנת, או תשובה לשאלה. העדף לשנות רק את המשימה הזו; הוסף משימות חדשות רק אם הוא מבקש.`;
+  try{const r=await sample.json(input,{cache:false});a.busy=false;const reply=String(r?.reply||'').trim();const ops=cleanOps(r?.ops);
+    const auto=ops.filter(o=>o.id===id&&(['postpone','wait','step'].includes(o.type)||(o.type==='update'&&!o.text)));const rest=ops.filter(o=>!auto.includes(o));
+    if(auto.length)await runOps(auto);
+    const t2=S.tasks.find(x=>x.id===id);
+    if(reply&&t2)await upd(id,{log:[...(t2.log||[]),{at:Date.now(),text:reply,by:'c'}]});
+    if(rest.length){a.reply='';a.ops=rest;a.state='pending'}else delete S.rowAI[id];
+  }catch(e){a.busy=false;a.reply=e.code==='rate_limited'?'יותר מדי בקשות כרגע. נסה שוב עוד רגע.':(e.code==='not_granted'||e.code==='sampling_disabled')?'אין לי הרשאה לענות כאן.':'משהו השתבש. העדכון נשמר.'}
   render();
 }
 async function runOps(ops){
@@ -1385,6 +1398,8 @@ async function runOps(ops){
     else if(o.type==='postpone')await upd(o.id,{day:resolveDay(o.day)});
     else if(o.type==='done')await upd(o.id,{done:true,doneAt:Date.now()});
     else if(o.type==='drop')await upd(o.id,{dropped:true,droppedAt:Date.now()});
+    else if(o.type==='wait')await upd(o.id,{wait:{who:String(o.who||'משהו'),since:today()}});
+    else if(o.type==='step'){const t=S.tasks.find(x=>x.id===o.id);if(t)await upd(o.id,{steps:[...(t.steps||[]),{text:String(o.text),done:false}]})}
   }
 }
 async function applyOps(i){
@@ -1509,7 +1524,8 @@ function subLine(t,showTopic){
   if(S.advBusy[t.id])p.push('קלוד עובד…');
   if(S.splitBusy&&S.splitBusy[t.id])p.push('מפרק לצעדים…');
   if(t.dropped)p.push('לא רלוונטית');
-  return p.length?`<div class="t2">${p.join(' · ')}</div>`:'';
+  const lu=active(t)&&t.log&&t.log.filter(l=>l.by!=='c').pop();
+  return (p.length?`<div class="t2">${p.join(' · ')}</div>`:'')+(lu?`<div class="lu">${K3.pen}<span>${esc(lu.text)}</span><em>${luWhen(lu.at)}</em></div>`:'');
 }
 function card(t,showTopic,feat){
   if(feat)return urgentCard(t);
@@ -1735,10 +1751,12 @@ function detail(t){
   if(t.steps&&t.steps.length)cb+=`<div class="lb2" style="margin-top:10px">צעדים · ${t.steps.filter(s=>s.done).length}/${t.steps.length}</div><div class="steps">${t.steps.map((s,i)=>`<button class="stp${s.done?' done':''}" data-step="${t.id}" data-i="${i}"><span class="ring">${IC.check}</span><span class="f1">${esc(s.text)}</span></button>`).join('')}</div>`;
   if(cb)h+=`<div class="cbx2">${cb}</div>`;
   const a=S.rowAI[t.id];
-  if(a){h+=`<div class="xa${a.busy?' wait':''}">${esc(a.busy?'קלוד חושב…':a.reply)}</div>`;
+  if(a){if(a.busy||a.reply)h+=`<div class="xa${a.busy?' wait':''}">${esc(a.busy?'קלוד חושב…':a.reply)}</div>`;
     if(a.ops&&a.ops.length){h+=`<div class="chg">${a.ops.map(o=>{const [ic,c]=OPICON[o.type]||['•',''];return `<div><b class="${c}">${ic}</b><span>${opLine(o)}</span></div>`}).join('')}</div>`;
       if(a.state==='pending')h+=`<div class="chgb"><button class="wide" data-rapply="${t.id}">לעדכן</button><button class="no" data-rskip="${t.id}">לא</button></div>`}}
-  if(sample&&active(t))h+=`<div class="ask"><input id="ask-${t.id}" data-askin="${t.id}" value="${esc(S.rowDraft[t.id]||'')}" placeholder="לקלוד: מה השתנה?" enterkeyhint="send"><button data-ask="${t.id}" aria-label="שליחה"${a&&a.busy?' disabled':''}>${IC.send}</button></div>`;
+  if(t.log&&t.log.length){const L=t.log.slice().reverse();const all=S.logAll&&S.logAll[t.id];const sh=all?L:L.slice(0,4);
+    h+=`<div class="ulog"><div class="ulh">עדכונים</div>${sh.map(l=>`<div class="ul${l.by==='c'?' cc':''}"><i></i><div>${l.by==='c'?`<span class="by">${CLI()}קלוד</span>`:''}<b>${esc(l.text)}</b>${l.by==='c'?'':`<small>${luWhen(l.at,1)}</small>`}</div></div>`).join('')}${L.length>4?`<button class="mr2" data-logall="${t.id}">${all?'להציג פחות':'עוד '+(L.length-4)+' עדכונים'}</button>`:''}</div>`}
+  if(active(t))h+=`<div class="ask"><input id="ask-${t.id}" data-askin="${t.id}" value="${esc(S.rowDraft[t.id]||'')}" placeholder="${sample?'עדכון או שאלה לקלוד':'מה התקדם?'}" enterkeyhint="send">${dict?`<button class="amic" data-askmic="${t.id}" aria-label="הכתבה">${IC.mic}</button>`:''}<button data-ask="${t.id}" aria-label="שליחה"${a&&a.busy?' disabled':''}>${IC.send}</button></div>`;
   if(active(t)){
     const ib=(attr,ic,l,on,cls)=>`<button ${attr} class="${on?'on':''} ${cls||''}"><span>${ic}</span>${l}</button>`;
     h+=`<div class="icb2">${ib(`data-fzopen="${t.id}"`,K2.timer,'פוקוס',S.fz&&S.fz.id===t.id)}${ib(`data-editfull="${t.id}"`,K3.pen,'עריכה')}${t.wait?ib(`data-unwait="${t.id}"`,K3.hour,'חזרו אליי',true):ib(`data-wait="${t.id}"`,K3.hour,'מחכה',S.open.wt)}${ib(`data-pp="${t.id}"`,K3.clk,'דחייה',S.open.pp)}${ib(`data-dropit="${t.id}"`,K3.x,'לא רלוונטית',false,'rd')}</div>`;
@@ -2002,6 +2020,23 @@ html,body{overflow-x:clip}
   run();
 })();
 </script>
-<script type="application/json" id="keenest-manifest">{"mcp": []}</script><script>window.KEENEST_APP="mytasks";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=8"></script><style id="fix-bottom">html.v6 #composer,#composer{bottom:0!important;padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 10px)!important}html.v6 body::after,body::after{display:none!important}.icb2>.gap2{width:auto!important;height:auto!important;background:none!important;border-radius:0!important;flex:0 0 10px}</style>
+<script type="application/json" id="keenest-manifest">{"mcp": []}</script><script>window.KEENEST_APP="mytasks";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=8"></script><style id="ulog-css">
+.ulog{margin-top:14px}.ulh{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--v-muted);margin-bottom:8px}.ulh::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.ul{display:flex;gap:10px;padding-bottom:12px;position:relative}.ul>i{width:8px;height:8px;border-radius:50%;background:var(--v-ring);margin-top:7px;flex:none;position:relative}
+.ul:not(:last-of-type)>i::after{content:"";position:absolute;top:10px;right:3px;width:2px;height:calc(100% + 26px);background:var(--v-ring);opacity:.45}
+.ul.cc>i{background:#D97757}.ul b{display:block;font-size:14.5px;font-weight:500;line-height:1.45;color:var(--v-text)}.ul small{color:var(--v-muted);font-size:12.5px}
+.ul .by{display:flex;gap:5px;align-items:center;font-size:12.5px;color:var(--v-muted);margin-bottom:2px}.ul .by .cl{width:14px;height:14px}
+.ask .amic{background:var(--sunk)!important;color:var(--v-text)!important}.ask .amic.on{background:var(--fuchsia,#FA1664)!important;color:#fff!important}
+.lu{display:flex;gap:6px;align-items:center;margin-top:3px;font-size:13px;color:var(--v-text);opacity:.78;min-width:0}.lu svg{width:13px;height:13px;flex:none;color:var(--v-lk)}.lu span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.lu em{font-style:normal;color:var(--v-muted);flex:none}.lu em::before{content:"· "}
+</style>
+<script>
+function luWhen(at,full){const d=new Date(at),n=new Date();const hm=d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});const k=x=>x.toDateString();
+  if(k(d)===k(n))return full?'היום '+hm:'היום';const y=new Date(n);y.setDate(n.getDate()-1);if(k(d)===k(y))return 'אתמול';return d.getDate()+'.'+(d.getMonth()+1)}
+document.addEventListener('click',e=>{const m=e.target.closest('[data-askmic]');const l=e.target.closest('[data-logall]');
+  if(l){e.stopImmediatePropagation();e.preventDefault();S.logAll=S.logAll||{};const k=l.dataset.logall;S.logAll[k]=!S.logAll[k];render();return}
+  if(!m||!dict)return;e.stopImmediatePropagation();e.preventDefault();
+  if(dict.active()){dict.stop().catch(()=>{})}else{dictTarget='ask:'+m.dataset.askmic;dict.start().catch(()=>{dictTarget=null})}},true);
+</script>
+<style id="fix-bottom">html.v6 #composer,#composer{bottom:0!important;padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 10px)!important}html.v6 body::after,body::after{display:none!important}.icb2>.gap2{width:auto!important;height:auto!important;background:none!important;border-radius:0!important;flex:0 0 10px}</style>
 </body>
 </html>
