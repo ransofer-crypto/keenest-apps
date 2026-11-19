@@ -322,8 +322,10 @@ function scheduleTick() {
   try { state = JSON.parse(readFileSync(SCHED_STATE, "utf8")); } catch {}
   const t = ilParts();
   for (const it of list) {
+    if (!it.at) continue; // watch-only entries (handled by watchTick)
     if (it.days && !it.days.includes(t.day)) continue;
     for (const at of [].concat(it.at)) {
+      if (typeof at !== "string" || !/^\d{1,2}:\d{2}$/.test(at)) continue;
       const [h, m] = at.split(":").map(Number), due = h * 60 + m;
       const key = `${it.task}|${t.date}|${at}`;
       if (t.min >= due && t.min < due + (it.grace || 90) && !state[key]) {
@@ -335,7 +337,7 @@ function scheduleTick() {
     }
   }
 }
-setInterval(scheduleTick, 30 * 1000);
+setInterval(() => { try { scheduleTick(); } catch (e) { log("schedule error", String(e && e.message).slice(0, 200)); } }, 30 * 1000);
 
 // ---------- watchers: run a task as soon as a site leaves work for it ----------
 async function watchTick() {
@@ -422,6 +424,8 @@ function hebrew(e) {
   return (m[e.code] || "משהו השתבש במחשב במשרד.") + (e.code === "tool_error" ? " " + String(e.message).slice(0, 300) : "");
 }
 
+process.on("uncaughtException", (e) => { try { log("uncaught", String(e && e.stack || e).slice(0, 300)); } catch {} });
+process.on("unhandledRejection", (e) => { try { log("unhandled", String(e && e.stack || e).slice(0, 300)); } catch {} });
 const REPO = join(HERE, "..");
 function head() { try { return execFileSync("git", ["-C", REPO, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(); } catch { return ""; } }
 const STARTED_AT = head();
@@ -440,6 +444,7 @@ function selfUpdate() {
   } catch (e) { lastUpdate = { at: new Date().toISOString(), ok: false, err: String(e.message).slice(0, 160) }; log("self-update failed", String(e.message).slice(0, 200)); }
 }
 setInterval(selfUpdate, 3 * 60 * 1000);
+setTimeout(selfUpdate, 10 * 1000); // also right after start, so a fix on GitHub arrives even if something else goes wrong
 
 async function loop() {
   log("Keenest worker started", os.hostname(), STARTED_AT.slice(0, 7));
