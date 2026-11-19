@@ -351,11 +351,11 @@ setInterval(watchTick, 60 * 1000);
 // ---------- editor heartbeat: the editor page shows whether the Mac is alive and working ----------
 async function editorBeat() {
   const working = agentRunning.has("editor_work") || agentRunning.has("editor_styles");
-  const d = { updatedAt: new Date().toISOString(), state: working ? "working" : "idle" };
+  const d = { updatedAt: new Date().toISOString(), state: working ? "working" : "idle", rev: STARTED_AT.slice(0, 7), upd: lastUpdate };
   if (!working) { d.project = null; d.label = null; }
   try { await rpc("worker_docs_put", { s: SECRET, a: "editor", c: "editor", i: "status", d, merge: true }); } catch (e) { log("editor beat failed", String(e.message).slice(0, 120)); }
 }
-setInterval(editorBeat, 60 * 1000); editorBeat();
+setInterval(editorBeat, 60 * 1000); setTimeout(editorBeat, 5000); // after the whole file has loaded (uses STARTED_AT / lastUpdate below)
 
 // ---------- nightly backup to the Mac: all site data, our file copies, and the full-size Higgsfield originals ----------
 const BACKUP = join(os.homedir(), "Keenest-Backup");
@@ -425,6 +425,7 @@ function hebrew(e) {
 const REPO = join(HERE, "..");
 function head() { try { return execFileSync("git", ["-C", REPO, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(); } catch { return ""; } }
 const STARTED_AT = head();
+let lastUpdate = null;
 function selfUpdate() {
   try {
     // GitHub is the only source of truth for this folder (config.json is not tracked, so it stays)
@@ -435,7 +436,8 @@ function selfUpdate() {
       log("new worker code", now.slice(0, 7), "— restarting when idle");
       const t = setInterval(() => { if (running.size === 0 && agentRunning.size === 0 && !backingUp) { clearInterval(t); process.exit(0); } }, 2000);
     }
-  } catch (e) { log("self-update failed", String(e.message).slice(0, 200)); }
+    lastUpdate = { at: new Date().toISOString(), ok: true };
+  } catch (e) { lastUpdate = { at: new Date().toISOString(), ok: false, err: String(e.message).slice(0, 160) }; log("self-update failed", String(e.message).slice(0, 200)); }
 }
 setInterval(selfUpdate, 3 * 60 * 1000);
 
