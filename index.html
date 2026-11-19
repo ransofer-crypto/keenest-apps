@@ -26,7 +26,7 @@ a.row:active{background:rgba(6,179,229,.08)}
 .go{color:var(--blue);font-size:20px}
 .soon{font-size:12px;color:var(--sub);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
 div.row .nm{color:var(--sub)}
-.ic{display:flex;align-items:center;gap:14px}
+.ic{display:flex;align-items:center;gap:10px}.ic .go{margin-right:4px}
 .cp{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--blue);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:background .25s ease}
 .cp:active{background:rgba(6,179,229,.12)}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;background:#FFF3B8;color:#4a3d00;border-radius:999px;padding:8px 18px;font-size:14px;white-space:nowrap;pointer-events:none;transition:opacity .35s ease,transform .35s ease}
@@ -56,13 +56,14 @@ const SITES=[
 const full=u=>u.startsWith("http")?u:"https://app.keenest.co.il/"+u;
 const show=u=>full(u).replace(/^https:\/\//,"").replace(/\/$/,"");
 document.getElementById("list").innerHTML=SITES.map(s=>`<h2>${s.g}</h2>`+s.items.map(i=>i.live
- ?`<a class="row" href="${full(i.u)}"><div><div class="nm">${i.n}</div><div class="ad">${show(i.u)}</div></div><span class="ic"><button class="cp" data-cp="${full(i.u)}" aria-label="פתיחה בכרום"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></button><span class="go">‹</span></span></a>`
+ ?`<a class="row" href="${full(i.u)}"><div><div class="nm">${i.n}</div><div class="ad">${show(i.u)}</div></div><span class="ic"><button class="cp cpy" data-cp="${full(i.u)}" aria-label="העתקת קישור"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button><button class="cp" data-cp="${full(i.u)}" aria-label="פתיחה בכרום"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></button><span class="go">‹</span></span></a>`
  :`<div class="row"><div><div class="nm">${i.n}</div><div class="ad">${show(i.u)}</div></div><span class="soon">בקרוב</span></div>`).join("")).join("");
 /* copy a site's link (the button sits inside the row, so it must not open the site) */
 const toastEl=document.createElement("div");toastEl.className="toast";document.body.appendChild(toastEl);let toastT;
 function toast(t){toastEl.textContent=t;toastEl.classList.add("in");clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove("in"),1800)}
 async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch(e){const a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}a.remove();return ok}}
 document.getElementById("list").addEventListener("click",e=>{const b=e.target.closest(".cp");if(!b)return;e.preventDefault();e.stopPropagation();const u=b.dataset.cp;
+  if(b.classList.contains("cpy")){copyText(u).then(ok=>toast(ok?"הקישור הועתק":"לא הצלחתי להעתיק"));return}
   /* open in Chrome (iPhone: googlechromes://). If Chrome didn't take over, copy the link instead */
   let left=false;const gone=()=>{left=true};document.addEventListener("visibilitychange",gone,{once:true});addEventListener("pagehide",gone,{once:true});
   location.href=u.replace(/^https:\/\//,"googlechromes://");
