@@ -1233,7 +1233,7 @@ async function initClaude(){
   S.sampleChecked=true;autoFocus();
   try{dict=await claude.use('dictation')}catch(_){dict=null}
   if(dict){const mic=document.getElementById('cMic');mic.hidden=false;mic.innerHTML=IC.mic;
-    dict.onFinal(({text})=>{if(typeof dictTarget==='string'&&dictTarget.startsWith('ask:')){const k=dictTarget.slice(4);const i=document.getElementById('ask-'+k);if(i){i.value=(i.value?i.value+' ':'')+text.trim();S.rowDraft[k]=i.value}return}if(dictTarget){const p=document.querySelector('#layer .pop');const b=p&&p.querySelector('#fT');if(b){b.value=(b.value?b.value+' ':'')+text.trim()}return}const b=document.getElementById('cIn');b.value=(b.value?b.value:text.replace(/^\s+/,''))+(b.value?text:'');grow()});
+    dict.onFinal(({text})=>{if(typeof dictTarget==='string'&&dictTarget.startsWith('ask:')){const k=dictTarget.slice(4);const i=document.getElementById('ask-'+k);if(i){i.value=(i.value?i.value+' ':'')+text.trim();S.rowDraft[k]=i.value}return}if(dictTarget){const p=document.querySelector('#layer .pop');const b=p&&(p.querySelector('#fT')||p.querySelector('#nB'));if(b){b.value=(b.value?b.value+' ':'')+text.trim();b.dispatchEvent(new Event('input'))}return}const b=document.getElementById('cIn');b.value=(b.value?b.value:text.replace(/^\s+/,''))+(b.value?text:'');grow()});
     dict.onState(({state})=>{const on=state!=='idle';document.querySelectorAll('[data-askmic]').forEach(b=>b.classList.toggle('on',on&&dictTarget==='ask:'+b.dataset.askmic));if(dictTarget){const p=document.querySelector('#layer .pop');const fm=p&&p.querySelector('#fM');if(fm)fm.classList.toggle('on',on);if(!on&&state==='idle'){const was=dictTarget;dictTarget=null;if(p&&was==='form')tidy(p)}return}mic.classList.toggle('on',on)});
     mic.onclick=()=>{if(dict.active()){dict.stop().catch(()=>{})}else dict.start().catch(e=>{if(e.code==='not_granted'||e.code==='unavailable')mic.hidden=true})}}
   render();
@@ -2036,6 +2036,150 @@ document.addEventListener('click',e=>{const m=e.target.closest('[data-askmic]');
   if(l){e.stopImmediatePropagation();e.preventDefault();S.logAll=S.logAll||{};const k=l.dataset.logall;S.logAll[k]=!S.logAll[k];render();return}
   if(!m||!dict)return;e.stopImmediatePropagation();e.preventDefault();
   if(dict.active()){dict.stop().catch(()=>{})}else{dictTarget='ask:'+m.dataset.askmic;dict.start().catch(()=>{dictTarget=null})}},true);
+</script>
+<style id="notes-css">
+.nr{position:relative;display:flex;align-items:flex-start;gap:10px;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.nr:last-child{border-bottom:0}.nr .f1{flex:1;min-width:0}
+.nr b{display:block;font-size:16px;font-weight:600;color:var(--v-text);line-height:1.35}
+.nr p{margin:3px 0 2px;font-size:14px;line-height:1.45;color:var(--v-text);opacity:.78;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
+.nr small{font-size:12.5px;color:var(--v-muted)}
+.nr .npin{color:var(--v-lk);flex:none;margin-top:3px}.nr .npin svg{width:15px;height:15px}
+.nsh{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--v-muted);margin:14px 4px 2px}.nsh::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.ntype{display:flex;background:var(--sunk,rgb(127 140 160 / .12));border-radius:999px;padding:4px}
+.ntype button{flex:1;height:36px;border:0;border-radius:999px;background:none;font:inherit;font-weight:600;font-size:14px;color:var(--v-muted)}
+.ntype button.on{background:var(--surface);color:var(--v-text);box-shadow:0 2px 8px rgb(0 20 40 / .12)}
+.pop #nTi{font-size:18px;font-weight:700}
+.nrow2{display:flex;gap:8px;flex-wrap:wrap}
+.nrow2 button{height:40px;border-radius:999px;border:0;background:var(--sunk,rgb(127 140 160 / .12));color:var(--v-text);font:inherit;font-size:13.5px;font-weight:600;display:flex;gap:6px;align-items:center;padding:0 14px}
+.nrow2 button svg{width:16px;height:16px}.nrow2 button.on{background:#174560;color:#fff}
+.nrow2 #fM{width:40px;padding:0;justify-content:center;margin-inline-start:auto}.nrow2 #fM.on{background:var(--fuchsia,#FA1664);color:#fff}
+.nck{display:flex;flex-direction:column;gap:2px}
+.nci{display:flex;align-items:center;gap:10px}.nci input{flex:1;border:0!important;background:none!important;padding:8px 0!important;font:inherit;font-size:15px;color:var(--v-text);box-shadow:none!important}
+.nci.d input{text-decoration:line-through;opacity:.55}
+.nci .cbx{width:22px;height:22px;border-radius:7px;border:1.8px solid var(--v-ring,#B8C6D2);background:none;display:grid;place-items:center;flex:none;padding:0;color:#fff}
+.nci.d .cbx{background:#174560;border-color:#174560}.nci .cbx svg{width:14px;height:14px}
+.nci .rmx{border:0;background:none;color:var(--v-muted);padding:4px;display:grid;place-items:center}.nci .rmx svg{width:14px;height:14px}
+.ncl{background:rgb(31 93 128 / .07);border-radius:18px;padding:12px}
+.ncl .lb{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--v-muted);margin-bottom:8px}.ncl .lb .cl{width:16px;height:16px}
+.ncl .acts{display:flex;gap:8px;flex-wrap:wrap}.ncl .acts button{height:36px;border-radius:999px;border:0;background:var(--surface);color:var(--v-text);font:inherit;font-size:13.5px;font-weight:600;padding:0 13px}
+.ncl .wait{font-size:14px;color:var(--v-muted)}
+.ncl .tk{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:14.5px;color:var(--v-text)}.ncl .tk small{display:block;color:var(--v-muted);font-size:12.5px}
+.ncl .tk .cbx{width:20px;height:20px;border-radius:6px;border:1.8px solid var(--v-ring,#B8C6D2);display:grid;place-items:center;flex:none;color:#fff;margin-top:2px}.ncl .tk.on .cbx{background:#174560;border-color:#174560}.ncl .tk .cbx svg{width:13px;height:13px}
+.ncl .addt{width:100%;height:44px;border-radius:999px;border:0;background:var(--sel-bg,#121A24);color:var(--sel-fg,#fff);font:inherit;font-weight:700;font-size:14.5px;margin-top:8px}
+</style>
+<script type="text/keenest-app">
+(function(){
+const NSV=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const NI={pin:NSV('<path d="M9 3h6l-1 6 4 4H6l4-4zM12 13v8"/>'),chk:NSV('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),list:NSV('<path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/>'),x:NSV('<path d="M6 6l12 12M18 6L6 18"/>')};
+S.notes=[];
+(function sub(){if(!db){setTimeout(sub,300);return}
+  db.collection('notes').onSnapshot(s=>{S.notes=s.docs.map(d=>({id:d.id,...d.data()}));render()},()=>{})})();
+const nTitle=n=>(n.title||'').trim()||((n.body||'').trim().split('\n')[0]||((n.items||[])[0]||{}).t||'פתק');
+const nPrev=n=>{if(n.items&&n.items.length){const d=n.items.filter(i=>i.d).length;const open=n.items.filter(i=>!i.d).map(i=>i.t);return `${d} מתוך ${n.items.length}`+(open.length?' · '+open.slice(0,4).join(', ')+(open.length>4?'…':''):'')}
+  const b=(n.body||'').trim();return (n.title||'').trim()?b:b.split('\n').slice(1).join('\n')};
+const nMatch=n=>matchFlt({topic:n.topic||'',text:nTitle(n)+' '+(n.body||'')+' '+(n.items||[]).map(i=>i.t).join(' '),note:''});
+const nList=()=>S.notes.filter(nMatch).sort((a,b)=>(b.updated||0)-(a.updated||0));
+function nRow(n){const pv=nPrev(n),tp=n.topic?topicName(n.topic):'';
+  return `<div class="nr" data-note="${n.id}"><div class="f1"><b>${esc(nTitle(n))}</b>${pv?`<p>${esc(pv)}</p>`:''}<small>${[tp,luWhen(n.updated||n.created||Date.now())].filter(Boolean).map(esc).join(' · ')}</small></div>${n.pinned?`<span class="npin">${NI.pin}</span>`:''}</div>`}
+function notesBody(){const L=nList();if(!L.length)return `<div class="empty">אין פתקים</div>`;
+  const P=L.filter(n=>n.pinned),R=L.filter(n=>!n.pinned);
+  if(!P.length)return `<div class="list nlist">${R.map(nRow).join('')}</div>`;
+  return `<div class="nsh">מוצמדים</div><div class="list nlist">${P.map(nRow).join('')}</div>`+(R.length?`<div class="nsh">השאר</div><div class="list nlist">${R.map(nRow).join('')}</div>`:'')}
+const _vt=viewToday;
+viewToday=function(){
+  const isN=S.when==='notes';if(isN)S.when='wait';
+  let h=_vt();if(isN)S.when='notes';
+  const i=h.indexOf('<div class="wtabs">');if(i<0)return h;
+  const j=h.indexOf('</div>',i);
+  const cnt=S.notes.filter(nMatch).length;
+  let tabs=h.slice(i,j);if(isN)tabs=tabs.replace(' class="on" data-when2="wait"',' class="" data-when2="wait"');
+  tabs+=`<button class="${isN?'on':''}" data-when2="notes">פתקים<i>${cnt||''}</i></button>`;
+  return h.slice(0,i)+tabs+'</div>'+(isN?notesBody():h.slice(j+6));
+};
+const addD=n=>{const d=new Date();d.setDate(d.getDate()+n);return ds(d)};
+async function saveNote(id,data){data.updated=Date.now();
+  if(id){const n=S.notes.find(x=>x.id===id);if(n)Object.assign(n,data);render();try{await db.collection('notes').doc(id).update(data)}catch(e){toast('השמירה נכשלה')}}
+  else{const ref=db.collection('notes').doc();const body={title:'',body:'',items:null,topic:'',pinned:false,created:Date.now(),...data};S.notes.push({id:ref.id,...body});render();try{await ref.set(body)}catch(e){toast('השמירה נכשלה')}}}
+function delNote(id){const n=S.notes.find(x=>x.id===id);if(!n)return;const {id:_,...body}=n;S.notes=S.notes.filter(x=>x.id!==id);render();
+  db.collection('notes').doc(id).delete().catch(()=>{});
+  toast('הפתק נמחק',async()=>{S.notes.push({id,...body});render();await db.collection('notes').doc(id).set(body)})}
+function noteEditor(n){
+  const isNew=!n;n=n?JSON.parse(JSON.stringify(n)):{title:'',body:'',items:null,topic:S.flt.k==='topic'?S.flt.v:'',pinned:false};
+  let items=n.items?n.items.slice():null,pinned=!!n.pinned,ai=null;
+  const p=pop(`<h3>${isNew?'פתק חדש':'פתק'}</h3>${isNew?`<div class="ntype"><button type="button" data-nt="task">משימה</button><button type="button" class="on">פתק</button></div>`:''}
+    <div class="fld"><input id="nTi" placeholder="כותרת" value="${esc(n.title||'')}"></div>
+    <div class="fld" id="nBw"></div>
+    <div class="nrow2"><button type="button" id="nPin" class="${pinned?'on':''}">${NI.pin}הצמדה</button><button type="button" id="nLs" class="${items?'on':''}">${NI.list}רשימת סימון</button>${dict?`<button type="button" id="fM" aria-label="הכתבה">${IC.mic}</button>`:''}</div>
+    <div class="fld"><label>נושא</label><select id="nTp">${topicOptions(n.topic||'')}</select></div>
+    ${sample?`<div class="ncl" id="nCl"></div>`:''}
+    <div class="btns"><button class="bp" id="nS">שמירה</button>${isNew?'':'<button class="bred" id="nX">מחיקת פתק</button>'}<button class="bs" id="nC">ביטול</button></div>`);
+  const $=s=>p.querySelector(s);
+  const readItems=()=>{if(!items)return;p.querySelectorAll('.nci[data-i]').forEach(r=>{const k=+r.dataset.i;if(items[k])items[k].t=r.querySelector('input').value})};
+  function drawBody(){
+    const w=$('#nBw');
+    if(!items){w.innerHTML=`<textarea id="nB" rows="7" placeholder="מה רוצים לרשום?">${esc(n.body||'')}</textarea>`;$('#nB').oninput=e=>n.body=e.target.value;return}
+    const ord=items.map((it,k)=>({...it,k})).sort((a,b)=>(a.d?1:0)-(b.d?1:0));
+    w.innerHTML=`<div class="nck">${ord.map(it=>`<div class="nci${it.d?' d':''}" data-i="${it.k}"><button type="button" class="cbx">${it.d?NI.chk:''}</button><input value="${esc(it.t)}"><button type="button" class="rmx" aria-label="הסרה">${NI.x}</button></div>`).join('')}<div class="nci"><span class="cbx" style="opacity:.4"></span><input id="nNew" placeholder="פריט חדש" enterkeyhint="done"></div></div>`;
+    w.querySelectorAll('.nci[data-i]').forEach(r=>{const k=+r.dataset.i;
+      r.querySelector('.cbx').onclick=()=>{readItems();items[k].d=!items[k].d;drawBody()};
+      r.querySelector('.rmx').onclick=()=>{readItems();items.splice(k,1);drawBody()}});
+    const ni=$('#nNew');ni.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();const v=ni.value.trim();if(!v)return;readItems();items.push({t:v,d:false});drawBody();$('#nNew').focus()}};
+  }
+  function drawAI(){const c=$('#nCl');if(!c)return;
+    if(!ai){c.innerHTML=`<div class="lb">${CLI()}קלוד</div><div class="acts"><button type="button" id="aT">להפוך למשימות</button><button type="button" id="aO">לסדר את הפתק</button></div>`;
+      $('#aT').onclick=toTasks;$('#aO').onclick=tidyNote;return}
+    if(ai.busy){c.innerHTML=`<div class="lb">${CLI()}קלוד</div><div class="wait">קלוד קורא את הפתק…</div>`;return}
+    if(ai.msg){c.innerHTML=`<div class="lb">${CLI()}קלוד</div><div class="wait">${esc(ai.msg)}</div>`;setTimeout(()=>{ai=null;drawAI()},2600);return}
+    const on=ai.tasks.filter(t=>t.on).length;
+    c.innerHTML=`<div class="lb">${CLI()}${ai.tasks.length===1?'מצאתי בפתק משימה אחת':'מצאתי בפתק '+ai.tasks.length+' משימות'}</div>${ai.tasks.map((t,k)=>`<div class="tk${t.on?' on':''}" data-k="${k}"><span class="cbx">${t.on?NI.chk:''}</span><div>${esc(t.text)}<small>${esc([topicName(t.topic)||'',(WHEN.find(w=>w[0]===t.when)||[,''])[1]].filter(Boolean).join(' · '))}</small></div></div>`).join('')}<button type="button" class="addt" ${on?'':'disabled'}>${on===1?'להוסיף משימה אחת':'להוסיף '+on+' משימות'}</button>`;
+    c.querySelectorAll('.tk').forEach(r=>r.onclick=()=>{const t=ai.tasks[+r.dataset.k];t.on=!t.on;drawAI()});
+    c.querySelector('.addt').onclick=async()=>{const sel=ai.tasks.filter(t=>t.on);for(const t of sel)await addTask({text:t.text,topic:t.topic||'',day:whenDay(t.when)});ai={msg:sel.length===1?'הוספתי משימה אחת':'הוספתי '+sel.length+' משימות'};drawAI()};
+  }
+  const content=()=>{readItems();return items?items.map(i=>(i.d?'[בוצע] ':'')+i.t).join('\n'):(n.body||'')};
+  const topicsTxt=()=>S.topics.map(t=>`${t.id}: ${t.name}`).join('\n');
+  async function toTasks(){const txt=($('#nTi').value+'\n'+content()).trim();if(!txt)return;ai={busy:true};drawAI();
+    try{const r=await sample.json(`רן כתב פתק באתר המשימות שלו. מצא בו משימות מעשיות (דברים שצריך לעשות), לא מידע או רעיונות כלליים. כל משימה בעברית קצרה שמתחילה בפועל.\nנושאים קיימים (id: שם):\n${topicsTxt()}\nנושא הפתק: ${$('#nTp').value||'בלי'}\n\nהפתק:\n${txt}\n\nהחזר JSON בלבד: {"tasks":[{"text":"...","topic":"id של נושא קיים או ריק","when":"today|tomorrow|week|none"}]}. אם אין משימות, tasks ריק.`,{cache:false});
+      const ts=(r&&Array.isArray(r.tasks)?r.tasks:[]).filter(t=>t&&t.text).slice(0,10).map(t=>({text:String(t.text),topic:S.topics.some(x=>x.id===t.topic)?t.topic:($('#nTp').value||''),when:WHEN.some(w=>w[0]===t.when)?t.when:'none',on:true}));
+      ai=ts.length?{tasks:ts}:{msg:'לא מצאתי בפתק משימות'}}catch(e){ai={msg:'משהו השתבש, נסה שוב'}}
+    drawAI()}
+  async function tidyNote(){const txt=content();if(!txt.trim()&&!$('#nTi').value.trim())return;ai={busy:true};drawAI();
+    try{const r=await sample.json(`סדר את הפתק של רן: תקן שגיאות הכתבה, חלק לשורות ברורות, ותן כותרת קצרה אם אין. אל תוסיף מידע ואל תשמיט כלום. עברית.\nכותרת: ${$('#nTi').value}\n${items?'רשימת סימון (שורה לפריט, [בוצע] = מסומן)':'טקסט'}:\n${txt}\n\nהחזר JSON בלבד: {"title":"...",${items?'"items":[{"t":"...","d":false}]':'"body":"..."'}}`,{cache:false});
+      if(r&&r.title)$('#nTi').value=String(r.title);
+      if(items&&Array.isArray(r?.items)){items=r.items.filter(i=>i&&i.t).map(i=>({t:String(i.t),d:!!i.d}));drawBody()}
+      else if(!items&&r&&typeof r.body==='string'){n.body=r.body;drawBody()}
+      ai={msg:'סידרתי. בודקים ושומרים.'}}catch(e){ai={msg:'משהו השתבש, נסה שוב'}}
+    drawAI()}
+  drawBody();drawAI();
+  $('#nPin').onclick=()=>{pinned=!pinned;$('#nPin').classList.toggle('on',pinned)};
+  $('#nLs').onclick=()=>{if(items){readItems();n.body=items.map(i=>i.t).join('\n');items=null}else{items=(n.body||'').split('\n').map(s=>s.replace(/^\s*[-•*]\s*/,'').trim()).filter(Boolean).map(t=>({t,d:false}))}$('#nLs').classList.toggle('on',!!items);drawBody()};
+  const fm=$('#fM');if(fm)fm.onclick=()=>{if(dict.active()){dict.stop().catch(()=>{})}else{if(items){$('#nLs').click()}dictTarget='note';dict.start().catch(()=>{dictTarget=null})}};
+  const stopD=()=>{if(dict&&dict.active())dict.stop().catch(()=>{});dictTarget=null};
+  $('#nC').onclick=()=>{stopD();closePop()};
+  const tt=p.querySelector('[data-nt="task"]');if(tt)tt.onclick=()=>{stopD();closePop();taskForm({topic:$('#nTp').value||'',day:null},true)};
+  $('#nS').onclick=async()=>{readItems();const title=$('#nTi').value.trim();const body=items?'':(n.body||'').trim();const its=items?items.filter(i=>i.t.trim()):null;
+    if(!title&&!body&&!(its&&its.length)){$('#nTi').focus();return}
+    stopD();closePop();await saveNote(isNew?null:n.id,{title,body,items:its,topic:$('#nTp').value,pinned})};
+  const x=$('#nX');if(x)x.onclick=()=>{stopD();const q=pop(`<h3>למחוק את הפתק?</h3><p class="sub">${esc(nTitle(n))}</p><div class="btns"><button class="bred" id="cD">מחיקה</button><button class="bs" id="cC">ביטול</button></div>`);q.querySelector('#cC').onclick=closePop;q.querySelector('#cD').onclick=()=>{closePop();delNote(n.id)}};
+  if(isNew&&!dict)setTimeout(()=>$('#nTi').focus(),60);
+}
+window.noteEditor=noteEditor;
+// + on the notes tab opens a note; the task form gets a משימה/פתק switch
+const _tf=taskForm;
+taskForm=function(t,isNew){_tf(t,isNew);if(!isNew)return;const p=document.querySelector('#layer .pop');if(!p||p.querySelector('.ntype'))return;
+  const sw=document.createElement('div');sw.className='ntype';sw.innerHTML='<button type="button" class="on">משימה</button><button type="button" data-nt="note">פתק</button>';
+  const hd=p.querySelector('.kd-hd')||p.querySelector('h3');hd.after(sw);
+  sw.querySelector('[data-nt="note"]').onclick=()=>{const tx=(p.querySelector('#fT')||{}).value||'';if(dict&&dict.active())dict.stop().catch(()=>{});dictTarget=null;closePop();noteEditor(null);const b=document.getElementById('nB');if(b&&tx){b.value=tx;b.dispatchEvent(new Event('input'))}}};
+document.addEventListener('click',e=>{
+  const nt=e.target.closest('[data-note]');if(nt&&!e.target.closest('#layer')){e.stopImmediatePropagation();const n=S.notes.find(x=>x.id===nt.dataset.note);if(n)noteEditor(n);return}
+  const nw=e.target.closest('[data-new]');if(nw&&S.tab==='today'&&S.when==='notes'){e.stopImmediatePropagation();e.preventDefault();noteEditor(null);return}
+},true);
+// Claude reads the notes when it prepares help for tasks
+const _db=dataBlock;
+dataBlock=function(){let s=_db();const ns=S.notes.slice().sort((a,b)=>(b.updated||0)-(a.updated||0)).slice(0,15);
+  if(ns.length)s+='\n\nפתקים של רן (מידע לשימוש כשעוזרים במשימות, לא משימות):\n'+ns.map(n=>`- ${nTitle(n)}${n.topic?' ['+topicName(n.topic)+']':''}: ${(n.items?n.items.map(i=>i.t).join(', '):(n.body||'')).replace(/\s+/g,' ').slice(0,300)}`).join('\n');
+  return s};
+render();
+})();
 </script>
 <style id="fix-bottom">html.v6 #composer,#composer{bottom:0!important;padding:8px 16px calc(env(safe-area-inset-bottom,0px) + 10px)!important}html.v6 body::after,body::after{display:none!important}.icb2>.gap2{width:auto!important;height:auto!important;background:none!important;border-radius:0!important;flex:0 0 10px}</style>
 </body>
