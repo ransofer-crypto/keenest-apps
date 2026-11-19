@@ -41,6 +41,11 @@ if "</body>" in html:
 else:
     html = html.replace("</html>", tail + "</html>", 1)
 html = defer_after(html)
+# old Claude pages close <head> before <title>; phones only read the app icon from <head>
+he = html.find("</head>")
+m = re.search(r'<title>.*?</title>(?:<link rel="manifest"[^>]*>|<meta name="(?:apple-mobile-web-app-[a-z-]+|mobile-web-app-capable)"[^>]*>|<link rel="(?:apple-touch-icon|icon)"[^>]*>)+', html, re.S)
+if m and he >= 0 and m.start() > he:
+    blk = m.group(0); html = html[:m.start()] + html[m.end():]; he = html.find("</head>"); html = html[:he] + blk + html[he:]
 out.mkdir(parents=True, exist_ok=True)
 (out / "index.html").write_text(html, encoding="utf-8")
 (out / "manifest.webmanifest").write_text(json.dumps({
