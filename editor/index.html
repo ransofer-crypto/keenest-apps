@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>עורך קינסט</title><link rel="manifest" href="manifest.webmanifest?v=2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="עורך קינסט"><link rel="apple-touch-icon" sizes="180x180" href="icons/apple-180.png?v=1"><link rel="icon" type="image/png" href="icons/icon-192.png?v=1">
+<title>עורך קינסט</title><link rel="manifest" href="manifest.webmanifest?v=2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="עורך קינסט"><link rel="apple-touch-icon" sizes="180x180" href="icons/apple-180.png?v=1"><link rel="icon" type="image/png" href="icons/icon-192.png?v=1">
 <style>:root{--bg:#F8F7F4;--ink:#00203F;--ink2:#4D5E73;--ink3:#8592A3;--trk:#E6E9EC;--sf:#FFFFFF;--line:rgb(0 32 63 / .1);
   --cy:#06B3E5;--fx:#FA1664;--navy:#00203F;--onnavy:#FFFFFF;--sh:0 2px 10px rgb(0 32 63 / .08);--toast:#FFF4C2;--toastink:#3B3000;
   --surface:#FFFFFF;--sel-bg:#00203F;--sel-fg:#FFFFFF;--red:#E5484D;
@@ -1280,7 +1280,9 @@ html,body{overflow-x:clip}
 <script type="application/json" id="keenest-manifest">{"mcp": []}</script><script>window.KEENEST_APP="editor";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=8"></script><style id="kx-look">
 body{padding-top:env(safe-area-inset-top,0px)}
 html body::before{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-.topfade{position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 34px);pointer-events:none;z-index:18}
+.wash,.kxwash{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 140px);mask-image:linear-gradient(to bottom,transparent 0,#000 140px)}
+.topfade{position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 26px);pointer-events:none;z-index:18;opacity:0;transition:opacity .3s}
+html.kx-scrolled .topfade{opacity:1}
 .topfade i{position:absolute;inset:0}
 .topfade i:nth-child(1){-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);-webkit-mask:linear-gradient(to top,transparent 0%,#000 45%);mask:linear-gradient(to top,transparent 0%,#000 45%)}
 .topfade i:nth-child(2){-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);-webkit-mask:linear-gradient(to top,transparent 30%,#000 70%);mask:linear-gradient(to top,transparent 30%,#000 70%)}
@@ -1300,4 +1302,4 @@ html,body{background:var(--bg)}body{background:transparent!important}.tb{backgro
 .hb2 .kxt{font-size:21px;font-weight:700;letter-spacing:-.2px;line-height:1.15;color:var(--ink)}
 .hb2 .kxs{font-size:12.5px;font-weight:500}
 .hb2 .kxs{color:var(--ink2)}.tb.hb2wrap{justify-content:flex-start}
-</style><!-- kx theme-color --><script>(()=>{let m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}const set=()=>{const c=getComputedStyle(document.documentElement).backgroundColor;if(c&&c!=="rgba(0, 0, 0, 0)")m.setAttribute("content",c)};set();new MutationObserver(()=>setTimeout(set,30)).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class"]});matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>setTimeout(set,30));addEventListener("pageshow",set)})();</script></body></html>
+</style><!-- kx theme-color --><script>(()=>{let m=document.querySelector('meta[name="theme-color"]');if(!m){m=document.createElement("meta");m.name="theme-color";document.head.appendChild(m)}const set=()=>{const c=getComputedStyle(document.documentElement).backgroundColor;if(c&&c!=="rgba(0, 0, 0, 0)")m.setAttribute("content",c)};set();new MutationObserver(()=>setTimeout(set,30)).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class"]});matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>setTimeout(set,30));addEventListener("pageshow",set)})();</script><script>(()=>{const f=()=>document.documentElement.classList.toggle("kx-scrolled",(window.scrollY||document.scrollingElement.scrollTop||0)>4);addEventListener("scroll",f,{passive:true});document.addEventListener("scroll",f,{passive:true,capture:true});f()})();</script></body></html>
