@@ -1,7 +1,10 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Keenest – לידים</title><link rel="manifest" href="manifest.webmanifest?v=2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Keenest – לידים"><link rel="apple-touch-icon" sizes="180x180" href="icons/apple-180.png?v=2"><link rel="icon" type="image/png" href="icons/icon-192.png?v=2"></head><body><style id="kx-nav">
 /* compact bottom nav sized to its buttons + progressive blur behind it (Nov 2026) */
-html body .nav,html body nav.tabs{left:0!important;right:0!important;width:fit-content!important;max-width:calc(100% - 28px)!important;margin-inline:auto!important}
-html body .nav button,html body nav.tabs button{flex:0 1 78px!important;min-width:0!important;padding-inline:10px}
+html body .nav,html body nav.tabs{--n:3;left:0!important;right:0!important;width:min(calc(100% - 28px),calc(var(--n) * 92px + 10px))!important;max-width:none!important;margin-inline:auto!important}
+html body .nav:has(>button:nth-of-type(4)),html body nav.tabs:has(>button:nth-of-type(4)){--n:4}
+html body .nav:has(>button:nth-of-type(5)),html body nav.tabs:has(>button:nth-of-type(5)){--n:5}
+html body .nav:not(:has(>button:nth-of-type(3))),html body nav.tabs:not(:has(>button:nth-of-type(3))){--n:2}
+html body .nav button,html body nav.tabs button{flex:1 1 0!important;min-width:0!important;width:auto!important}
 .navfade{position:fixed;left:0;right:0;bottom:0;height:calc(150px + env(safe-area-inset-bottom,0px));pointer-events:none;z-index:19}
 .navfade i{position:absolute;inset:0}
 .navfade i:nth-child(1){-webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px);-webkit-mask:linear-gradient(to bottom,transparent 0%,#000 30%);mask:linear-gradient(to bottom,transparent 0%,#000 30%)}
