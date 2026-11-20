@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>עורך קינסט</title><link rel="manifest" href="manifest.webmanifest?v=2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="עורך קינסט"><link rel="apple-touch-icon" sizes="180x180" href="icons/apple-180.png?v=1"><link rel="icon" type="image/png" href="icons/icon-192.png?v=1">
+<title>עורך קינסט</title><link rel="manifest" href="manifest.webmanifest?v=2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="עורך קינסט"><link rel="apple-touch-icon" sizes="180x180" href="icons/apple-180.png?v=1"><link rel="icon" type="image/png" href="icons/icon-192.png?v=1">
 <style>:root{--bg:#F8F7F4;--ink:#00203F;--ink2:#4D5E73;--ink3:#8592A3;--trk:#E6E9EC;--sf:#FFFFFF;--line:rgb(0 32 63 / .1);
   --cy:#06B3E5;--fx:#FA1664;--navy:#00203F;--onnavy:#FFFFFF;--sh:0 2px 10px rgb(0 32 63 / .08);--toast:#FFF4C2;--toastink:#3B3000;
   --surface:#FFFFFF;--sel-bg:#00203F;--sel-fg:#FFFFFF;--red:#E5484D;
@@ -288,7 +288,7 @@ input,textarea,select,.search input,.inp input,.field input,.fld input,.ta{font-
 .bstat .bar{height:6px;border-radius:999px;background:var(--trk);overflow:hidden}
 .bstat .bar i{display:block;height:100%;background:var(--cy);border-radius:999px;transition:width .6s cubic-bezier(.22,1,.36,1)}
 .bstat .muted{font-size:12.5px}
-</style><link rel="stylesheet" href="online-styles.css"></head><body><div class="kxwash" aria-hidden="true"></div>
+</style><link rel="stylesheet" href="online-styles.css"></head><body><div class="topfade" aria-hidden="true"><i></i><i></i><i></i></div><div class="kxwash" aria-hidden="true"></div>
 <div class="app"><header class="tb" id="tb"></header><main id="view"></main></div>
 <div id="layer"></div><div id="toast"></div>
 <script type="text/keenest-app">/* ===== Keenest editor — control panel. Data lives in the artifact db; the Mac editor reads `requests` and writes everything else. ===== */
@@ -1278,9 +1278,13 @@ html,body{overflow-x:clip}
 })();
 </script>
 <script type="application/json" id="keenest-manifest">{"mcp": []}</script><script>window.KEENEST_APP="editor";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=8"></script><style id="kx-look">
-.wash,.kxwash{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 90px);mask-image:linear-gradient(to bottom,transparent 0,#000 90px)}
 body{padding-top:env(safe-area-inset-top,0px)}
-html body::before{background:transparent!important;-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+html body::before{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.topfade{position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 34px);pointer-events:none;z-index:18}
+.topfade i{position:absolute;inset:0}
+.topfade i:nth-child(1){-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);-webkit-mask:linear-gradient(to top,transparent 0%,#000 45%);mask:linear-gradient(to top,transparent 0%,#000 45%)}
+.topfade i:nth-child(2){-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);-webkit-mask:linear-gradient(to top,transparent 30%,#000 70%);mask:linear-gradient(to top,transparent 30%,#000 70%)}
+.topfade i:nth-child(3){-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);-webkit-mask:linear-gradient(to top,transparent 55%,#000 90%);mask:linear-gradient(to top,transparent 55%,#000 90%)}
 /* Keenest look (Nov 2026) */
 :root{--g1:rgb(6 179 229 / .20);--g2:rgb(250 22 100 / .11);--g3:rgb(255 190 77 / .26)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#233552;--sf:#33496A;--surface:#33496A;--trk:#3B5276;--ink2:#C9D2DD;--ink3:#A3B1C2;--line:rgb(255 255 255 / .14);--g1:rgb(6 179 229 / .26);--g2:rgb(250 22 100 / .12);--g3:rgb(255 255 255 / .05)}}
