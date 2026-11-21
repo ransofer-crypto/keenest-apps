@@ -1,0 +1,323 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Keenest – בובות</title><link rel="manifest" href="manifest.webmanifest?v=2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Keenest – בובות"><link rel="apple-touch-icon" href="../shared/logo.png">
+<style>
+:root{
+  --bg:#F8F7F4;--card:#FFFFFF;--sub:#F2F1EC;--ink:#00203F;--ink2:#4D5E73;--ink3:#8592A3;
+  --line:rgb(0 32 63 / .11);--blue:#06B3E5;--navy:#00203F;--fuchsia:#FA1664;
+  --on:#00203F;--onfg:#FFFFFF;--chip:rgb(0 32 63 / .06);
+  --g1:rgb(6 179 229 / .20);--g2:rgb(250 22 100 / .11);--g3:rgb(255 190 77 / .26);
+  --f:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Hebrew","Heebo",system-ui,sans-serif;
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+:root[data-theme="dark"]{--bg:#233552;--card:#33496A;--sub:#2A3E5B;--ink:#F2F5F8;--ink2:#C9D2DD;--ink3:#A3B1C2;--line:rgb(255 255 255 / .14);--on:#06B3E5;--onfg:#00203F;--chip:rgb(255 255 255 / .08);--g1:rgb(6 179 229 / .26);--g2:rgb(250 22 100 / .12);--g3:rgb(255 255 255 / .07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#233552;--card:#33496A;--sub:#2A3E5B;--ink:#F2F5F8;--ink2:#C9D2DD;--ink3:#A3B1C2;--line:rgb(255 255 255 / .14);--on:#06B3E5;--onfg:#00203F;--chip:rgb(255 255 255 / .08);--g1:rgb(6 179 229 / .26);--g2:rgb(250 22 100 / .12);--g3:rgb(255 255 255 / .07)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{touch-action:manipulation}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--f);min-height:100vh;padding:env(safe-area-inset-top) 0 calc(60px + env(safe-area-inset-bottom))}
+.wash{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden;background:radial-gradient(60% 34% at 10% 6%,var(--g3),transparent 70%)}
+.wash::before,.wash::after{content:"";position:absolute;border-radius:50%;filter:blur(48px)}
+.wash::before{width:95%;height:42%;top:-12%;right:-30%;background:radial-gradient(circle,var(--g1),transparent 66%)}
+.wash::after{width:90%;height:42%;top:16%;left:-40%;background:radial-gradient(circle,var(--g2),transparent 66%)}
+main{max-width:640px;margin:0 auto;padding:12px 20px}
+.hb{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:16px}
+.hb .mark{height:40px;width:auto;flex:none}
+.hb .tt{font-size:19px;font-weight:700;line-height:1.15}
+.hb .st{font-size:12px;color:var(--ink2);font-weight:500}
+.rbtn{margin-inline-start:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.rbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+h2{font-size:12.5px;font-weight:600;color:var(--ink2);margin:26px 0 10px;display:flex;align-items:center;gap:8px}
+h2::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--ink3)}
+.photos{display:flex;gap:10px;flex-wrap:wrap}
+.ph{position:relative;width:96px;height:120px;border-radius:16px;overflow:hidden;background:var(--sub)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .x{position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;border:0;background:rgb(0 0 0 / .5);color:#fff;font-size:13px;line-height:24px;cursor:pointer;padding:0}
+.ph .up{position:absolute;inset:auto 0 0 0;font-size:11px;text-align:center;padding:4px;background:rgb(0 0 0 / .45);color:#fff}
+.ph .up.err{background:var(--fuchsia)}
+.add{width:96px;height:120px;border-radius:16px;border:1.5px dashed var(--line);background:none;color:var(--blue);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:500 13px var(--f);cursor:pointer;transition:background .3s var(--ease)}
+.add:active{background:rgb(6 179 229 / .08)}
+.add b{font-size:26px;font-weight:300;line-height:1}
+.seg{position:relative;display:flex;background:var(--chip);border-radius:999px;padding:3px;width:max-content;max-width:100%}
+.seg button{position:relative;z-index:1;border:0;background:none;font:500 14px var(--f);color:var(--ink2);padding:7px 16px;border-radius:999px;cursor:pointer;transition:color .35s var(--ease)}
+.seg button.on{color:var(--onfg)}
+.seg .pill{position:absolute;top:3px;bottom:3px;border-radius:999px;background:var(--on);transition:left .4s var(--ease),width .4s var(--ease),opacity .3s}
+.note{font-size:12px;color:var(--ink3);margin-top:7px;min-height:17px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select{appearance:none;-webkit-appearance:none;font:500 14px var(--f);color:var(--ink);background:var(--chip) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238592A3' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat left 10px center/14px;border:0;border-radius:999px;padding:8px 14px 8px 32px;cursor:pointer}
+.go{margin-top:22px;width:100%;height:48px;border:0;border-radius:999px;background:var(--blue);color:#fff;font:600 16px var(--f);cursor:pointer;transition:opacity .3s,transform .3s var(--ease)}
+.go:disabled{opacity:.45;cursor:default}
+.go:active:not(:disabled){transform:scale(.98)}
+details{margin-top:14px}
+summary{cursor:pointer;color:var(--blue);font-size:13px;list-style:none}
+summary::-webkit-details-marker{display:none}
+pre{white-space:pre-wrap;direction:ltr;text-align:left;font:12px/1.5 ui-monospace,Menlo,monospace;background:var(--sub);color:var(--ink2);border-radius:14px;padding:14px;margin:10px 0 0;max-height:340px;overflow:auto}
+.base{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--ink3)}
+.base img{width:64px;height:36px;object-fit:cover;border-radius:8px;background:var(--sub)}
+.runs{margin-top:4px}
+.sw{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.sw .acts{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 10px}
+.sw .acts button{width:84px;height:40px;border:0;border-radius:999px;color:#fff;font:600 14px var(--f);cursor:pointer}
+.sw .del{background:var(--fuchsia)}.sw .dup{background:var(--blue)}
+.run{position:relative;background:var(--bg);padding:16px 0;transition:transform .4s var(--ease)}
+.run.drag{transition:none}
+.rh{display:flex;align-items:center;gap:10px}
+.rh .th{display:flex}
+.rh .th img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--bg);margin-inline-start:-10px;background:var(--sub)}
+.rh .th img:first-child{margin-inline-start:0}
+.rh .t{font-weight:600;font-size:15px}
+.rh .m{font-size:12px;color:var(--ink3)}
+.rh .more{margin-inline-start:auto}
+.res{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+@media (min-width:560px){.res{grid-template-columns:1fr 1fr}}
+.res .cell{aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--sub);position:relative;cursor:zoom-in}
+.res img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s}
+.res img.ok{opacity:1}
+.res .wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink3)}
+.res .wait.bad{color:var(--fuchsia)}
+.shim{background:linear-gradient(100deg,var(--sub) 30%,var(--card) 50%,var(--sub) 70%);background-size:300% 100%;animation:sh 1.6s linear infinite}
+@keyframes sh{from{background-position:100% 0}to{background-position:-100% 0}}
+.empty{color:var(--ink3);font-size:13px;padding:8px 0}
+.view{position:fixed;inset:0;z-index:50;background:rgb(0 0 0 / .88);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .35s var(--ease)}
+.view.in{opacity:1}
+.view img{max-width:100%;max-height:78vh;border-radius:12px;transform:scale(.96);transition:transform .4s var(--ease)}
+.view.in img{transform:none}
+.view .vb{display:flex;gap:10px;margin-top:16px}
+.view a,.view button{border:0;border-radius:999px;padding:9px 18px;font:600 14px var(--f);background:#fff;color:#00203F;text-decoration:none;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;background:#FFF3B8;color:#4a3d00;border-radius:999px;padding:8px 18px;font-size:14px;max-width:calc(100% - 40px);display:flex;gap:12px;align-items:center;transition:opacity .35s var(--ease),transform .35s var(--ease);z-index:60;pointer-events:none}
+.toast.in{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{border:0;background:none;color:#0480AB;font:600 14px var(--f);cursor:pointer;padding:0}
+.dlg{position:fixed;inset:0;z-index:70;background:rgb(0 20 40 / .35);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .3s}
+.dlg.in{opacity:1}
+.dlg .bx{background:var(--card);border-radius:22px;padding:22px;width:100%;max-width:320px;text-align:center;transform:scale(.94);transition:transform .35s var(--ease)}
+.dlg.in .bx{transform:none}
+.dlg p{margin:0 0 18px;font-size:15px}
+.dlg .bb{display:flex;gap:10px}
+.dlg .bb button{flex:1;height:42px;border:0;border-radius:999px;font:600 15px var(--f);cursor:pointer;background:var(--chip);color:var(--ink)}
+.dlg .bb .red{background:var(--fuchsia);color:#fff}
+</style></head><body>
+<div class="wash"></div>
+<main>
+  <div class="hb"><img class="mark" id="mark" alt=""><div><div class="tt">בובות</div><div class="st" id="greet"></div></div><button class="rbtn" id="themeBtn" aria-label="מצב תצוגה"></button></div>
+
+  <h2>תמונות של האדם</h2>
+  <div class="photos" id="photos"></div>
+  <input type="file" id="file" accept="image/*" multiple hidden>
+
+  <h2>מי זה</h2>
+  <div class="seg" id="who"></div>
+  <div class="note" id="whoNote"></div>
+
+  <h2>מודל</h2>
+  <div class="row">
+    <select id="model"></select>
+    <select id="count"><option value="1">תמונה אחת</option><option value="2" selected>2 תמונות</option><option value="3">3 תמונות</option><option value="4">4 תמונות</option></select>
+  </div>
+  <div class="base"><img id="baseImg" alt=""><span>גוף הבסיס (תמונה 1) מצורף אוטומטית</span></div>
+
+  <button class="go" id="go" disabled>ליצור דף דמות</button>
+  <details id="pdet"><summary>הפרומפט שיישלח</summary><pre id="prompt"></pre></details>
+
+  <h2>דמויות</h2>
+  <div class="runs" id="runs"><div class="empty">טוען…</div></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script type="text/keenest-app">
+const MARK="data:image/png;base64,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";
+/* ================= the prompt — word for word as Ran wrote it ================= */
+const TEMPLATE=`ROLES OF THE IMAGES:
+- Image 1 = BASE BODY. The only source for body shape: big head relative to the body, long thin visible neck, narrow shoulders, slim torso, limb length, height and stance. Match its silhouette.
+- Images 2, 3 = real photos of the PERSON, the same man from different angles. They are the only source for his head shape, face, eyes, nose, mouth, eyebrows, glasses, hair, skin tone and age. Combine them to understand his true head and face shape. Copy only what is visible; add nothing. Ignore phone interfaces, backgrounds and text. Keep his real age.
+
+STYLE - a Pixar / Disney 3D animated feature film style with a big eyes, Every feature keeps HIS OWN real shape from the photos; the style only simplifies its surface:
+- Skin: very smooth, one color, with no pores or wrinkles, on his own face shape.
+- Hair: his own hair shape and hairline from the photos, sculpted as bold solid clumps with a sharp hairline.
+- Eyebrows: his own eyebrow shape, made thick, solid and uniform.
+- Eyes: his own eye shape, enlarged and lively.
+.- Crisp clean edges between every part.
+
+LAYOUT 16:9: full-body front view, full-body back view, face close-up. Both full bodies at the same scale on the same ground line. Plain seamless mid-grey backdrop, soft even neutral light.`;
+
+/* the silver base body (faceless mannequin) — Higgsfield job */
+const BASE_JOB="f4ec335f-cde3-42db-8e00-87dba1453fb2";
+const BASE_URL="https://d8j0ntlcm91z4.cloudfront.net/user_35kE6Lk0NU2Z0dO1p09MV8THQ6E/hf_20261120_063254_f4ec335f-cde3-42db-8e00-87dba1453fb2.png";
+const MODELS=[
+  {id:"nano_banana_2_1",n:"Nano Banana 2.1",p:{resolution:"2k"}},
+  {id:"gpt_image_2_6",n:"GPT Image 2.6",p:{quality:"high"}},
+  {id:"kling_image_4_0",n:"Kling 4.0",p:{resolution:"2k"},at:true},
+  {id:"seedream_v5_pro",n:"Seedream 5.0 Pro",p:{resolution:"2k"}}
+];
+const WHO=[["man","גבר"],["woman","אישה"],["boy","ילד"],["girl","ילדה"]];
+
+/* Only the small words change: man → woman/boy/girl, his → her, and the photo numbers. Nothing else. */
+function adapt(who,n,atRefs){
+  let t=TEMPLATE;
+  const nums=Array.from({length:n},(_,i)=>i+2);
+  if(n===1){
+    t=t.replace("- Images 2, 3 = real photos of the PERSON, the same man from different angles. They are the only source","- Image 2 = a real photo of the PERSON, the man. It is the only source")
+       .replace("Combine them to understand","Use it to understand");
+  }else if(n!==2){
+    t=t.replace("Images 2, 3",`Images ${nums.join(", ")}`);
+  }
+  if(who!=="man")t=t.replace(/\bman\b/g,who);
+  if(who==="woman"||who==="girl")t=t.replace(/\bhis\b/g,"her").replace(/\bHIS\b/g,"HER");
+  if(atRefs){ /* Kling reads its references as @image_N */
+    t=t.replace(/\bImages ((?:\d+, )*\d+)/g,(m,l)=>l.split(", ").map(x=>"@image_"+x).join(", ")).replace(/\bImage (\d+)/g,"@image_$1");
+  }
+  return t;
+}
+
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const UUID=/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+const txtOf=r=>{if(!r)return "";const p=r.payload;const c=(r.content||[]).filter(x=>x&&x.type==="text").map(x=>x.text).join("\n");return (typeof p==="string"?p:JSON.stringify(p||""))+"\n"+c};
+let toastT=null;
+function toast(msg,undo){const t=$("#toast");t.innerHTML=`<span>${esc(msg)}</span>`+(undo?`<button>ביטול</button>`:"");t.classList.add("in");
+  if(undo)t.querySelector("button").onclick=()=>{t.classList.remove("in");undo()};clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("in"),undo?5000:3200)}
+function confirmBox(msg,yes){return new Promise(res=>{const d=document.createElement("div");d.className="dlg";d.innerHTML=`<div class="bx"><p>${esc(msg)}</p><div class="bb"><button class="no">ביטול</button><button class="red">${esc(yes)}</button></div></div>`;
+  document.body.appendChild(d);requestAnimationFrame(()=>d.classList.add("in"));const close=v=>{d.classList.remove("in");setTimeout(()=>d.remove(),300);res(v)};
+  d.querySelector(".no").onclick=()=>close(false);d.querySelector(".red").onclick=()=>close(true);d.onclick=e=>{if(e.target===d)close(false)}})}
+
+/* theme: follows the phone, plus a manual toggle */
+const I={moon:'<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',sun:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>'};
+const eff=()=>document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+$("#themeBtn").innerHTML=eff()==="dark"?I.sun:I.moon;
+$("#themeBtn").onclick=()=>{document.documentElement.setAttribute("data-theme",eff()==="dark"?"light":"dark");$("#themeBtn").innerHTML=eff()==="dark"?I.sun:I.moon};
+$("#mark").src=MARK;$("#baseImg").src=BASE_URL;
+
+/* ================= state ================= */
+const S={photos:[],who:null,whoAuto:false,detecting:false,runs:[],busy:false};
+let DB=null,MCP=null,SAMPLE=null;
+const hf=async(tool,input)=>{if(!MCP)MCP=await claude.use("mcp");return MCP.callTool("Higgsfield",tool,input)};
+
+/* ---- who segmented control ---- */
+function renderWho(){const w=$("#who");w.innerHTML=WHO.map(([k,l])=>`<button data-w="${k}" class="${S.who===k?"on":""}">${l}</button>`).join("")+'<span class="pill"></span>';
+  w.querySelectorAll("button").forEach(b=>b.onclick=()=>{S.who=b.dataset.w;S.whoAuto=false;renderWho();renderPrompt()});movePill();
+  $("#whoNote").textContent=S.detecting?"מזהה מהתמונה…":S.who&&S.whoAuto?"זוהה אוטומטית מהתמונה":""}
+function movePill(){const w=$("#who"),p=w.querySelector(".pill"),on=w.querySelector("button.on");if(!on){p.style.opacity=0;return}p.style.opacity=1;p.style.left=on.offsetLeft+"px";p.style.width=on.offsetWidth+"px"}
+
+/* ---- model select ---- */
+$("#model").innerHTML=MODELS.map(m=>`<option value="${m.id}">${m.n}</option>`).join("");
+try{const sv=localStorage.getItem("dolls.model");if(sv&&MODELS.some(m=>m.id===sv))$("#model").value=sv;const sc=localStorage.getItem("dolls.count");if(sc)$("#count").value=sc}catch(e){}
+$("#model").onchange=()=>{try{localStorage.setItem("dolls.model",$("#model").value)}catch(e){}renderPrompt()};
+$("#count").onchange=()=>{try{localStorage.setItem("dolls.count",$("#count").value)}catch(e){}};
+const modelOf=()=>MODELS.find(m=>m.id===$("#model").value)||MODELS[0];
+
+/* ---- photos ---- */
+function renderPhotos(){const box=$("#photos");
+  box.innerHTML=S.photos.map((p,i)=>`<div class="ph"><img src="${p.prev}" alt=""><button class="x" data-i="${i}" aria-label="הסרה">✕</button>${p.state==="up"?'<div class="up">עולה…</div>':p.state==="err"?'<div class="up err">לא עלתה</div>':""}</div>`).join("")+
+    (S.photos.length<3?`<button class="add" id="addBtn"><b>+</b>${S.photos.length?"עוד תמונה":"תמונה"}</button>`:"");
+  box.querySelectorAll(".x").forEach(b=>b.onclick=()=>{S.photos.splice(+b.dataset.i,1);if(!S.photos.length){S.who=null;S.whoAuto=false}renderAll()});
+  const a=$("#addBtn");if(a)a.onclick=()=>$("#file").click()}
+$("#file").onchange=async e=>{const files=[...e.target.files].slice(0,3-S.photos.length);e.target.value="";
+  const first=!S.photos.length;
+  for(const f of files){const blob=await shrink(f,1600,.86);const p={id:uid(),prev:URL.createObjectURL(blob),blob,state:"up"};S.photos.push(p);upload(p)}
+  renderAll();if(first||!S.who)detect()};
+async function shrink(file,max,q){try{const bm=await createImageBitmap(file);const k=Math.min(1,max/Math.max(bm.width,bm.height));const c=document.createElement("canvas");c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(bm,0,0,c.width,c.height);return await new Promise(r=>c.toBlob(r,"image/jpeg",q))}catch(e){return file}}
+/* photo → our storage (public link) → Higgsfield imports it → media_id */
+async function upload(p){try{const A=await claude.use("assets");const a=await A.upload(p.blob,{type:"image/jpeg"});p.url=a.url;
+    const r=await hf("media_import_url",{url:a.url,type:"image"});const m=(txtOf(r).match(UUID)||[]);if(!m.length)throw new Error("no media id");p.media=m[0];p.state="ok"}
+  catch(e){console.error(e);p.state="err";toast(e&&e.code==="worker_offline"?e.message:"תמונה לא עלתה ל-Higgsfield. מסירים ומוסיפים שוב")}
+  renderAll()}
+
+/* ---- who is it: Claude looks at the photo ---- */
+async function detect(){const p=S.photos[0];if(!p)return;S.detecting=true;renderWho();
+  try{if(!SAMPLE)SAMPLE=await claude.use("sample");
+    const r=await SAMPLE.json('Look at the photo of the person. Is this a man, a woman, a boy or a girl? (boy/girl = a child or teenager under about 16.) Reply with JSON only: {"who":"man"} — one of man, woman, boy, girl.',{images:[p.blob],modelTier:"quick"});
+    const w=String((r&&r.who)||"").toLowerCase();if(WHO.some(x=>x[0]===w)&&(!S.who||S.whoAuto)){S.who=w;S.whoAuto=true}}
+  catch(e){console.error(e);toast("לא הצלחתי לזהות לבד. בוחרים למעלה")}
+  S.detecting=false;renderWho();renderPrompt()}
+
+function renderPrompt(){const n=Math.max(1,S.photos.length||2);$("#prompt").textContent=adapt(S.who||"man",n,!!modelOf().at);
+  const ready=S.photos.length&&S.photos.every(p=>p.state==="ok")&&S.who&&!S.busy;$("#go").disabled=!ready;
+  $("#go").textContent=S.busy?"שולח…":S.photos.some(p=>p.state==="up")?"מחכה שהתמונות יעלו…":"ליצור דף דמות"}
+function renderAll(){renderPhotos();renderWho();renderPrompt()}
+
+/* ================= generate ================= */
+$("#go").onclick=()=>generate({photos:S.photos.map(p=>({url:p.url,media:p.media})),who:S.who,model:modelOf().id,count:+$("#count").value});
+async function generate(spec){
+  const m=MODELS.find(x=>x.id===spec.model)||MODELS[0];const n=spec.photos.length;
+  const prompt=adapt(spec.who,n,!!m.at);
+  const params=Object.assign({model:m.id,prompt,aspect_ratio:"16:9",count:spec.count,use_unlim:false,
+    medias:[{role:"image_references",value:BASE_JOB}].concat(spec.photos.map(p=>({role:"image_references",value:p.media})))},m.p);
+  S.busy=true;renderPrompt();
+  try{const r=await hf("generate_image",{params,context:"Doll character sheet from a person's photos for a 3D-printed figure."});
+    const t=txtOf(r);const known=new Set([BASE_JOB,...spec.photos.map(p=>p.media)].map(x=>x.toLowerCase()));
+    let jobs=[...t.matchAll(/^\s*-\s*([0-9a-f-]{36})/gmi)].map(x=>x[1]);if(!jobs.length)jobs=(t.match(UUID)||[]);
+    jobs=[...new Set(jobs.map(x=>x.toLowerCase()))].filter(x=>!known.has(x));
+    if(!jobs.length)throw new Error(/insufficient|credit/i.test(t)?"אין מספיק קרדיטים ב-Higgsfield":"Higgsfield לא קיבל את הבקשה");
+    const run={id:uid(),at:Date.now(),who:spec.who,model:m.id,count:spec.count,photos:spec.photos,prompt,jobs:jobs.map(j=>({job:j,state:"wait"}))};
+    await DB.collection("runs").doc(run.id).set(run);toast("נשלח ל-Higgsfield");
+    poll(run.id)}
+  catch(e){console.error(e);toast(e&&e.code==="worker_offline"?e.message:(e&&e.message&&e.message.length<80?e.message:"לא הצלחתי לשלוח ל-Higgsfield. נסו שוב"))}
+  S.busy=false;renderPrompt()}
+
+/* jobs_wait answers as text: find each job's status and image link */
+function parseJobs(t,ids){const out={};const low=t;
+  ids.forEach(id=>{const i=low.toLowerCase().indexOf(id);if(i<0)return;let seg=low.slice(i,i+900);
+    const next=seg.slice(36).search(UUID);if(next>=0)seg=seg.slice(0,36+next);
+    const st=(seg.match(/\b(completed|in_progress|queued|pending|failed|nsfw|error|cancel\w*|ip_detected)\b/i)||[])[1]||"";
+    const url=(seg.match(/https:\/\/[^\s",]+\.(?:png|jpe?g|webp)/i)||[])[0]||"";out[id]={st:st.toLowerCase(),url}});return out}
+const polling={};
+async function poll(id){if(polling[id])return;polling[id]=true;
+  try{for(let round=0;round<120;round++){const run=S.runs.find(r=>r.id===id)||(await DB.collection("runs").doc(id).get()).data();if(!run)break;
+      const pend=run.jobs.filter(j=>j.state==="wait");if(!pend.length)break;
+      let r;try{r=await hf("jobs_wait",{jobs:pend.map((j,i)=>({index:i,job_id:j.job})),timeout_seconds:15})}catch(e){if(e&&e.code==="worker_offline")break;await sleep(5000);continue}
+      const got=parseJobs(txtOf(r),pend.map(j=>j.job));let ch=false;
+      run.jobs.forEach(j=>{const g=got[j.job];if(!g||j.state!=="wait")return;
+        if(g.st==="completed"&&g.url){j.state="done";j.url=g.url;ch=true}
+        else if(/fail|nsfw|error|cancel|ip_detected/.test(g.st)){j.state="fail";j.why=g.st==="nsfw"?"נחסם בפילטר של Higgsfield":"Higgsfield לא הצליח";ch=true}});
+      if(ch)await DB.collection("runs").doc(id).set(run);
+      await sleep(2500)}}
+  finally{delete polling[id]}}
+
+/* ================= list of runs ================= */
+const fmt=t=>{const d=new Date(t);return d.toLocaleDateString("he-IL",{day:"numeric",month:"numeric"})+" · "+d.toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit"})};
+const whoName=w=>(WHO.find(x=>x[0]===w)||[,""])[1];
+function renderRuns(){const box=$("#runs");
+  if(!S.runs.length){box.innerHTML='<div class="empty">עוד אין דמויות. מעלים תמונה ומתחילים.</div>';return}
+  box.innerHTML=S.runs.map(r=>{const m=MODELS.find(x=>x.id===r.model);
+    return `<div class="sw" data-id="${r.id}"><div class="acts"><button class="dup" data-dup="${r.id}">שכפול</button><button class="del" data-del="${r.id}">מחיקה</button></div>
+    <div class="run"><div class="rh"><span class="th">${(r.photos||[]).map(p=>`<img src="${esc(p.url)}" alt="">`).join("")}</span>
+      <div><div class="t">${esc(whoName(r.who))}</div><div class="m">${esc(m?m.n:r.model)} · ${fmt(r.at)}</div></div></div>
+      <div class="res">${r.jobs.map(j=>j.state==="done"?`<div class="cell" data-v="${esc(j.url)}"><img src="${esc(j.url)}" alt="" onload="this.classList.add('ok')"></div>`:
+        j.state==="fail"?`<div class="cell"><div class="wait bad">${esc(j.why||"נכשל")}</div></div>`:`<div class="cell shim"><div class="wait">יוצר…</div></div>`).join("")}</div></div></div>`}).join("");
+  box.querySelectorAll(".cell[data-v]").forEach(c=>c.onclick=()=>view(c.dataset.v));
+  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>delRun(b.dataset.del));
+  box.querySelectorAll("[data-dup]").forEach(b=>b.onclick=()=>dupRun(b.dataset.dup));
+  box.querySelectorAll(".sw").forEach(swipe)}
+/* swipe right = delete, swipe left = duplicate (reveals a button to tap) */
+function swipe(sw){const el=sw.querySelector(".run");let x0=null,y0=0,dx=0,lock=null;
+  const set=v=>{el.style.transform=v?`translateX(${v}px)`:""};
+  el.addEventListener("pointerdown",e=>{if(e.target.closest(".cell"))return;x0=e.clientX;y0=e.clientY;dx=0;lock=null});
+  el.addEventListener("pointermove",e=>{if(x0==null)return;const mx=e.clientX-x0,my=e.clientY-y0;if(lock==null&&(Math.abs(mx)>8||Math.abs(my)>8))lock=Math.abs(mx)>Math.abs(my);if(!lock)return;
+    el.classList.add("drag");dx=Math.max(-110,Math.min(110,mx+(sw.dataset.open?+sw.dataset.open:0)));set(dx)});
+  const end=()=>{if(x0==null)return;x0=null;el.classList.remove("drag");if(!lock)return;
+    document.querySelectorAll(".sw[data-open]").forEach(o=>{if(o!==sw){delete o.dataset.open;o.querySelector(".run").style.transform=""}});
+    if(dx>60){sw.dataset.open=104;set(104)}else if(dx<-60){sw.dataset.open=-104;set(-104)}else{delete sw.dataset.open;set(0)}};
+  el.addEventListener("pointerup",end);el.addEventListener("pointercancel",end)}
+async function delRun(id){const r=S.runs.find(x=>x.id===id);if(!r)return;if(!(await confirmBox("למחוק את הדמות הזאת?","מחיקה")))return;
+  await DB.collection("runs").doc(id).delete();toast("נמחק",async()=>{await DB.collection("runs").doc(id).set(r)})}
+function dupRun(id){const r=S.runs.find(x=>x.id===id);if(!r)return;
+  if(r.photos.some(p=>!p.media)){toast("חסרות תמונות בדמות הזאת");return}
+  document.querySelectorAll(".sw[data-open]").forEach(o=>{delete o.dataset.open;o.querySelector(".run").style.transform=""});
+  generate({photos:r.photos,who:r.who,model:r.model,count:r.count||2})}
+function view(url){const v=document.createElement("div");v.className="view";v.innerHTML=`<img src="${esc(url)}" alt=""><div class="vb"><a href="${esc(url)}" target="_blank" rel="noopener">פתיחה בגודל מלא</a><button>סגירה</button></div>`;
+  document.body.appendChild(v);requestAnimationFrame(()=>v.classList.add("in"));const close=()=>{v.classList.remove("in");setTimeout(()=>v.remove(),350)};v.querySelector("button").onclick=close;v.onclick=e=>{if(e.target===v)close()}}
+
+/* ================= start ================= */
+(async()=>{
+  try{const me=await (await claude.use("user")).me();const h=new Date().getHours();const g=h>=5&&h<12?"בוקר טוב":h>=12&&h<17?"צהריים טובים":h>=17&&h<22?"ערב טוב":"לילה טוב";
+    const nm=String((me&&me.name)||"").trim().split(/\s+/)[0];$("#greet").textContent=nm?g+", "+nm:g}catch(e){}
+  renderAll();
+  DB=await claude.use("db");
+  DB.collection("runs").onSnapshot(s=>{S.runs=s.docs.map(d=>d.data()).filter(Boolean).sort((a,b)=>b.at-a.at);renderRuns();
+    S.runs.forEach(r=>{if(r.jobs.some(j=>j.state==="wait")&&Date.now()-r.at<3*3600*1000)poll(r.id)})});
+  addEventListener("resize",movePill);
+})();
+</script>
+<script type="application/json" id="keenest-manifest">{"mcp": [{"server": "Higgsfield", "tools": ["media_import_url", "generate_image", "jobs_wait"]}]}</script><script>window.KEENEST_APP="dolls";</script><script src="../shared/supabase.js"></script><script src="../shared/bridge.js?v=8"></script></body></html>
